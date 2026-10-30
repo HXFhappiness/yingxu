@@ -1,0 +1,29 @@
+# 构建产物 / 运行目录
+out/
+AC201_AL_board_test_Runs/
+*.vvp
+*.wdb
+*.bak
+*.lst
+
+# 固件 bit：只保留 release/
+*.bit
+!release/*.bit
+
+# 媒体素材（版权原因不入库，用 tools/music2sd.py 自行转换）
+*.mp3
+*.wav
+*.flac
+*.yxm
+!tb/assets/*.yxm
+
+# 厂商资料 / 一次性脚本（历史补丁记录在工作目录，不入库）
+tools/ffmpeg/
+tools/_*.py
+YX-tool/
+
+# 系统 / 编辑器
+__pycache__/
+Thumbs.db
+.recent_user_depot.ini
+*.lnk

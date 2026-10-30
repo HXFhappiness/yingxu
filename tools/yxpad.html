@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>YX Pad — 映序像素画板</title>
+<style>
+  :root{
+    --bg:#12141c; --panel:#1b1f2b; --line:#2c3242; --text:#e6e9f2;
+    --dim:#8f97ab; --accent:#39dff7; --warn:#f8c838;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font:13px/1.5 "Segoe UI","Microsoft YaHei",sans-serif;overflow:hidden}
+  #app{display:flex;height:100%}
+  #side{width:250px;flex:0 0 250px;background:var(--panel);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;overflow-y:auto}
+  #side h1{margin:0;padding:10px 12px;font-size:13px;letter-spacing:.08em;color:var(--accent);
+    border-bottom:1px solid var(--line);font-weight:600}
+  .grp{padding:10px 12px;border-bottom:1px solid var(--line)}
+  .grp>label{display:block;font-size:11px;color:var(--dim);margin-bottom:6px;letter-spacing:.06em}
+  .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  button{background:#232838;color:var(--text);border:1px solid var(--line);border-radius:5px;
+    padding:5px 9px;font:inherit;cursor:pointer}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.on{background:#0e3a44;border-color:var(--accent);color:var(--accent)}
+  input[type=number]{width:64px;background:#0e1118;color:var(--text);border:1px solid var(--line);
+    border-radius:4px;padding:4px 6px;font:inherit}
+  select{background:#0e1118;color:var(--text);border:1px solid var(--line);border-radius:4px;
+    padding:4px 6px;font:inherit;width:100%}
+  #pal{display:grid;grid-template-columns:repeat(16,1fr);gap:1px;padding:0 12px 10px}
+  #pal i{display:block;aspect-ratio:1;cursor:pointer;outline:1px solid #00000040}
+  #pal i:hover{outline:1.5px solid var(--accent)}
+  #pal i.sel{outline:2px solid #fff;z-index:2}
+  #cur{width:100%;height:26px;border:1px solid var(--line);border-radius:4px}
+  #main{flex:1;position:relative;display:flex;flex-direction:column;min-width:0}
+  #bar{height:32px;flex:0 0 32px;display:flex;align-items:center;gap:14px;padding:0 12px;
+    border-bottom:1px solid var(--line);color:var(--dim);font-size:12px;background:var(--panel)}
+  #bar b{color:var(--text);font-weight:500}
+  #stage{flex:1;position:relative;overflow:hidden;cursor:crosshair;
+    touch-action:none;overscroll-behavior:contain;
+    background:
+      linear-gradient(45deg,#1a1e28 25%,transparent 25%,transparent 75%,#1a1e28 75%),
+      linear-gradient(45deg,#1a1e28 25%,#151922 25%,#151922 75%,#1a1e28 75%);
+    background-size:24px 24px;background-position:0 0,12px 12px}
+  #cv{position:absolute;left:0;top:0;image-rendering:pixelated;transform-origin:0 0;
+    box-shadow:0 0 0 1px #4a5470, 0 12px 32px #0006}
+  kbd{background:#0e1118;border:1px solid var(--line);border-radius:3px;padding:0 4px;
+    font:11px/1.6 ui-monospace,monospace;color:var(--dim)}
+  .hint{color:var(--dim);font-size:11px;line-height:1.7}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="side">
+    <h1>YX PAD · 映序像素画板</h1>
+
+    <div class="grp">
+      <label>画布预设</label>
+      <select id="preset">
+        <option value="8,8">8 × 8   （小图标）</option>
+        <option value="16,16" selected>16 × 16 （外星人/砖块）</option>
+        <option value="24,16">24 × 16 （侵略者精灵）</option>
+        <option value="32,32">32 × 32</option>
+        <option value="48,16">48 × 16 （炮台）</option>
+        <option value="64,64">64 × 64</option>
+        <option value="128,128">128 × 128 （最大精灵）</option>
+        <option value="320,180">320 × 180（整屏 1/4 逻辑分辨率）</option>
+        <option value="640,360">640 × 360（全屏 1/2）</option>
+        <option value="1280,720">1280 × 720（全屏背景图）</option>
+        <option value="custom">自定义…</option>
+      </select>
+      <div class="row" style="margin-top:6px">
+        <input type="number" id="cw" value="16" min="1" max="1280">
+        <span style="color:var(--dim)">×</span>
+        <input type="number" id="ch" value="16" min="1" max="720">
+        <button id="newBtn">新建</button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button id="up2">细化 ×2</button>
+        <span class="hint" style="margin:0">32×32 → 64×64</span>
+      </div>
+    </div>
+
+    <div class="grp">
+      <label>工具</label>
+      <div class="row">
+        <button id="tPencil" class="on">铅笔 <kbd>B</kbd></button>
+        <button id="tEraser">橡皮 <kbd>E</kbd></button>
+        <button id="tMove">移动 <kbd>M</kbd></button>
+        <button id="tPick">取色 <kbd>I</kbd></button>
+      </div>
+      <div class="hint" id="moveHint" style="display:none;margin-top:6px">
+        拖动框选 → 再拖选区内部即可整体移动；<kbd>Esc</kbd> 取消
+      </div>
+      <div class="row" style="margin-top:6px">
+        <span style="color:var(--dim)">笔刷</span>
+        <button id="bsMinus">−</button>
+        <b id="bsVal">1</b>
+        <button id="bsPlus">+</button>
+        <span class="hint">滚轮<kbd>Shift</kbd>也可</span>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button id="tGrid" class="on">网格</button>
+        <button id="tUndo">撤销 <kbd>Ctrl+Z</kbd></button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <label>辅助线框</label>
+      <div class="row">
+        <button id="gGrid" class="on">格</button>
+        <button id="gCenter" class="on">中线</button>
+        <button id="gThird">三分</button>
+        <button id="gSafe">安全框</button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <span style="color:var(--dim)">对称</span>
+        <select id="symMode" style="width:auto">
+          <option value="off" selected>关</option>
+          <option value="x">左右</option>
+          <option value="y">上下</option>
+          <option value="xy">四向</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grp">
+      <label>当前色号</label>
+      <div id="cur"></div>
+      <div class="hint" id="curTxt">0xFF 透明</div>
+    </div>
+
+    <div class="grp">
+      <label>主色板 YX-256（点选；0xFF = 透明）</label>
+    </div>
+    <div id="pal"></div>
+
+    <div class="grp">
+      <label>文件</label>
+      <div class="row">
+        <button id="saveBmp">保存 BMP</button>
+        <button id="loadBtn">读取…</button>
+        <input type="file" id="file" accept=".bmp,.png" hidden>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button id="rectBtn">复制矩形列表</button>
+      </div>
+      <div class="hint" style="margin-top:6px">
+        导入 JPG/PNG = 自动吸附 YX-256 色板转 8bpp（选大画布可做全屏图）；
+  保存 = 8bpp 索引 BMP（带 YX-256 色板），直接给程序用
+      </div>
+    </div>
+
+    <div class="grp hint">
+      <kbd>空格</kbd>+拖动 = 平移　<kbd>滚轮</kbd> = 缩放<br>
+      <kbd>[</kbd> <kbd>]</kbd> = 笔刷大小　<kbd>1</kbd> = 适应窗口
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="bar">
+      <span>画布 <b id="sz">16×16</b></span>
+      <span>缩放 <b id="zm">×8</b></span>
+      <span>光标 <b id="pos">—</b></span>
+      <span>色号 <b id="idx">—</b></span>
+      <span id="msg" style="color:var(--accent)"></span>
+    </div>
+    <div id="stage"><canvas id="cv"></canvas></div>
+  </div>
+</div>
+
+<script>
+const YX_PAL = [0x000000,0x101010,0x212021,0x313431,0x424542,0x525552,0x636563,0x737573,0x8C8A8C,0x9C9A9C,0xADAAAD,0xBDBABD,0xCECBCE,0xDEDFDE,0xEFEFEF,0xFFFFFF,0x000000,0xFFFFFF,0xFF0000,0x00FF00,0x0000FF,0x00FFFF,0xFF00FF,0xFFFF00,0xFF8200,0x84FF00,0x008284,0x0082FF,0x4200FF,0x8400FF,0xFF82BD,0x846142,0x290810,0x4A1018,0x631821,0x842831,0xA53C4A,0xC6596B,0xE78694,0xFFBEC6,0x291008,0x4A2010,0x633018,0x844529,0xA55D39,0xC6795A,0xE7A284,0xFFCFBD,0x291808,0x4A2C08,0x634118,0x845921,0xA57539,0xC69252,0xE7B684,0xFFDFBD,0x292008,0x4A3810,0x635518,0x847129,0xA58E42,0xC6AE63,0xE7CF8C,0xFFEFBD,0x292408,0x4A4510,0x636121,0x848231,0xA5A24A,0xC6BE63,0xE7DB8C,0xFFFBC6,0x212810,0x314918,0x4A6521,0x638631,0x84AA4A,0x9CC76B,0xBDE394,0xE7FFC6,0x082810,0x104918,0x216529,0x318639,0x4AAA52,0x63C76B,0x8CE394,0xC6FFC6,0x082821,0x184939,0x21655A,0x318673,0x4AAA94,0x6BC7B5,0x94E3D6,0xC6FFF7,0x082429,0x10414A,0x215D63,0x317D84,0x429EA5,0x63BEC6,0x8CDBE7,0xC6FBFF,0x081C29,0x10344A,0x214D63,0x316584,0x4A86A5,0x63A2C6,0x8CC3E7,0xC6EBFF,0x081429,0x10204A,0x183063,0x294984,0x4261A5,0x637DC6,0x8CA6E7,0xBDD3FF,0x100C29,0x18144A,0x211C63,0x312C84,0x4A45A5,0x6B61C6,0x948EE7,0xC6C3FF,0x180829,0x29104A,0x391C63,0x522C84,0x6B41A5,0x8C61C6,0xAD8AE7,0xDEBEFF,0x210C29,0x39144A,0x5A1C63,0x732C84,0x9445A5,0xB561C6,0xD68EE7,0xF7C3FF,0x290821,0x4A1039,0x631C5A,0x842C73,0xA54194,0xC661B5,0xE78ACE,0xFFBEEF,0x290C18,0x4A1829,0x632442,0x84385A,0xA55173,0xC66D94,0xE796B5,0xFFC7DE,0x312418,0x4A3829,0x6B5142,0x8C6952,0xA5866B,0xC69E84,0xDEB694,0xF7D3B5,0x211810,0x422C18,0x5A4129,0x7B5531,0x946D42,0xB5865A,0xCE9E6B,0xE7B684,0x212429,0x42414A,0x5A5D63,0x737D84,0x949EA5,0xADBAC6,0xCED7E7,0xE7F3FF,0x212429,0x394142,0x52595A,0x73717B,0x8C8E94,0xA5A6AD,0xBDBEC6,0xD6D7DE,0x086908,0x18A210,0x42D739,0x8CFF84,0x08696B,0x10A2A5,0x39D7D6,0x84FFFF,0x08206B,0x1038A5,0x3961D6,0x84A2FF,0x4A046B,0x7B14A5,0xA53CD6,0xDE86FF,0x6B044A,0xA5147B,0xD63CA5,0xFF86DE,0x6B0408,0xA51421,0xD63C4A,0xFF868C,0x5A6908,0x84A210,0xB5D739,0xE7FF84,0x6B4908,0xA57110,0xD6A239,0xFFD784,0x080C18,0x101821,0x212439,0x424D6B,0xE7EBF7,0x949AAD,0x39DFF7,0x4ADF7B,0xF7C739,0xF7494A,0x73AAF7,0x080810,0xFFFFFF,0xF7EF7B,0x5A6173,0x181829,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000];
+
+const T = 0xFF;              // 透明色号
+let W = 16, H = 16;
+let px = new Uint8Array(W * H).fill(T);
+let zoom = 8, panX = 0, panY = 0;
+let tool = 'pencil', brush = 1, cur = 0x11, showGrid = true;
+let shapeStart = null, hoverX = -1, hoverY = -1;
+let spaceDown = false, dragging = false, painting = false;
+let drawId = null;                 // 正在画的 pointerId
+let guideGrid = true, guideCenter = true, guideThird = false, guideSafe = false;
+let gridStep = 4;                  // 4px 加粗分界
+let symMode = 'off';
+let sel = null;                    // {x,y,w,h} 选区
+let floatBuf = null;               // {x,y,w,h,data} 浮动选区
+let selAnchor = null, movingFloat = false;
+let lastX = -1, lastY = -1;
+const undoStack = [], UNDO_MAX = 40;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const stage = document.getElementById('stage');
+
+/* ---------------- 色板 UI ---------------- */
+const palEl = document.getElementById('pal');
+for (let i = 0; i < 256; i++) {
+  const d = document.createElement('i');
+  const c = YX_PAL[i];
+  d.style.background = (i === T) ? 'repeating-linear-gradient(45deg,#333 0 3px,#555 3px 6px)'
+                                 : `rgb(${(c>>16)&255},${(c>>8)&255},${c&255})`;
+  d.title = `0x${i.toString(16).toUpperCase().padStart(2,'0')}`;
+  d.onclick = () => { cur = i; refreshPal(); };
+  palEl.appendChild(d);
+}
+function refreshPal() {
+  [...palEl.children].forEach((el, i) => el.classList.toggle('sel', i === cur));
+  const c = YX_PAL[cur];
+  document.getElementById('cur').style.background =
+    (cur === T) ? 'repeating-linear-gradient(45deg,#333 0 6px,#555 6px 12px)'
+                : `rgb(${(c>>16)&255},${(c>>8)&255},${c&255})`;
+  document.getElementById('curTxt').textContent =
+    `0x${cur.toString(16).toUpperCase().padStart(2,'0')}  ` +
+    (cur === T ? '（透明）' : `#${c.toString(16).toUpperCase().padStart(6,'0')}`);
+}
+refreshPal();
+
+/* ---------------- 画布渲染 ---------------- */
+const off = document.createElement('canvas');
+const octx = off.getContext('2d');
+
+function render() {
+  off.width = W; off.height = H;
+  const img = octx.createImageData(W, H);
+  for (let i = 0; i < W * H; i++) {
+    const v = px[i], o = i * 4;
+    if (v === T) { img.data[o+3] = 0; }
+    else {
+      const c = YX_PAL[v];
+      img.data[o] = (c>>16)&255; img.data[o+1] = (c>>8)&255; img.data[o+2] = c&255; img.data[o+3] = 255;
+    }
+  }
+  octx.putImageData(img, 0, 0);
+
+  cv.width = W * zoom; cv.height = H * zoom;
+  cv.style.width = cv.width + 'px'; cv.style.height = cv.height + 'px';
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.drawImage(off, 0, 0, cv.width, cv.height);
+  // G6: 形状预览在渲染后由 drawShapePreview() 叠加（pointermove 处调用）
+
+  // ---- 辅助线框 ----
+  if (showGrid && guideGrid && zoom >= 3) {
+    // 1x1 细线
+    if (zoom >= 6) {
+      ctx.strokeStyle = 'rgba(255,255,255,.10)';
+      ctx.lineWidth = 1;
+      for (let x = 1; x < W; x++) {
+        if (x % gridStep === 0) continue;
+        ctx.beginPath(); ctx.moveTo(x*zoom+.5,0); ctx.lineTo(x*zoom+.5,cv.height); ctx.stroke();
+      }
+      for (let y = 1; y < H; y++) {
+        if (y % gridStep === 0) continue;
+        ctx.beginPath(); ctx.moveTo(0,y*zoom+.5); ctx.lineTo(cv.width,y*zoom+.5); ctx.stroke();
+      }
+    }
+    // 每 gridStep 一条加粗分界线
+    ctx.strokeStyle = 'rgba(150,205,255,.42)';
+    ctx.lineWidth = Math.max(1, Math.round(zoom / 10));
+    for (let x = gridStep; x < W; x += gridStep) {
+      ctx.beginPath(); ctx.moveTo(x*zoom+.5,0); ctx.lineTo(x*zoom+.5,cv.height); ctx.stroke();
+    }
+    for (let y = gridStep; y < H; y += gridStep) {
+      ctx.beginPath(); ctx.moveTo(0,y*zoom+.5); ctx.lineTo(cv.width,y*zoom+.5); ctx.stroke();
+    }
+    ctx.lineWidth = 1;
+  }
+  // 中线：红色醒目
+  if (guideCenter) {
+    ctx.strokeStyle = 'rgba(255,64,64,.95)';
+    ctx.lineWidth = Math.max(1, Math.round(zoom / 8));
+    ctx.beginPath(); ctx.moveTo(cv.width/2+.5,0); ctx.lineTo(cv.width/2+.5,cv.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,cv.height/2+.5); ctx.lineTo(cv.width,cv.height/2+.5); ctx.stroke();
+    ctx.lineWidth = 1;
+  }
+  if (guideThird) {
+    ctx.strokeStyle = 'rgba(248,200,56,.55)'; ctx.lineWidth = 1;
+    ctx.setLineDash([3,5]);
+    for (const f of [1/3, 2/3]) {
+      ctx.beginPath(); ctx.moveTo(cv.width*f+.5,0); ctx.lineTo(cv.width*f+.5,cv.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,cv.height*f+.5); ctx.lineTo(cv.width,cv.height*f+.5); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+  if (guideSafe) {
+    const m = Math.max(2, Math.round(Math.min(W,H) * 0.0833));
+    ctx.strokeStyle = 'rgba(255,120,120,.85)'; ctx.lineWidth = 1;
+    ctx.strokeRect(m*zoom+.5, m*zoom+.5, (W-2*m)*zoom-1, (H-2*m)*zoom-1);
+  }
+  // 浮动选区内容
+  if (floatBuf) {
+    const fb = floatBuf;
+    for (let yy = 0; yy < fb.h; yy++) for (let xx = 0; xx < fb.w; xx++) {
+      const v = fb.data[yy*fb.w+xx];
+      if (v === T) continue;
+      const c = YX_PAL[v];
+      ctx.fillStyle = `rgb(${(c>>16)&255},${(c>>8)&255},${c&255})`;
+      ctx.fillRect((fb.x+xx)*zoom, (fb.y+yy)*zoom, zoom, zoom);
+    }
+    ctx.strokeStyle = 'rgba(57,223,247,.95)'; ctx.lineWidth = 2;
+    ctx.setLineDash([6,4]);
+    ctx.strokeRect(fb.x*zoom, fb.y*zoom, fb.w*zoom, fb.h*zoom);
+    ctx.setLineDash([]);
+  }
+  // 选区框
+  if (sel) {
+    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+    ctx.strokeRect(sel.x*zoom+.5, sel.y*zoom+.5, sel.w*zoom-1, sel.h*zoom-1);
+    ctx.setLineDash([]);
+  }
+  cv.style.transform = `translate(${panX}px,${panY}px)`;
+  document.getElementById('sz').textContent = W + '×' + H;
+  document.getElementById('zm').textContent = '×' + zoom;
+}
+
+function fit() {
+  const r = stage.getBoundingClientRect();
+  zoom = Math.max(1, Math.floor(Math.min(r.width / W, r.height / H) * 0.85));
+  panX = Math.floor((r.width - W * zoom) / 2);
+  panY = Math.floor((r.height - H * zoom) / 2);
+  render();
+}
+
+/* ---------------- 绘制逻辑 ---------------- */
+function pushUndo() {
+  undoStack.push({ W: W, H: H, px: new Uint8Array(px) });
+  if (undoStack.length > UNDO_MAX) undoStack.shift();
+}
+function putPixel(x, y, v) {
+  if (x >= 0 && y >= 0 && x < W && y < H) px[y * W + x] = v;
+}
+function plot(cx, cy) {
+  const v = (tool === 'eraser') ? T : cur;
+  const b = brush, half = Math.floor((b - 1) / 2);
+  const mx = (symMode === 'x' || symMode === 'xy');
+  const my = (symMode === 'y' || symMode === 'xy');
+  for (let dy = 0; dy < b; dy++) for (let dx = 0; dx < b; dx++) {
+    const x = cx + dx - half, y = cy + dy - half;
+    putPixel(x, y, v);
+    if (mx) putPixel(W - 1 - x, y, v);
+    if (my) putPixel(x, H - 1 - y, v);
+    if (mx && my) putPixel(W - 1 - x, H - 1 - y, v);
+  }
+}
+function line(x0, y0, x1, y1) {
+  const dx = Math.abs(x1-x0), dy = Math.abs(y1-y0);
+  const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+  for (;;) {
+    plot(x0, y0);
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x0 += sx; }
+    if (e2 <  dx) { err += dx; y0 += sy; }
+  }
+}
+function toPixel(ev) {
+  const r = stage.getBoundingClientRect();
+  const x = Math.floor((ev.clientX - r.left - panX) / zoom);
+  const y = Math.floor((ev.clientY - r.top  - panY) / zoom);
+  return [x, y];
+}
+
+    // ---- 形状预览（直线/矩形）：画在当前帧之上（每帧由 render() 重绘） ----
+    function drawShapePreview() {
+      if (!(tool === 'line' || tool === 'rect') || !shapeStart) return;
+      ctx.strokeStyle = '#' + YX_PAL[cur].toString(16).padStart(6, '0');
+      ctx.lineWidth = Math.max(1, brush);
+      const x0 = shapeStart.x * zoom, y0 = shapeStart.y * zoom;
+      const x1 = hoverX * zoom,  y1 = hoverY * zoom;
+      ctx.beginPath();
+      if (tool === 'line') {
+        ctx.moveTo(x0 + zoom / 2, y0 + zoom / 2);
+        ctx.lineTo(x1 + zoom / 2, y1 + zoom / 2);
+      } else {
+        ctx.rect(x0, y0, (x1 - x0) + zoom, (y1 - y0) + zoom);
+      }
+      ctx.stroke();
+    }
+
+/* ---------------- 事件 ---------------- */
+cv.addEventListener('contextmenu', e => e.preventDefault());
+
+stage.addEventListener('pointerdown', e => {
+  // 数位板：笔悬停(pressure=0 且无按键)不落笔；笔尾橡皮按 eraser 处理
+  const isPen = e.pointerType === 'pen';
+  const penEraser = isPen && (e.button === 5 || (e.buttons & 32));
+  if (isPen && !penEraser && e.pressure === 0 && e.buttons === 0) return;
+
+  const [x, y] = toPixel(e);
+  if (spaceDown || e.button === 1) {
+    dragging = true;
+    stage.setPointerCapture(e.pointerId);
+    return;
+  }
+  if (!(e.button === 0 || penEraser)) return;
+
+  // ---- 移动工具：框选 / 拖动选区 ----
+  if (tool === 'pick') {
+    if (e.buttons) pickAt(x, y);
+    return;
+  }
+  if (tool === 'move') {
+    stage.setPointerCapture(e.pointerId);
+    if (sel && x >= sel.x && y >= sel.y && x < sel.x + sel.w && y < sel.y + sel.h) {
+      // 抓起选区内容
+      floatBuf = { x: sel.x, y: sel.y, w: sel.w, h: sel.h, data: new Uint8Array(sel.w * sel.h) };
+      for (let yy = 0; yy < sel.h; yy++) for (let xx = 0; xx < sel.w; xx++) {
+        const sx = sel.x + xx, sy = sel.y + yy;
+        floatBuf.data[yy*sel.w+xx] = px[sy*W+sx];
+        px[sy*W+sx] = T;
+      }
+      pushUndo();
+      movingFloat = true;
+      lastX = x; lastY = y;
+    } else {
+      selAnchor = { x, y };
+      sel = { x, y, w: 1, h: 1 };
+      movingFloat = false;
+    }
+    render();
+    return;
+  }
+
+  if (x < 0 || y < 0 || x >= W || y >= H) return;
+
+  // 取色：吸管工具，或按住 Alt 临时取色
+  if (tool === 'pick' || e.altKey) {
+    pickAt(x, y);
+    return;
+  }
+
+  // ---- 直线 / 矩形：起笔 ----
+  if (tool === 'line' || tool === 'rect') {
+    if (e.button !== 0) return;
+    stage.setPointerCapture(e.pointerId);
+    pushUndo();
+    shapeStart = { x: Math.max(0, Math.min(W - 1, x)), y: Math.max(0, Math.min(H - 1, y)) };
+    hoverX = shapeStart.x; hoverY = shapeStart.y;
+    painting = true;
+    e.preventDefault();
+    return;
+  }
+
+
+  if (penEraser) setTool('eraser');
+  stage.setPointerCapture(e.pointerId);   // 关键：手指/笔滑出画布仍继续画
+  drawId = e.pointerId;
+  pushUndo(); painting = true;
+  lastX = x; lastY = y; plot(x, y); render();
+  e.preventDefault();
+});
+stage.addEventListener('pointermove', e => {
+  if (painting && drawId !== null && e.pointerId !== drawId) return;
+  const [x, y] = toPixel(e);
+  document.getElementById('pos').textContent =
+    (x >= 0 && y >= 0 && x < W && y < H) ? `${x},${y}` : '—';
+  document.getElementById('idx').textContent =
+    (x >= 0 && y >= 0 && x < W && y < H) ? '0x' + px[y*W+x].toString(16).toUpperCase().padStart(2,'0') : '—';
+  if (dragging) { panX += e.movementX; panY += e.movementY; render(); return; }
+  if (tool === 'move') {
+    if (movingFloat && floatBuf) {
+      const dx = x - lastX, dy = y - lastY;
+      if (dx || dy) {
+        floatBuf.x = Math.min(W - floatBuf.w, Math.max(0, floatBuf.x + dx));
+        floatBuf.y = Math.min(H - floatBuf.h, Math.max(0, floatBuf.y + dy));
+        lastX = Math.min(W - 1, Math.max(0, x)); lastY = Math.min(H - 1, Math.max(0, y));
+        render();
+      }
+    } else if (selAnchor) {
+      const x0 = Math.min(selAnchor.x, x), y0 = Math.min(selAnchor.y, y);
+      const x1 = Math.max(selAnchor.x, x), y1 = Math.max(selAnchor.y, y);
+      sel = { x: Math.max(0,x0), y: Math.max(0,y0),
+              w: Math.min(W-1,x1) - Math.max(0,x0) + 1,
+              h: Math.min(H-1,y1) - Math.max(0,y0) + 1 };
+      render();
+    }
+    return;
+  }
+  hoverX = x; hoverY = y;
+  if (painting && shapeStart && (tool === 'line' || tool === 'rect')) { render(); drawShapePreview(); return; }
+  if (painting) {
+    const evs = (e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
+    for (const ce of evs) {
+      const [cx, cy] = toPixel(ce);
+      if (cx !== lastX || cy !== lastY) { line(lastX, lastY, cx, cy); lastX = cx; lastY = cy; }
+    }
+    render();
+  }
+});
+function endStroke(e) {
+  if (tool === 'move') {
+    if (movingFloat && floatBuf) {
+      for (let yy = 0; yy < floatBuf.h; yy++) for (let xx = 0; xx < floatBuf.w; xx++) {
+        const v = floatBuf.data[yy*floatBuf.w+xx];
+        if (v === T) continue;
+        const dx = floatBuf.x + xx, dy = floatBuf.y + yy;
+        if (dx >= 0 && dy >= 0 && dx < W && dy < H) px[dy*W+dx] = v;
+      }
+      sel = { x: floatBuf.x, y: floatBuf.y, w: floatBuf.w, h: floatBuf.h };
+      floatBuf = null; movingFloat = false;
+      render();
+    }
+    selAnchor = null;
+  }
+  if (painting && shapeStart && (tool === 'line' || tool === 'rect')) {
+    const [x, y] = e ? toPixel(e) : [hoverX, hoverY];
+    const xe = Math.max(0, Math.min(W - 1, x)), ye = Math.max(0, Math.min(H - 1, y));
+    if (tool === 'line') {
+      line(shapeStart.x, shapeStart.y, xe, ye);
+    } else {
+      const xa = Math.min(shapeStart.x, xe), xb = Math.max(shapeStart.x, xe);
+      const ya = Math.min(shapeStart.y, ye), yb = Math.max(shapeStart.y, ye);
+      line(xa, ya, xb, ya); line(xb, ya, xb, yb);
+      line(xb, yb, xa, yb); line(xa, yb, xa, ya);
+    }
+    shapeStart = null;
+  }
+  if (e && stage.hasPointerCapture && stage.hasPointerCapture(e.pointerId))
+    stage.releasePointerCapture(e.pointerId);
+  painting = false; dragging = false; drawId = null;
+}
+window.addEventListener('pointerup', endStroke);
+window.addEventListener('pointercancel', endStroke);
+stage.addEventListener('lostpointercapture', () => { painting = false; dragging = false; drawId = null; });
+
+stage.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (e.shiftKey) { brush = Math.min(16, Math.max(1, brush + (e.deltaY < 0 ? 1 : -1))); syncBrush(); return; }
+  const r = stage.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const old = zoom;
+  const factor = e.deltaY < 0 ? 1.25 : 0.8;
+  zoom = Math.min(64, Math.max(1, Math.round(zoom * factor)));
+  if (zoom === old) return;
+  panX = mx - (mx - panX) * zoom / old;
+  panY = my - (my - panY) * zoom / old;
+  render();
+}, { passive: false });
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space' && !spaceDown) { spaceDown = true; stage.style.cursor = 'grab'; e.preventDefault(); }
+  if (e.key === 'b' || e.key === 'B') setTool('pencil');
+  if (e.key === 'e' || e.key === 'E') setTool('eraser');
+  if (e.key === 'm' || e.key === 'M') setTool('move');
+  if (e.key === 'l' || e.key === 'L') setTool('line');
+  if (e.key === 'r' || e.key === 'R') setTool('rect');
+  if (e.key === 'i' || e.key === 'I') setTool('pick');
+  if (e.key === 'Escape') { sel = null; floatBuf = null; render(); }
+  if (e.key === '[') { brush = Math.max(1, brush - 1); syncBrush(); }
+  if (e.key === ']') { brush = Math.min(16, brush + 1); syncBrush(); }
+  if (e.key === '1') fit();
+  if (e.key === 'g' || e.key === 'G') toggleGrid();
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') { undo(); e.preventDefault(); }
+});
+window.addEventListener('keyup', e => {
+  if (e.code === 'Space') { spaceDown = false; stage.style.cursor = 'crosshair'; }
+});
+
+/* ---------------- 工具/按钮 ---------------- */
+function setTool(t) {
+  tool = t;
+  document.getElementById('tPencil').classList.toggle('on', t === 'pencil');
+  document.getElementById('tEraser').classList.toggle('on', t === 'eraser');
+  const mv = document.getElementById('tMove');
+  if (mv) mv.classList.toggle('on', t === 'move');
+  const pk = document.getElementById('tPick');
+  if (pk) pk.classList.toggle('on', t === 'pick');
+  const ln = document.getElementById('tLine');
+  if (ln) ln.classList.toggle('on', t === 'line');
+  const rc = document.getElementById('tRect');
+  if (rc) rc.classList.toggle('on', t === 'rect');
+  const hint = document.getElementById('moveHint');
+  if (hint) hint.style.display = (t === 'move') ? 'block' : 'none';
+  if (t !== 'move') { sel = null; floatBuf = null; }
+  render();
+}
+function syncBrush() { document.getElementById('bsVal').textContent = brush; }
+function toggleGrid() {
+  showGrid = !showGrid;
+  document.getElementById('tGrid').classList.toggle('on', showGrid);
+  render();
+}
+function undo() {
+  if (!undoStack.length) return;
+  const s = undoStack.pop();
+  W = s.W; H = s.H; px = s.px;
+  sel = null; floatBuf = null;
+  fit(); render();
+}
+function pickAt(x, y) {
+  if (x < 0 || y < 0 || x >= W || y >= H) return;
+  cur = px[y * W + x];
+  refreshPal();
+  const el = document.getElementById('msg');
+  if (el) { el.textContent = '取色 0x' + cur.toString(16).toUpperCase().padStart(2, '0'); }
+}
+function upscale2() {
+  const nw = Math.min(320, W * 2), nh = Math.min(180, H * 2);
+  if (nw === W && nh === H) return;
+  pushUndo();
+  const np = new Uint8Array(nw * nh).fill(T);
+  for (let y = 0; y < nh; y++) for (let x = 0; x < nw; x++) {
+    const sx = Math.min(W - 1, x >> 1), sy = Math.min(H - 1, y >> 1);
+    np[y * nw + x] = px[sy * W + sx];
+  }
+  W = nw; H = nh; px = np;
+  sel = null; floatBuf = null;
+  document.getElementById('cw').value = W;
+  document.getElementById('ch').value = H;
+  fit(); render();
+}
+document.getElementById('tPencil').onclick = () => setTool('pencil');
+document.getElementById('tEraser').onclick = () => setTool('eraser');
+document.getElementById('tMove').onclick   = () => setTool('move');
+document.getElementById('tPick').onclick   = () => setTool('pick');
+document.getElementById('up2').onclick     = upscale2;
+document.getElementById('bsPlus').onclick  = () => { brush = Math.min(16, brush + 1); syncBrush(); };
+document.getElementById('bsMinus').onclick = () => { brush = Math.max(1, brush - 1); syncBrush(); };
+document.getElementById('tGrid').onclick = toggleGrid;
+function wireGuide(id, setter) {
+  const el = document.getElementById(id);
+  el.onclick = () => {
+    setter(!el.classList.contains('on'));
+    el.classList.toggle('on');
+    render();
+  };
+  if (!el.classList.contains('on')) setter(false);
+}
+wireGuide('gGrid',   v => { guideGrid = v; });
+wireGuide('gCenter', v => { guideCenter = v; });
+wireGuide('gThird',  v => { guideThird = v; });
+wireGuide('gSafe',   v => { guideSafe = v; });
+const symSel = document.getElementById('symMode');
+if (symSel) symSel.onchange = e => { symMode = e.target.value; };
+const gStepEl = document.getElementById('gStep');
+if (gStepEl) gStepEl.onchange = e => {
+  gridStep = parseInt(e.target.value, 10) || 4;
+  render();
+};
+document.getElementById('tUndo').onclick = undo;
+
+document.getElementById('preset').onchange = e => {
+  const v = e.target.value;
+  if (v === 'custom') return;
+  const [w, h] = v.split(',').map(Number);
+  document.getElementById('cw').value = w;
+  document.getElementById('ch').value = h;
+  doNew(w, h);
+};
+function doNew(w, h) {
+  W = Math.max(1, Math.min(1280, w|0));
+  H = Math.max(1, Math.min(720, h|0));
+  px = new Uint8Array(W * H).fill(T);
+  undoStack.length = 0;
+  fit();
+}
+document.getElementById('newBtn').onclick = () =>
+  doNew(+document.getElementById('cw').value, +document.getElementById('ch').value);
+
+/* ---------------- 保存 / 读取 ---------------- */
+function buildBMP() {
+  const rowBytes = (W + 3) & ~3;
+  const imgSize = rowBytes * H;
+  const off = 14 + 40 + 1024;
+  const buf = new ArrayBuffer(off + imgSize);
+  const dv = new DataView(buf), u8 = new Uint8Array(buf);
+  u8[0] = 0x42; u8[1] = 0x4D;
+  dv.setUint32(2, off + imgSize, true);
+  dv.setUint32(10, off, true);
+  dv.setUint32(14, 40, true);
+  dv.setInt32(18, W, true);
+  dv.setInt32(22, H, true);
+  dv.setUint16(26, 1, true);
+  dv.setUint16(28, 8, true);
+  dv.setUint32(34, imgSize, true);
+  dv.setUint32(46, 256, true);
+  for (let i = 0; i < 256; i++) {
+    const c = YX_PAL[i];
+    u8[54 + i*4]     = c & 255;
+    u8[54 + i*4 + 1] = (c >> 8) & 255;
+    u8[54 + i*4 + 2] = (c >> 16) & 255;
+    u8[54 + i*4 + 3] = 0;
+  }
+  for (let y = 0; y < H; y++) {
+    const srcY = H - 1 - y;
+    const base = off + y * rowBytes;
+    for (let x = 0; x < W; x++) u8[base + x] = px[srcY * W + x];
+  }
+  return new Blob([buf], { type: 'image/bmp' });
+}
+document.getElementById('saveBmp').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(buildBMP());
+  a.download = `yx_${W}x${H}.bmp`;
+  a.click();
+  flash('已保存 8bpp 索引 BMP');
+};
+document.getElementById('loadBtn').onclick = () => document.getElementById('file').click();
+document.getElementById('file').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const b = await f.arrayBuffer();
+  if (f.name.toLowerCase().endsWith('.bmp')) loadBMP(b);
+  else await loadImage(b);
+  e.target.value = '';
+};
+
+function loadBMP(buf) {
+  const dv = new DataView(buf);
+  if (dv.getUint16(0, true) !== 0x4D42) return flash('不是 BMP');
+  const off = dv.getUint32(10, true);
+  const w = dv.getInt32(18, true), h0 = dv.getInt32(22, true);
+  const bpp = dv.getUint16(28, true);
+  if (bpp !== 8) { flash(`需要 8bpp 索引 BMP（当前 ${bpp}bpp）`); return; }
+  const h = Math.abs(h0), flip = h0 > 0;
+  W = w; H = h;
+  px = new Uint8Array(W * H);
+  const stride = (W + 3) & ~3;
+  const u8 = new Uint8Array(buf);
+  for (let y = 0; y < H; y++) {
+    const src = flip ? (H - 1 - y) : y;
+    const base = off + src * stride;
+    for (let x = 0; x < W; x++) px[y*W+x] = u8[base+x];
+  }
+  document.getElementById('cw').value = W;
+  document.getElementById('ch').value = H;
+  undoStack.length = 0;
+  fit();
+  flash('已读取');
+}
+
+async function loadImage(buf) {
+  const blob = new Blob([buf]);
+  const img = new Image();
+  img.src = URL.createObjectURL(blob);
+  await img.decode();
+  W = img.width; H = img.height;
+  const t = document.createElement('canvas');
+  t.width = W; t.height = H;
+  const tc = t.getContext('2d');
+  tc.drawImage(img, 0, 0);
+  const d = tc.getImageData(0, 0, W, H).data;
+  px = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) {
+    const o = i * 4, r = d[o], g = d[o+1], b = d[o+2], a = d[o+3];
+    px[i] = (a < 128) ? T : nearest(r, g, b);
+  }
+  document.getElementById('cw').value = W;
+  document.getElementById('ch').value = H;
+  undoStack.length = 0;
+  fit();
+  flash('已读取并吸附到主色板');
+}
+
+function nearest(r, g, b) {
+  let best = 0, bd = 1e18;
+  for (let i = 0; i < 0xF0; i++) {
+    const c = YX_PAL[i];
+    const dr = ((c>>16)&255) - r, dg = ((c>>8)&255) - g, db = (c&255) - b;
+    const d = dr*dr*2 + dg*dg*4 + db*db*3;
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+
+/* ---------------- 矩形列表（给程序用） ---------------- */
+document.getElementById('rectBtn').onclick = async () => {
+  const rects = [];               // [x,y,w,h,idx]
+  const open = new Map();         // "x,w,idx" -> rect index
+  for (let y = 0; y < H; y++) {
+    let x = 0;
+    while (x < W) {
+      const v = px[y*W+x];
+      if (v === T) { x++; continue; }
+      let run = 1;
+      while (x + run < W && px[y*W+x+run] === v) run++;
+      const key = x + ',' + run + ',' + v;
+      const i = open.get(key);
+      if (i !== undefined && rects[i][1] + rects[i][3] === y) rects[i][3]++;
+      else { rects.push([x, y, run, 1, v]); open.set(key, rects.length - 1); }
+      x += run;
+    }
+  }
+  const text = `; ${W}x${H} -> ${rects.length} rects\n` +
+    rects.map(r => `    .byte ${r[0]}, ${r[1]}, ${r[2]}, ${r[3]}, 0x${r[4].toString(16).toUpperCase().padStart(2,'0')}`).join('\n') +
+    `\n    .byte 0xFF`;
+  try { await navigator.clipboard.writeText(text); flash(`已复制 ${rects.length} 个矩形`); }
+  catch { alert(text); }
+};
+
+function flash(t) {
+  const m = document.getElementById('msg');
+  m.textContent = t;
+  setTimeout(() => { if (m.textContent === t) m.textContent = ''; }, 2200);
+}
+
+/* ---------------- 启动 ---------------- */
+window.addEventListener('resize', render);
+syncBrush();
+fit();
+</script>
+</body>
+</html>
