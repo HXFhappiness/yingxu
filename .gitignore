@@ -4,6 +4,7 @@ AC201_AL_board_test_Runs/
 *.vvp
 *.wdb
 *.bak
+*.bak_*
 *.lst
 
 # 固件 bit：只保留 release/
