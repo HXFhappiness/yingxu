@@ -148,7 +148,7 @@ module yingxu_sd_integration_probe #(
         // ?? clk_div_var ? one_allow=0 ????? div=1?
         // 50 MHz ????? 25 MHz ??? spi_high_div=1 ???? SPI ?????
         // R1 Integration ??? 12.5 MHz SCLK??????? RTL ?????
-        .SPI_HIGHFREQ (25_000_000) // P0 acceptance configuration; legacy two-cycle drain
+        .SPI_HIGHFREQ (12_500_000) // Board accepted: 12.5MHz, legacy two-cycle drain
     ) U_SD_STREAM (
         .mosi                   (sd_mosi),
         .sclk                   (sd_sclk),
