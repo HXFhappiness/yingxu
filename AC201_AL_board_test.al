@@ -168,12 +168,19 @@
                 </FileInfo>
             </File>
             <File Path="src/user_source/hdl_source/media/mjpeg/yingxu_yxv_scanout.v">
-            <File Path="src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
                     <Attr Name="CompileOrder" Val="193"/>
+                </FileInfo>
+            </File>
+            <File Path="src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="194"/>
                 </FileInfo>
             </File>
             <File Path="src/user_source/hdl_source/yingxu_sdram_control_4port.v">
