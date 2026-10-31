@@ -31,7 +31,7 @@
 //------------------------------------------------------------------------------
 
 module sd_stream_reader_core #(
-    parameter integer DRAIN_1CYC = 1
+    parameter integer DRAIN_1CYC = 0 // P0 acceptance: hardware-validated legacy drain
 )(
     input  wire         clk,
     input  wire         rst,
