@@ -411,7 +411,7 @@ Sdram_RD_FIFO 	read_fifo2(
 				.di(mDATAOUT),
 				.we(OUT_VALID&RD_MASK[1]),
 				.clkw(CLK),
-				.rst(!RESET_N),//(RD2_LOAD),
+				.rst(!RESET_N || (MJPEG_PORT && MJ_ACTIVE && RD2_LOAD)),// video blank flush,
 				.re(RD2),
 				.clkr(RD2_CLK),
 				.\do (RD2_DATA),

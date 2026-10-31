@@ -13,3 +13,13 @@ HEADERCHK: PASS bad magic code=92 finite reject drained-SD
 ```
 
 后续：连接100/50MHz CDC、显示消隐交换、WAV字节适配、顶层开关/遥测与3秒验收。尚未宣布D3整体验收通过。
+
+## 显示单元
+
+`tb_yxv_scanout`双缓冲窗口检查：frame0红/蓝、frame1绿/白，高半字先出，消隐才交换，LOAD保持256pix周期覆盖旧128字物理burst尾部；新端口开启且视频活动时RD2 FIFO复位，旧参数关闭行为保持。颜色选择在原player的既有RGB输出寄存器入口，不串入亮度/对比度或sprite组合链。
+
+```text
+SCANOUTCHK: PASS centered640x480 high-half-first both banks pixels=306240/305602 vblank swaps=2 stretched flush no-underflow
+```
+
+该单元测试覆盖窗口内部并剔除流水边沿，完整图像/帧率/AV仍以最终顶层3秒TB为门禁。

@@ -17,12 +17,15 @@
 //   HDMI output loses lock.
 //------------------------------------------------------------------------------
 module yingxu_sdram_video_player #(
+    parameter integer VIDEO_MUX = 0,
     parameter integer H_ACTIVE     = 1280,
     parameter integer V_ACTIVE     = 720,
     parameter integer H_TOTAL      = 1650,
     parameter integer V_TOTAL      = 750,
     parameter [20:0]  SCRATCH_ADDR = 21'h100000
 )(
+    input wire i_video_en,
+    input wire [23:0] i_video_rgb,
     input  wire        pixel_clk,
     input  wire        rst,
 
@@ -198,7 +201,7 @@ module yingxu_sdram_video_player #(
             b5_o <= clamp5(b5_c);
             g6_o <= clamp6(g6_c);
 
-            rgb_out <= (pixel_active && primed) ?
+            rgb_out <= (VIDEO_MUX && i_video_en) ? i_video_rgb : (pixel_active && primed) ?
                        { r5_o, r5_o[4:2], g6_o, g6_o[5:4], b5_o, b5_o[4:2] } :
                        24'h000000;
         end
