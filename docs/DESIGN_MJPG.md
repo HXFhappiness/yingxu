@@ -1,6 +1,6 @@
 # YXV MJPEG 解码器设计（待审阅）
 
-本稿基于 `main@3397925`，工作分支为 `feat/mjpeg`。本阶段唯一交付是本文档；以下文件名、端口、测试与转换器约束均为**拟实现规格**，不代表已有 RTL 或已测性能。初赛固件及厂商 IP 保持冻结。
+本稿基于 `main@3397925`，工作分支为 `feat/mjpeg`。D0设计稿已审阅，本次依批注进入D1；Python模型/转换器的已实现部分与结果见 [D1验证报告](D1_MJPEG_REPORT.md)。以下RTL文件/端口仍为拟实现规格，不代表已有RTL或板上性能。初赛固件及厂商 IP 保持冻结。
 
 依据：[HANDOFF_FULL.md §10](HANDOFF_FULL.md#10-进行中yxv-视频管道)、[YXV_FORMAT.md §7](YXV_FORMAT.md#7-硬件消费模型)，并核对了 SD 探针、`sd_stream_reader_core`、SDRAM 自研控制封装、BMP 写入器、显示读出器和 WAV 播放器的现有接口。
 
@@ -8,7 +8,7 @@
 
 首版选 **50 MHz 解码、8 路乘加复用的两遍 IDCT、动态 DHT/DQT、RGB565、640×480 原尺寸居中显示**。所有熵解码、反量化、IDCT、色彩转换、地址运算均在 `sys_clk` 域；100 MHz 域只做 SDRAM 突发接入；pix 域只保留寄存后的读出、黑边选择和音频计数快照。首版不做缩放，避免将“640×480 播放”暗换成 720p 全幅写入。
 
-预算目标为新增 **7.6K LUT、23 块 BRAM9K、13 个 DSP18×18**，分别留下约 1.5K LUT、2 块 BRAM、16 个 DSP 余量。DSP 类型/打包方式最终以 TD 映射报告确认，禁止把宽乘法静默综合成 LUT。
+预算目标为新增 **7.6K LUT、19 块 BRAM9K、13 个 DSP18×18**，分别留下约 1.5K LUT、6 块 BRAM、16 个 DSP 余量。DSP 类型/打包方式最终以 TD 映射报告确认，禁止把宽乘法静默综合成 LUT。
 
 实时能力针对“可接纳素材”而非任意合法 JPEG：固定 640×480@24，单帧含 JPEG 头不超过 40 KiB，帧数不超过 512，且通过后述复杂度及实际 SD 服务率检查。纹理过密的素材需要降低 JPEG 质量或拒绝转换，不能用平均码率掩盖最坏帧。完整 4 分钟曲目与任意尺寸不属于首版。
 
@@ -52,11 +52,11 @@ MCU 是 16×16，而目标帧是线性行存储。完整一条 MCU 行重排需�
 
 ### 2.3 PCM 与 WAV 的真实接法
 
-YXV 音轨是裸 PCM，不能直接送到寻找 `YXMA` 的 WAV 解析器。`yingxu_yxv_pcm_bridge` 在第一次 PCM 前合成 32 B YXMA 头（2 声道、16 位、48000 Hz、frames=`audio_bytes/4`），然后从 8 KiB 音频 reservoir 连续送字节，握手接现有 `u_wav.sd_data/sd_valid/sd_ready`。
+YXV 音轨是裸 PCM，不能直接送到寻找 `YXMA` 的 WAV 解析器。`yingxu_yxv_pcm_bridge` 在第一次 PCM 前合成 32 B YXMA 头（2 声道、16 位、48000 Hz、frames=`audio_bytes/4`），然后从 4 KiB 音频 reservoir 连续送字节，握手接现有 `u_wav.sd_data/sd_valid/sd_ready`。
 
 视频模式下屏蔽 `wav_base/wav_restart` 对物理 SD 的控制；调度器独立维护 PCM 文件游标。WAV 原有 chunk 请求只记录，不用于重新插头或跳扇区；chunk 长度是 4 的倍数，跨 chunk 保持 L/R 字节相位。EOF 后不喂下一轮头，等尾部 FIFO 样本播完后结束，由 YXV 控制器统一重新开始。不要在“最后一个 PCM 字节已入 FIFO”时清掉 `music_active` 截掉尾音。
 
-现有 WAV FIFO 物理为 1024 个立体声采样帧，背压水位 768 帧，常规可用时间约 **16 ms**，不是半秒。新增 8 KiB reservoir 为 42.67 ms；不能只凭 WAV 小 FIFO 支撑整帧 SD 独占。
+现有 WAV FIFO 物理为 1024 个立体声采样帧，背压水位 768 帧，常规可用时间约 **16 ms**，不是半秒。新增4 KiB reservoir为21.33ms；满reservoir加WAV约16ms共37.33ms，约为8ms gap的4.67倍（不是低水位时也有4倍）；不能只凭 WAV 小 FIFO 支撑整帧 SD 独占。
 
 ### 2.4 呈现与时钟
 
@@ -77,7 +77,7 @@ src/user_source/hdl_source/media/yxv/
   yingxu_yxv_player.v              顶层、epoch/错误恢复、前后台槽管理
   yingxu_yxv_sd_sched.v            单 SD 分时、音频优先、事务路由
   yingxu_yxv_container.v           YXV 头/512 项帧表/边界校验
-  yingxu_yxv_pcm_bridge.v          8 KiB reservoir、虚拟 YXMA 头 → 现有 WAV
+  yingxu_yxv_pcm_bridge.v          4 KiB reservoir、虚拟 YXMA 头 → 现有 WAV
   yingxu_yxv_avsync.v              WAV 计数快照、sys 时间轴、呈现 mailbox
   yingxu_yxv_scanout.v             视频模式 RD2 读出、居中黑边
   yingxu_yxv_cdc_fifo.v            数据/描述符 FIFO，Gray 指针、复位 epoch
@@ -147,11 +147,11 @@ S=`sys_clk=50 MHz`，P=`pix_clk≈73.30 MHz`，M=`sdram_ctrl_clk=100 MHz`。各�
 |---|---|---|---|
 | `yingxu_yxv_player` | 入 `play_valid/ready:1`, `slot_base:28`, `stop:1`；出 `playing:1`, `frame_id:9`, `err_*` | S | play 接收一次锁存槽；stop 为 S 单拍，先排空/丢弃旧 epoch，再停 |
 | 同上 | 出 SDREQ、入 SD 完成；入 FRAME；出解码 `start_valid/ready:1, jpeg_bytes:32, back_base:21, frame_id:9`；入 `decode_done:1`、最终 COMMIT；出 PRESENT | S / S↔P | decode_done 只表示 JPEG 结束；还须所有写提交后才能发布后台 |
-| `yingxu_yxv_sd_sched` | 入上层读请求、`audio_occ:14`、`jpeg_space:10`；出 SDREQ 对探针；入 `sd_init:1,sd_busy:1,sd_done:1,sd_error:1` | S | 事务不可抢占；PCM 低水位优先，LBA/tag/count 全程锁存 |
+| `yingxu_yxv_sd_sched` | 入上层读请求、`audio_occ:13`、`jpeg_space:10`；出 SDREQ 对探针；入 `sd_init:1,sd_busy:1,sd_done:1,sd_error:1` | S | 事务不可抢占；PCM 低水位优先，LBA/tag/count 全程锁存 |
 | 同上 | 入 `stream_data:8,stream_valid:1,stream_last:1`，出 `stream_ready:1`；出表/JPEG/PCM BYTE | S | 对拥有者的 data/valid/ready 成对路由；完成须收到 nsector×512 字节和 done，不看 sticky done |
 | `yingxu_yxv_container` | 入 BYTE；出 FRAME；出 `hdr_valid/ready:1`, `frames:10,width:16,height:16,fps:16,audio_off:32,audio_bytes:32`；入 `lookup_valid/ready:1,id:9` | S | 头先验证再装表；同步表 RAM 查表有显式响应 valid，不能假设零拍读 |
 | 同上 | 出 `table_req`（SDREQ 的表拥有者）；出 `err_*` | S | 32+N×8 向上取整读；audio_off 由最后一项 offset+align512(len) 推导；无 audio_off 头字段 |
-| `yingxu_yxv_pcm_bridge` | 入 PCM BYTE、`audio_bytes:32,begin:1`；出 `occ:14`；出 `wav_data:8,wav_valid:1`，入 `wav_ready:1`；出 `producer_eof:1` | S | 缓存容量8192B，合成头也遵守 WAV ready；last 后仅丢弃扇区填充，不插入 PCM |
+| `yingxu_yxv_pcm_bridge` | 入 PCM BYTE、`audio_bytes:32,begin:1`；出 `occ:13`；出 `wav_data:8,wav_valid:1`，入 `wav_ready:1`；出 `producer_eof:1` | S | 缓存容量4096B，合成头也遵守 WAV ready；last 后仅丢弃扇区填充，不插入 PCM |
 | 同上 | 入 `wav_restart:1,wav_base:28`，出 `wav_music_active:1` | S | 视频模式隔离物理读请求；维持 active 到真实播放尾部；非视频模式走旧连线 |
 | `yingxu_yxv_avsync` | 入 `wav_pops:16,wav_out_ticks:16`；入/出快照 req/ack toggle:1，held snapshot:32 | P↔S | P 收请求后一次锁存两个16位计数并保持，ack 经2FF；S 再取稳定总线，不把二进制计数器逐位2FF |
 | 同上 | 出 `samples_played:32,due_id:9`；入/出 PRESENT 与释放 ack | S↔P | ≤0.5ms轮询，16位计数模差扩展32位；同一epoch不能间隔≥65536/48000秒；每2000采样帧推进一次deadline；EOF单独标识，不让第512帧回绕为0 |
@@ -179,7 +179,7 @@ S=`sys_clk=50 MHz`，P=`pix_clk≈73.30 MHz`，M=`sdram_ctrl_clk=100 MHz`。各�
 | `yingxu_jpeg_fb_writer` | 入 PIXEL、`back_base:21,frame_id:9,epoch:8`；出 WCMD/WDATA；入 COMMIT；出 `frame_committed:1` | 两MCU条带双bank；只发布完整16字行；最后一burst落SDRAM后才committed |
 | `yingxu_sdram_vwrite_port` | S侧入 WCMD/WDATA、出 ready；M侧出 `vwr_valid:1,addr:21,len:9,data:32`，入 `vwr_ready:1,data_take:1`；入 `vwr_done:1`；S侧出 COMMIT | 数据FIFO256×32、描述符FIFO16×64；描述符在全部16字写入后发布，M侧还须等同步后的数据credit≥16；完成事件保持/确认，不能丢M单拍 |
 
-M侧实际接入自研控制器时，`vwr_ready` 只接受一个完整 burst 的控制权，数据随后按 `IN_REQ` 每拍提供；完成等 `mWR_DONE`。全帧9,600个行burst，16位tag足够；配置及epoch高位可在整帧期间稳定保持、mailbox传递，64位描述符以 `{addr:21,len:9,tag:16,epoch:8,reserved:10}` 存储。首选在一块32位宽物理BRAM中分两拍写/读描述符的高低半部，逻辑读写指针仅在整条描述符完成后推进；独立64位宽映射的24块备选总预算见§7。
+M侧实际接入自研控制器时，`vwr_ready` 只接受一个完整 burst 的控制权，数据随后按 `IN_REQ` 每拍提供；完成等 `mWR_DONE`。全帧9,600个行burst，16位tag足够；配置及epoch高位可在整帧期间稳定保持、mailbox传递，64位描述符以 `{addr:21,len:9,tag:16,epoch:8,reserved:10}` 存储。首选在一块32位宽物理BRAM中分两拍写/读描述符的高低半部，逻辑读写指针仅在整条描述符完成后推进；独立64位宽映射的20块备选总预算见§7。
 
 ## 5. JPEG 子集与输入保证
 
@@ -251,7 +251,7 @@ MCU RAM双bank共 `2×(256Y+64Cb+64Cr)=768B`，放一块1024×8存储。IDCT可�
 | 模块组 | LUT目标 | BRAM9K（物理块） | DSP18×18 |
 |---|---:|---:|---:|
 | YXV顶层、头/表、SD调度 | 1,200 | 4（512×64帧表） | 0 |
-| PCM bridge、采样快照/epoch | 550 | 8（8192×8 reservoir） | 0 |
+| PCM bridge、采样快照/epoch | 550 | 4（4096×8 reservoir） | 0 |
 | JPEG marker、bits、输入FIFO | 800 | 1（512×8） | 0 |
 | DHT/DQT构建、canonical Huffman | 1,400 | 3（symbol、canonical、DQT各1） | 0 |
 | blockbuf、反zigzag/反量化 | 350 | 1（128×16） | 1 |
@@ -259,13 +259,27 @@ MCU RAM双bank共 `2×(256Y+64Cb+64Cr)=768B`，放一块1024×8存储。IDCT可�
 | MCU RAM、色彩流水 | 550 | 1（1024×8） | 4 |
 | RGB条带、burst组装/CDC/提交 | 800 | 4（条带2 + 数据1 + 描述符1，见下） | 0 |
 | 视频读出、SDRAM仲裁侧口/读FIFO独立flush适配 | 500 | 0 | 0 |
-| **合计目标** | **7,600** | **23** | **13** |
+| **合计目标** | **7,600** | **19** | **13** |
 
-上表burst组的描述符不能按逻辑字节数误计：16×64存储在36位宽物理RAM需2块，若独立分配则该组为5、总计24。首选把描述符的高/低32位分置于同一物理双口RAM的不同地址，使用64×32 RAM、两拍组装命令；不需要每拍发布命令，故仍为1块。数据FIFO256×32为1块，条带各256×32为1块。**若TD不能可靠推断这种打包，允许改按24块验收，但不再增加别的缓存；25是硬上限。**
+上表burst组的描述符不能按逻辑字节数误计：16×64存储在36位宽物理RAM需2块，若独立分配则该组为5、总计20。首选把描述符的高/低32位分置于同一物理双口RAM的不同地址，使用64×32 RAM、两拍组装命令；不需要每拍发布命令，故仍为1块。数据FIFO256×32为1块，条带各256×32为1块。**默认目标为19块；若TD不能推断打包而需要20块，必须记录偏差并复审，不自动消费释放出的6块余量；25是器件硬上限。**
 
 ROM和小描述符寄存器包含在LUT估算中，不能再额外“免费”使用BRAM。目标不是已综合测量；约7.6K LUT的理由是没有全码字Huffman大表、没有可变通用除法器、没有全帧/全宽条带RAM、8 lane重复使用而非展开64乘法，且13个DSP承担全部乘法。常数像素地址用移位加法，fps固定24使每帧为2000采样帧。
 
-硬门槛：增量LUT≤9,081（19,600−10,519，9.1K是约数）、BRAM≤25、DSP≤29；优选总LUT≤18,119（10,519+7,600），目标BRAM总数≤62（39+23），DSP总数13。首次集成报告若预测超过目标，先停在独立模块阶段调整，不挤占未知“可回收”冻结模块资源。必须同时看寄存器、布线拥塞及各时钟slack；LUT能放下不等于时序通过。
+硬门槛：增量LUT≤9,081（19,600−10,519，9.1K是约数）、BRAM≤25、DSP≤29；优选总LUT≤18,119（10,519+7,600），目标BRAM总数≤58（39+19），DSP总数13。首次集成报告若预测超过目标，先停在独立模块阶段调整，不挤占未知“可回收”冻结模块资源。必须同时看寄存器、布线拥塞及各时钟slack；LUT能放下不等于时序通过。
+
+### 7.1 D2–D6每阶段都注册TD工程并综合：30%停机线
+
+7.6K LUT只是估算，约占实际剩余9081的83.7%，不能等D9才综合。D2/D3/D4/D5/D6结束后，分别把本阶段模块加入同一TD工程，以相同工具版本/参数/实际连接综合，记录源码SHA、基准、日志路径、LUT/REG/BRAM/DSP总数及增量。未运行或缺失报告时阶段状态是“待本地TD”，不能推进下一RTL阶段。
+
+| 阶段 | 当阶段估算 LUT/BRAM/DSP | 从S1基准起累计估算 LUT/BRAM/DSP |
+|---|---|---|
+| D2：writer/侧口/读flush适配 | 1300 / 4 / 0 | 1300 / 4 / 0 |
+| D3：marker/bits/tables | 1300 / 4 / 0 | 2600 / 8 / 0 |
+| D4：Huffman/blockbuf | 1250 / 1 / 1 | 3850 / 9 / 1 |
+| D5：IDCT | 1450 / 1 / 8 | 5300 / 10 / 9 |
+| D6：MCU/RGB | 550 / 1 / 4 | 5850 / 11 / 13 |
+
+其余YXV/SD调度1200 LUT+4BRAM、PCM/AV 550 LUT+4BRAM，总目标7600/19/13。累计实测增量相对**已完成阶段累计估算**的绝对偏差，任一资源超过30%即停下来重设计；估算为0却实测新增时同样停机，不能用除0规避。超器件硬上限或pix新增负裕量无论偏差百分比多少都停。基准使用S1完成后的同配置综合结果，同时保留冻结基线10519/39/0供追溯；不通过优化删除其他冻结功能来稀释增量。完整工程的综合差值能含优化抵消，须同时记录模块层级利用率。板卡/TD在本地，云端不能填造数字。
 
 ## 8. 周期、SD与SDRAM预算
 
@@ -294,9 +308,26 @@ ROM和小描述符寄存器包含在LUT估算中，不能再额外“免费”�
 | 12.5MHz | 1.5625MB/s是SPI线上上限，串行吐流已把无额外开销上限降到约1.47MB/s；不据此保证首版最坏帧 |
 | 25MHz | 原始3.125MB/s；计每扇区额外1024个50MHz吐字节周期，不含其他开销上限约2.78MB/s；实际卡/板能否≥1.50要测 |
 
-8扇区JPEG量子按1.50MB/s约2.73ms。调度器低水位4KiB、高水位8KiB，优先补PCM（每次最多8扇区），满后继续JPEG；必须保证音频可服务间隔≤8ms，长卡忙超界就记欠载并停本轮，而非无限重试维持“播放中”。8192B最多缓存42.67ms、低水位仍约21.33ms，与WAV实际水位一起覆盖切换间隙。
+8扇区JPEG量子按1.50MB/s约2.73ms。调度器低水位2KiB、高水位4KiB，优先补PCM（每次最多4扇区，且不能超过剩余容量），满后继续JPEG；必须保证音频可服务间隔≤8ms，长卡忙超界就记欠载并停本轮，而非无限重试维持“播放中”。4096B最多缓存21.33ms、低水位仍约10.67ms，与WAV实际水位一起覆盖切换间隙。
 
 单SD共享这一事实使平均带宽不充分：测试必须覆盖JPEG最大帧、PCM低水位、坏扇区延迟、帧表初装、随机ready停顿。SD量子不改变文件布局；音频文件游标和JPEG游标分别保存。首次启动先装表、计算audio_off、预解帧0及储备PCM，再放行音频。
+
+### 8.2.1 S1失败时的降级次序与门槛
+
+优先级固定为 **(c)提高压缩比 → (a)640×480降到15fps → (b)480×360降分辨率**。先保持尺寸/流畅度，再保尺寸牺牲fps，最后降低像素数。B_eff必须取用户板上持续读实测的保守下界，含命令/卡忙/分流，所有档位音频gap仍≤8ms。保留20%时间余量：`SD_required=(fps×align512(max_jpeg_bytes)+192000)/0.8`；按每个素材的最大帧验证，不用平均帧。
+
+| 档位（递次选择） | JPEG最大帧 | SD有效载荷/需求下界 MB/s | RGB565有效写入 MB/s |
+|---|---:|---:|---:|
+| 默认640×480@24 | 40KiB | 1.175040 / 1.468800；S1实际门槛仍为**1.50** | 14.745600 |
+| c1：640×480@24 | 32KiB | 0.978432 / 1.223040，实测≥1.23 | 14.745600 |
+| c2：640×480@24 | 24KiB | 0.781824 / 0.977280，实测≥0.98 | 14.745600 |
+| a：640×480@15，继承c2压缩 | 24KiB | 0.560640 / 0.700800，实测≥0.71 | 9.216000 |
+| b：480×360@15 | 16KiB | 0.437760 / 0.547200，实测≥0.55 | 5.184000 |
+| 对照：只降分辨率480×360@24 | 16KiB | 0.585216 / 0.731520，实测≥0.74 | 8.294400 |
+
+若S1在25MHz不稳定或B_eff<1.50，默认D2**停止**；先在稳定SPI频率测B_eff，再提出上表最高可用档位，调整素材并复核视觉质量、解码周期、写入deadline。用户确认降级目标后才可重新定义S1/D2门槛，不能靠选择fallback绕过“未通过不得进D2”。例如稳定读率0.75MB/s选a，0.60选b，<0.55则首版音视频播放不接纳；即使平均达标，gap超8ms也不通过。
+
+降压缩只减SD/熵负载，不减IDCT/像素写带宽；15fps把采样deadline改为3200对/帧、写入周期66.67ms；480×360是30×23 MCU（底部补8行，只输出360行），需要后续RTL加入边缘裁剪、地址/黑边及容器profile，不能对现有640-only RTL直接喂这种素材。D1转换器只产生默认640×480@24，并给明确错误；降级档位不是本次暗改的默认值。对于40KiB仍不改压缩的640@15对照，SD需求为1.008MB/s，而非表中采用24KiB的0.7008。
 
 ### 8.3 SDRAM：带地址短突发是关键验收项
 
@@ -308,11 +339,11 @@ ROM和小描述符寄存器包含在LUT估算中，不能再额外“免费”�
 
 当H≤24时，W_equiv≤36.864MB/s，落在40MB/s余额内。这个归一化上界用于给短突发留账，**不是说控制器已实测H=24，也不把400MB/s峰值当作150MB/s可用带宽**。实际还受RD2优先级、刷新和读写换向影响，必须在显示持续占用约110MB/s的压力下实测/周期仿真短突发有效写率≥15.36MB/s（614400B/40ms）、帧提交≤40ms且读端无欠载。若H或帧时长超界，先调整自研仲裁/条带调度，不能改厂商FIFO阈值或侵占显示预算。
 
-35ms解码核、约32.64ms最坏载荷SD服务及≤40ms写提交是可重叠的不同资源约束。最终系统门槛是：从开始供给下一帧到后台最终commit **≤40ms**，至少连续512帧在真实速率/显示压力下零音频欠载、零正常帧丢弃、零读端underflow。只有这个联合检查通过才称640×480@24成立；当前文档只是可实现预算，尚无RTL/硬件性能证据。
+35ms解码核、约32.64ms最坏载荷SD服务及≤40ms写提交是可重叠的不同资源约束。最终系统门槛是：从开始供给下一帧到后台最终commit **≤40ms**，至少连续504帧（21秒）在真实速率/显示压力下零音频欠载、零正常帧丢弃、零读端underflow。只有这个联合检查通过才称640×480@24成立；当前文档只是可实现预算，尚无RTL/硬件性能证据。
 
 ## 9. 验证计划：每个模块都有独立Python模型与RTL TB
 
-拟建标准库参考包 `tools/mjpeg_ref/` 与对应 `tb/` 文件；本阶段均不创建。每个参考模型输出带序号的中间轨迹，RTL TB仅导出本级可观察数据，不复用DUT内部算法作为期望值。明确记录seed、输入SHA256、epoch、命令、退出码和当前生成文件，防止误读旧日志。
+拟建标准库参考包 `tools/mjpeg_ref/` 与对应 `tb/` 文件；D1已实现的模型/测试/再生命令以D1报告为准，其余模型随对应RTL阶段补齐。每个参考模型输出带序号的中间轨迹，RTL TB仅导出本级可观察数据，不复用DUT内部算法作为期望值。明确记录seed、输入SHA256、epoch、命令、退出码和当前生成文件，防止误读旧日志。
 
 | 模块 | Python模型文件 | 对应RTL TB文件 | 逐点及不变量 |
 |---|---|---|---|
@@ -364,19 +395,20 @@ TD综合/布局布线及板卡只能用户本地完成：核对工程Path、资�
 
 ## 10. 分阶段实施与完成门槛
 
-先审本文；之后每阶段再分成“一处功能改动+相应模型/TB/判据”的小提交，不把整个列表当作一次改动授权。
+D0已经审阅；D1获准实施。每阶段再分成“一处功能改动+相应模型/TB/判据”的小提交，不把整个列表当作一次改动授权。
 
 | 阶段 | 工作范围 | 自动完成判据 / 不通过即停止条件 |
 |---|---|---|
-| D0（本阶段） | 新增本文档 | 只有`docs/DESIGN_MJPG.md`变化；`feat/mjpeg`；无RTL/工具/工程/约束改动，等用户审阅 |
+| D0（已完成） | 设计文档并处理四条批注 | D1范围不写RTL、不改SPI共用冻结通路；演示素材≤21秒（504帧），512项是硬件容量而非建议素材时长 |
 | D1 | Python标准库profile验证器、整数/浮点参考及周期模型；转换器约束单独提交 | 合成向量各阶段轨迹可再生；正例通过、负例精确错误码；40KiB/512帧/35ms等边界自动拒绝越界；不写卡 |
-| D2 | 独立验证带地址16字SDRAM侧口及条带writer，不接JPEG | 压力模型RD2=110MB/s，BURSTCHK/BWCHECK/QUEUECHK全过；614400B帧commit≤40ms；TD增量资源仍在预算内。此门失败不继续堆解码器 |
-| D3 | marker/tables/bits，分别逐模块实现 | 全部支持段与负例轨迹零diff，随机背压下BYTECHK/QUEUECHK通过；FF00/RST不串流 |
-| D4 | Huffman、blockbuf/反量化分别实现 | 全64点零diff，BLOCKCHK/DQTCHK通过，量化溢出及非法run明确拒绝；周期模型与RTL逐拍计数一致 |
-| D5 | IDCT单模块 | 每块176拍上限、整数点零diff、独立浮点≤3 LSB；TD映射8DSP且不溢出时序/资源 |
-| D6 | MCU/颜色、条带接入，先存储器字节源喂JPEG | 307200像素及153600字地址图零diff；正常帧≤35ms无外部停顿；错误帧绝不发布前台 |
-| D7 | 动态SD入口与25MHz提速分别验证，再加PCM bridge/avsync | PCM逐字节零diff，RATECHK/AVCHK通过；实际50MHz模型中音频gap≤8ms，基线回归结果逐项记录；本地SPI≥1.50MB/s待用户测 |
-| D8 | 视频scanout与全系统接入，后注册工程文件 | 512帧整机零丢正常帧/零音频欠载/零RD2underflow，后台commit≤40ms，呈现不超过一次刷新+0.5ms；所有旧模式单独回归 |
+| S1（独立任务，D1后、D2前） | 仅把共用探针SPI_HIGHFREQ改为25MHz，独立提交/回归 | 照片、音乐、卡带三路仿真和TD构建回归全过；用户板上实测持续读率≥1.50MB/s且gap≤8ms。任一失败或板上待测都不得开始D2；既有CPU测试台失败要先建立可通过的有效基线，不能标通过 |
+| D2 | 独立验证带地址16字SDRAM侧口及条带writer，不接JPEG | 压力模型RD2=110MB/s，BURSTCHK/BWCHECK/QUEUECHK全过；614400B帧commit≤40ms；TD增量资源仍在预算内。此门失败不继续堆解码器 ；当阶段模块加入TD工程综合，记录累计实测增量，任一资源偏差>30%停机（§7.1） |
+| D3 | marker/tables/bits，分别逐模块实现 | 全部支持段与负例轨迹零diff，随机背压下BYTECHK/QUEUECHK通过；FF00/RST不串流 ；当阶段模块加入TD工程综合，记录累计实测增量，任一资源偏差>30%停机（§7.1） |
+| D4 | Huffman、blockbuf/反量化分别实现 | 全64点零diff，BLOCKCHK/DQTCHK通过，量化溢出及非法run明确拒绝；周期模型与RTL逐拍计数一致 ；当阶段模块加入TD工程综合，记录累计实测增量，任一资源偏差>30%停机（§7.1） |
+| D5 | IDCT单模块 | 每块176拍上限、整数点零diff、独立浮点≤3 LSB；TD映射8DSP且不溢出时序/资源 ；当阶段模块加入TD工程综合，记录累计实测增量，任一资源偏差>30%停机（§7.1） |
+| D6 | MCU/颜色、条带接入，先存储器字节源喂JPEG | 307200像素及153600字地址图零diff；正常帧≤35ms无外部停顿；错误帧绝不发布前台 ；当阶段模块加入TD工程综合，记录累计实测增量，任一资源偏差>30%停机（§7.1） |
+| D7 | S1通过后动态SD入口，再加PCM bridge/avsync（不在此时才验证提速） | PCM逐字节零diff，RATECHK/AVCHK通过；实际50MHz模型中音频gap≤8ms，基线回归结果逐项记录；本地SPI≥1.50MB/s待用户测 |
+| D8 | 视频scanout与全系统接入，各阶段已注册工程后完整接入 | 504帧/21秒整机零丢正常帧/零音频欠载/零RD2underflow，后台commit≤40ms，呈现不超过一次刷新+0.5ms；所有旧模式单独回归 |
 | D9 | 用户本地TD与板上验收 | LUT增量≤9,081且总数≤19,600、BRAM增量≤25、DSP增量≤29，各真实域无新时序失败；板上同一素材满足实际SD、WR/AV/欠载判据。没有这些实测不宣布完成24fps |
 
-优先评审点是短突发SDRAM侧口、23/24块BRAM打包、40KiB及512帧接纳范围，以及25MHz的实测门槛。它们是本方案在冻结基线预算内成立的条件；本阶段到此为止，不创建上述RTL/模型，不变更转换器或发布配置。
+当前推进到D1；S1是独立硬门槛，S1未通过不能开始D2。短突发侧口、19块BRAM打包、40KiB最坏帧周期、各阶段综合增量都必须逐项验证，不用估算代替实测；不更改冻结main或发布云环境配置。
