@@ -23,12 +23,16 @@
 // 数据流：
 //   Sector N[0..511] -> Sector N+1[0..511] -> ...
 //
-// 注意：原厂 RD_RAM 为同步读 RAM，因此每个 Byte 使用 SET/GET 两拍读取。
-//       即使后续消费者产生 backpressure，GET 状态会保持数据和地址不变，
-//       直到 stream_valid && stream_ready 成功握手。
+// RD_RAM 为同 clk 的一拍同步读。DRAIN_1CYC=1 时 SET 只预取首字节，
+// GET 成功握手的同一边沿预读下一地址，随后每拍吐一字节。
+// ready=0 时读地址回到当前字节，RAM 重读同址，输出数据/元数据保持；
+// 不存在额外未接收的预读返回，因此无需修改厂商 RAM 或增加 skid FIFO。
+// DRAIN_1CYC=0 保留原 SET/GET 两拍路径，便于逐字节 A/B 回归。
 //------------------------------------------------------------------------------
 
-module sd_stream_reader_core (
+module sd_stream_reader_core #(
+    parameter integer DRAIN_1CYC = 1
+)(
     input  wire         clk,
     input  wire         rst,
 
@@ -75,8 +79,13 @@ module sd_stream_reader_core (
     reg [8:0]  drain_addr;
     reg [31:0] byte_count;
 
-    // RD_RAM 地址在 GET 状态等待期间保持不变。
-    assign ctrl_rd_ram_addr       = drain_addr;
+    // drain_addr 始终是当前输出字节号。只有本拍真的接受该字节时，
+    // 才将下一地址送到同步 RAM，使下一拍数据与递增后的 drain_addr 对齐。
+    // stall 时地址不自增；511 不回绕预读，防止末字节被地址 0 覆盖。
+    wire drain_advance = (DRAIN_1CYC != 0) &&
+                         (state == ST_DRAIN_GET) && stream_ready &&
+                         (drain_addr != 9'd511);
+    assign ctrl_rd_ram_addr = drain_advance ? (drain_addr + 9'd1) : drain_addr;
 
     // stream_valid 只有在同步 RAM 数据已经准备好的 GET 状态有效。
     assign stream_valid           = (state == ST_DRAIN_GET);
@@ -187,7 +196,7 @@ module sd_stream_reader_core (
                             // 当前 Byte 接收完成，准备下一个 RAM 地址。
                             byte_count <= byte_count + 32'd1;
                             drain_addr <= drain_addr + 9'd1;
-                            state      <= ST_DRAIN_SET;
+                            state      <= (DRAIN_1CYC != 0) ? ST_DRAIN_GET : ST_DRAIN_SET;
                         end
                     end
                 end
