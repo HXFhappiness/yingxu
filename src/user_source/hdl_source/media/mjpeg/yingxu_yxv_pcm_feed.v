@@ -10,17 +10,17 @@ module yingxu_yxv_pcm_feed(
     output wire [7:0] wav_data,output wire wav_valid,input wire wav_ready,
     output wire idle
 );
-    reg [1:0] state;reg [20:0] cursor;reg [3:0] received;
+    reg [1:0] state;reg [19:0] cursor;reg [3:0] received;
     wire fifo_wr,fifo_rd,fifo_full_ready,fifo_valid;
     wire [31:0] fifo_data;wire [4:0] level;
     yingxu_media_async_fifo #(.WIDTH(32),.ABITS(4)) fifo(
         .wclk(clk),.rclk(sys_clk),.rst(rst),.wvalid(fifo_wr),.wready(fifo_full_ready),.wdata(rdata),
         .rvalid(fifo_valid),.rready(fifo_rd),.rdata(fifo_data),.wlevel(level));
-    assign cmd_valid=state==1;assign cmd_write=0;assign cmd_addr=cursor;assign cmd_words=8;
+    assign cmd_valid=state==1;assign cmd_write=0;assign cmd_addr={1'b1,cursor};assign cmd_words=8;
     assign rready=state==2 && fifo_full_ready;assign fifo_wr=rvalid && state==2;
     assign idle=state==0;
     always @(posedge clk) begin
-        if(rst) begin state<=0;cursor<=21'h100000;received<=0;failed<=0;end
+        if(rst) begin state<=0;cursor<=0;received<=0;failed<=0;end
         else case(state)
             0: if(enable && !failed && level<=8) state<=1;
             1: if(cmd_ready) begin received<=0;state<=2;end
@@ -29,14 +29,14 @@ module yingxu_yxv_pcm_feed(
                 if(mem_done || mem_error) begin
                     state<=0;
                     if(mem_error || received+((rvalid&&rready) ? 1'b1:1'b0)!=8) failed<=1;
-                    cursor<=({1'b0,cursor}+8 >= 22'h100000+(pcm_bytes>>2)) ? 21'h100000:cursor+8;
+                    cursor<=({1'b0,cursor}+21'd8 >= {1'b0,pcm_bytes[21:2]}) ? 20'd0:cursor+20'd8;
                 end
             end
             default:state<=0;
         endcase
     end
     reg [1:0] en_sync;reg [2:0] warm;
-    reg header_mode;reg [4:0] hi;reg [1:0] bi;reg [31:0] sent;
+    reg header_mode;reg [4:0] hi;reg [1:0] bi;reg [21:0] sent;
     wire [31:0] pcm_frames=pcm_bytes>>2;
     function [7:0] header_byte(input [4:0] index);
         begin
@@ -44,8 +44,8 @@ module yingxu_yxv_pcm_feed(
                 0:header_byte="Y";1:header_byte="X";2:header_byte="M";3:header_byte="A";
                 4:header_byte=1;5:header_byte=2;6:header_byte=16;7:header_byte=0;
                 8:header_byte=8'h80;9:header_byte=8'hBB;10,11:header_byte=0;
-                12,13,14,15:header_byte=pcm_frames>>((index-12)*8);
-                16,17,18,19:header_byte=pcm_bytes>>((index-16)*8);
+                12:header_byte=pcm_frames[7:0];13:header_byte=pcm_frames[15:8];14:header_byte=pcm_frames[23:16];15:header_byte=pcm_frames[31:24];
+                16:header_byte=pcm_bytes[7:0];17:header_byte=pcm_bytes[15:8];18:header_byte=pcm_bytes[23:16];19:header_byte=pcm_bytes[31:24];
                 default:header_byte=0;
             endcase
         end
@@ -62,7 +62,7 @@ module yingxu_yxv_pcm_feed(
                 if(header_mode) begin hi<=hi+1'b1;if(hi==31)begin header_mode<=0;bi<=0;sent<=0;end end
                 else begin
                     bi<=bi+1'b1;sent<=sent+1'b1;
-                    if(sent+1==pcm_bytes) begin header_mode<=1;hi<=0;bi<=0;end
+                    if(sent+22'd1==pcm_bytes[21:0]) begin header_mode<=1;hi<=0;bi<=0;end
                 end
             end
         end

@@ -3,9 +3,10 @@
 // YXV1 fixed 640x480@24. PCM preload, then frame-frame_table-indexed double staging.
 // All external signals here are in mem_clk=100MHz; SD CDC is outside.
 module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
-    input wire clk,rst,enable,
+    input wire clk,rst,enable,abort,
     output wire sd_valid,input wire sd_ready,output reg [27:0] sd_lba,output reg [15:0] sd_sectors,
     input wire sd_done,input wire [7:0] sd_byte,input wire sd_byte_valid,output wire sd_byte_ready,
+    output wire idle,
     output reg ready,failed,output reg [7:0] error_code,
     output reg [9:0] frames,output reg [31:0] pcm_bytes,
     output reg [1:0] slot_valid,input wire [1:0] slot_release,
@@ -18,30 +19,36 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
 );
     localparam IDLE=0,SDREQ=1,RECEIVE=2,FINISH=3,SELECT=4,LOOKUP=5,PREPARE=6,FAIL=7;
     reg [2:0] state;reg [1:0] purpose; // 0 first meta,1 remaining meta,2 PCM,3 JPEG
-    reg [7:0] header[0:31];reg [63:0] frame_table[0:511];reg [63:0] table_q,assembly;
-    reg [8:0] next_local;reg [31:0] next_tag;reg selected;
-    reg [31:0] frame_start,previous_end,audio_off;
-    reg [31:0] count,expected,absolute_base;
+    reg [34:0] frame_table[0:511];reg [34:0] table_q;reg [55:0] assembly;
+    reg [8:0] next_local;reg [15:0] next_tag;reg selected;
+    reg [18:0] frame_start,previous_end,audio_off; // aligned sector indices
+    reg [21:0] count,expected;reg [12:0] absolute_base;
     reg ack,rx_complete,invalid;
-    reg [31:0] word;reg [31:0] write_buffer[0:7];reg [3:0] filled;
+    reg [23:0] word;reg [31:0] write_buffer[0:7];reg [3:0] filled;
     reg [1:0] mstate;reg [3:0] sent;reg [20:0] cursor;
     wire meta=purpose<2;
     wire byte_fire=sd_byte_valid && sd_byte_ready;
-    wire [31:0] absolute=absolute_base+count;
-    wire [31:0] entry_index=(absolute-32)>>3;
-    wire [63:0] complete_entry={sd_byte,assembly[55:0]};
+    wire [12:0] absolute=absolute_base+count[12:0];
+    wire [9:0] entry_index=(absolute-13'd32)>>3;
+    wire [63:0] complete_entry={sd_byte,assembly};
     wire [31:0] entry_off=complete_entry[31:0],entry_size=complete_entry[63:32];
-    wire [31:0] entry_end=entry_off+((entry_size+511)&32'hFFFFFE00);
-    function [31:0] h32(input integer a);h32={header[a+3],header[a+2],header[a+1],header[a]};endfunction
-    wire [31:0] header_frames=h32(12),header_start=h32(28);
+    wire [16:0] rounded_size=({1'b0,entry_size[15:0]}+17'd511)&17'h1FE00;
+    wire [19:0] entry_end={1'b0,entry_off[27:9]}+{12'd0,rounded_size[16:9]};
+    wire [13:0] pcm_sectors={1'b0,pcm_bytes[21:9]}+{13'd0,(|pcm_bytes[8:0])};
+    wire [19:0] audio_end=entry_end+{6'd0,pcm_sectors};
+    wire [31:0] complete_word={sd_byte,word[23:0]};
+    // Fixed shifts keep the 8000*frames duration check out of DSPs.
+    wire [22:0] expected_pcm={frames,13'd0}-{6'd0,frames,7'd0}-{7'd0,frames,6'd0};
+    wire [12:0] minimum_frame_start=(13'd32+{frames,3'd0}+13'd511)&13'h1E00;
     assign sd_valid=state==SDREQ;
-    assign sd_byte_ready=state==RECEIVE && (meta || invalid || filled<8);
+    assign sd_byte_ready=abort || (state==RECEIVE && (meta || invalid || filled<8));
+    assign idle=(state==IDLE || state==SELECT || state==FAIL) && mstate==0;
     assign cmd_valid=mstate==1;assign cmd_write=1;assign cmd_addr=cursor;assign cmd_words=8;
     assign wvalid=mstate==2 && sent<8;assign wdata=write_buffer[sent[2:0]];assign wlast=sent==7;
     always @(posedge clk) begin table_q<=frame_table[next_local];end
     task request_sd(input [27:0] lba,input [15:0] sectors,input [1:0] kind,input [20:0] target,input [31:0] file_offset);
-        begin sd_lba<=lba;sd_sectors<=sectors;purpose<=kind;cursor<=target;absolute_base<=file_offset;
-            expected<={7'd0,sectors,9'd0};count<=0;ack<=0;rx_complete<=0;filled<=0;state<=SDREQ;end
+        begin sd_lba<=lba;sd_sectors<=sectors;purpose<=kind;cursor<=target;absolute_base<=file_offset[12:0];
+            expected<={sectors[12:0],9'd0};count<=0;ack<=0;rx_complete<=0;filled<=0;state<=SDREQ;end
     endtask
     always @(posedge clk) begin
         if(rst) begin
@@ -67,36 +74,54 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
                 end
                 default:mstate<=0;
             endcase
-            if(byte_fire) begin
-                sd_accepted<=sd_accepted+1'b1;count<=count+1'b1;
+            if(byte_fire && !abort) begin
+                sd_accepted<=sd_accepted+1'b1;count<=count+22'd1;
                 if(meta) begin
-                    if(absolute<32) header[absolute[4:0]]<=sd_byte;
-                    if(absolute==32 && purpose==0) begin
-                        frames<=header_frames[9:0];pcm_bytes<=h32(20);frame_start<=h32(28);
-                        if({header[0],header[1],header[2],header[3]}!=32'h59585631 || header[4]!=1 || header[5]!=2 ||
-                           {header[7],header[6]}!=640 || {header[9],header[8]}!=480 || {header[11],header[10]}!=24 ||
-                           h32(12)==0 || h32(12)>512 || h32(16)!=48000 || h32(20)!=h32(12)*8000 ||
-                           h32(24)!=32 || header_start[8:0]!=0 || h32(28)<((32+h32(12)*8+511)&32'hFFFFFE00)) begin
-                            invalid<=1;error_code<=8'h92;
+                    // Validate one 32-bit header word at a time. Reusing the
+                    // existing byte assembler avoids a 32-byte multi-read RAM.
+                    if(absolute<32) begin
+                        word<={sd_byte,word[23:8]};
+                        if(count[1:0]==3) begin
+                            case(absolute[4:2])
+                                0:if(complete_word!=32'h31565859)begin invalid<=1;error_code<=8'h92;end
+                                1:if(complete_word!=32'h02800201)begin invalid<=1;error_code<=8'h92;end
+                                2:if(complete_word!=32'h001801E0)begin invalid<=1;error_code<=8'h92;end
+                                3:begin
+                                    frames<=complete_word[9:0];
+                                    if(complete_word==0 || complete_word>512)begin invalid<=1;error_code<=8'h92;end
+                                end
+                                4:if(complete_word!=48000)begin invalid<=1;error_code<=8'h92;end
+                                5:begin
+                                    pcm_bytes<={10'd0,complete_word[21:0]};
+                                    if(complete_word!={9'd0,expected_pcm})begin invalid<=1;error_code<=8'h92;end
+                                end
+                                6:if(complete_word!=32)begin invalid<=1;error_code<=8'h92;end
+                                7:begin
+                                    frame_start<=complete_word[27:9];
+                                    if(complete_word[31:28]!=0 || complete_word[8:0]!=0 || complete_word<minimum_frame_start)
+                                        begin invalid<=1;error_code<=8'h92;end
+                                end
+                            endcase
                         end
                     end
-                    if(absolute>=32 && (absolute==32 || absolute<32+{19'd0,frames,3'd0})) begin
-                        assembly[count[2:0]*8+:8]<=sd_byte;
+                    if(!invalid && absolute>=32 && absolute<13'd32+{frames,3'd0}) begin
+                        assembly<={sd_byte,assembly[55:8]};
                         if(count[2:0]==7) begin
-                            if(entry_index>=512 || entry_off[8:0]!=0 || entry_off[31:28]!=0 || entry_size<4 || entry_size>65535 ||
-                               (entry_index==0 ? entry_off!=frame_start : entry_off<previous_end) || entry_end<entry_off) begin
+                            if(entry_index>=512 || entry_off[8:0]!=0 || entry_off[31:28]!=0 || entry_size[31:16]!=0 || entry_size[15:0]<16'd4 ||
+                               (entry_index==0 ? entry_off[27:9]!=frame_start : entry_off[27:9]<previous_end) || entry_end[19] ||
+                               (entry_index+10'd1==frames && audio_end>20'h80000)) begin
                                 invalid<=1;error_code<=8'h93;
                             end else begin
-                                frame_table[entry_index[8:0]]<=complete_entry;previous_end<=entry_end;
-                                if(entry_index+1==frames) audio_off<=entry_end;
+                                frame_table[entry_index[8:0]]<={entry_size[15:0],entry_off[27:9]};previous_end<=entry_end[18:0];
+                                if(entry_index+10'd1==frames) audio_off<=entry_end[18:0];
                             end
                         end
                     end
                 end else if(!invalid) begin
-                    word[count[1:0]*8+:8]<=sd_byte;
-                    if(count[1:0]==3) begin write_buffer[filled[2:0]]<={sd_byte,word[23:0]};filled<=filled+1'b1;end
+                    word<={sd_byte,word[23:8]};
+                    if(count[1:0]==3) begin write_buffer[filled[2:0]]<=complete_word;filled<=filled+1'b1;end
                 end
-                if(count+1==expected) begin rx_complete<=1;state<=FINISH;end
+                if(count+22'd1==expected) begin rx_complete<=1;state<=FINISH;end
             end
             case(state)
                 IDLE: if(enable) request_sd(VIDEO_LBA,16'd1,0,0,0);
@@ -105,7 +130,7 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
                     if(invalid) begin failed<=1;state<=FAIL;end
                     else if(purpose==0 && 32+{19'd0,frames,3'd0}>512)
                         request_sd(VIDEO_LBA+1,((32+{19'd0,frames,3'd0}+511)>>9)-1,1,0,512);
-                    else if(purpose<2) request_sd(VIDEO_LBA+(audio_off>>9),(pcm_bytes+511)>>9,2,21'h100000,audio_off);
+                    else if(purpose<2) request_sd(VIDEO_LBA+{9'd0,audio_off},{2'd0,pcm_sectors},2,21'h100000,{4'd0,audio_off,9'd0});
                     else if(purpose==2) begin ready<=1;state<=SELECT;end
                     else begin
                         slot_valid[selected]<=1;
@@ -117,11 +142,12 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
                 SELECT: if(enable && slot_valid!=3) begin selected<=slot_valid[0] ? 1'b1:1'b0;state<=LOOKUP;end
                 LOOKUP:state<=PREPARE;
                 PREPARE: begin
-                    if(selected) slot_len1<=table_q[47:32];else slot_len0<=table_q[47:32];
-                    request_sd(VIDEO_LBA+(table_q[31:0]>>9),(table_q[63:32]+511)>>9,3,selected ? 21'h084000:21'h080000,table_q[31:0]);
+                    if(selected) slot_len1<=table_q[34:19];else slot_len0<=table_q[34:19];
+                    request_sd(VIDEO_LBA+{9'd0,table_q[18:0]},({1'b0,table_q[34:19]}+17'd511)>>9,3,selected ? 21'h084000:21'h080000,{4'd0,table_q[18:0],9'd0});
                 end
                 default:begin end
             endcase
+            if(abort && mstate==0) begin state<=FAIL;failed<=1;filled<=0;slot_valid<=0;end
         end
     end
 endmodule

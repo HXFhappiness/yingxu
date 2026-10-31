@@ -6,10 +6,10 @@ module tb_yxv_loader;
     wire meta,fail;wire [7:0] error;wire [9:0] frames;wire [31:0] pcm;
     wire [1:0] slots;reg [1:0] release_slot=0;wire [31:0] tag0,tag1;wire [15:0] len0,len1;
     wire cv,cw,wv,wl;reg cr=0,wr=0,done=0;wire [20:0] addr;wire [3:0] words;wire [31:0] wd;
-    reg [7:0] source[0:5999999];reg [31:0] memory[0:2097151];
+    reg [7:0] source[0:16777215];reg [31:0] memory[0:2097151];
     integer fd,nfile,i,j,off,nbytes,base=0,p=0,left=0,cycle=0,cmds=0,midx=0,delay_done=0;
     reg reading=0,writing=0;reg [20:0] maddr;reg [1023:0] filename;
-    yingxu_yxv_loader dut(.clk(clk),.rst(rst),.enable(en),.sd_valid(sv),.sd_ready(sr),.sd_lba(lba),.sd_sectors(sectors),
+    yingxu_yxv_loader dut(.clk(clk),.rst(rst),.enable(en),.abort(1'b0),.sd_valid(sv),.sd_ready(sr),.sd_lba(lba),.sd_sectors(sectors),
         .sd_done(sdone),.sd_byte(data),.sd_byte_valid(valid),.sd_byte_ready(ready),
         .ready(meta),.failed(fail),.error_code(error),.frames(frames),.pcm_bytes(pcm),
         .slot_valid(slots),.slot_release(release_slot),.slot_tag0(tag0),.slot_tag1(tag1),.slot_len0(len0),.slot_len1(len1),
@@ -46,19 +46,25 @@ module tb_yxv_loader;
         repeat(5) @(negedge clk);rst=0;en=1;
         wait(slots==3);@(negedge clk);
         if(fail || !meta || frames!=le32(12) || pcm!=le32(20) || tag0!=0 || tag1!=1) $fatal(1,"metadata/staging failed %h",error);
+        for(j=0;j<frames;j=j+1)begin
+            off=le32(32+j*8);nbytes=le32(36+j*8);
+            if(dut.frame_table[j]!=={nbytes[15:0],off[27:9]})$fatal(1,"packed frame table diff index=%0d",j);
+        end
         off=le32(32+(frames-1)*8);nbytes=le32(36+(frames-1)*8);off=off+(nbytes+511)/512*512;
         for(i=0;i<pcm;i=i+1) begin
             if(((memory[21'h100000+i/4]>>(8*(i%4)))&255)!==source[off+i]) $fatal(1,"PCM preload byte diff %0d",i);
         end
         check_slot(0,0,len0);check_slot(1,1,len1);
-        release_slot=1;@(negedge clk);release_slot=0;
-        wait(slots[0]&&tag0==2);@(negedge clk);check_slot(0,2,len0);
-        $display("SUPPLYCHK: PASS frames=%0d PCM=%0d bytes zero-diff JPEG=0,1,2 exact table-indexed commands=%0d",frames,pcm,cmds);
+        for(j=2;j<frames+2;j=j+1)begin
+            release_slot=1;@(negedge clk);release_slot=0;
+            wait(slots[0]&&tag0==j);@(negedge clk);check_slot(0,j%frames,len0);
+        end
+        $display("SUPPLYCHK: PASS frames=%0d PCM=%0d bytes zero-diff all packed table entries JPEG through wrap zero-diff commands=%0d",frames,pcm,cmds);
         // Common reset plus invalid magic: must drain one sector then stop.
         rst=1;repeat(5) @(negedge clk);source[0]=0;rst=0;
         wait(fail);@(negedge clk);
         if(reading || error!=8'h92) $fatal(1,"bad header failed to drain/error");
         $display("HEADERCHK: PASS bad magic code=%h finite reject drained-SD",error);$finish;
     end
-    initial begin #20000000;$fatal(1,"loader timeout state=%d count=%d",dut.state,dut.count);end
+    initial begin #200000000;$fatal(1,"loader timeout state=%d count=%d",dut.state,dut.count);end
 endmodule

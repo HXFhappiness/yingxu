@@ -20,7 +20,7 @@ module yingxu_mjpeg_arbiter(
     wire [1:0] select_owner=held ? chosen:priority_owner;
     assign mvalid=!active && (held || |cvalid);
     assign mwrite=cwrite[select_owner];
-    assign maddr=caddr[select_owner*21+:21];
+    assign maddr=select_owner==0 ? caddr[20:0]:select_owner==1 ? caddr[41:21]:caddr[62:42];
     assign mwords=cwords[select_owner*4+:4];
     assign mwvalid=active && cwvalid[owner];
     assign mwdata=cwdata[owner*32+:32];

@@ -35,7 +35,7 @@ module yingxu_yxv_scanout(
                     pair<=rd_data;rd_en<=1;primed<=1;
                     if(ack_pending) begin frame_done<=1;ack_pending<=0;end
                 end
-            end else if(window && x[0]) begin
+            end else if(window && x[0] && primed && displayed_valid) begin
                 rd_en<=1;
                 if(!rd_empty) pair<=rd_data;else underflow<=1;
             end

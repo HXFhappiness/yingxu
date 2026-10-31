@@ -33,3 +33,17 @@ PCMCHK: PASS pops=512 source_samples=128 loops=4 zero-diff L/R including EOF vir
 ```
 
 完整顶层正在接线，尚未宣布3秒集成门禁通过。
+
+## 集成前资源缩减与边界复测
+
+帧表内部改为512×35（19bit扇区偏移+16bit精确JPEG长度），BRAM结构映射由4块降为2块；容器外部格式、512帧上限不变。按32bit流式检查头字段，复用byte assembler，不保留多读口头RAM；最后PCM结束位置也检查256MiB槽边界。PCM地址/字节计数按4MiB约束裁位，虚拟YXMA头改固定slice，仲裁地址改显式三选一。
+
+```text
+SUPPLYCHK: PASS frames=36 PCM=288000 bytes zero-diff all packed table entries JPEG through wrap zero-diff commands=40
+SUPPLYCHK: PASS frames=512 PCM=4096000 bytes zero-diff all packed table entries JPEG through wrap zero-diff commands=517
+HEADERCHK: PASS bad magic code=92 finite reject drained-SD
+PCMCHK: PASS pops=512 source_samples=128 loops=4 zero-diff L/R including EOF virtual-header reuse-WAV 48k
+ARBCHK: PASS grants=5 priority=display>decode>other owner-until-done stalled-command-stable error-routed
+```
+
+scanout在第一帧发布/预充之前禁止RD2弹出，避免启动空FIFO被记为欠载。两bank颜色与消隐交换单测重跑通过。完整3秒顶层门禁和总面积账随最后集成提交提供。
