@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Last modified by TangDynasty Release_2026.2 -->
-<Project Version="3" Minor="2" Path="C:/Users/HXF/Desktop/YX">
+<Project Version="3" Minor="2" Path="C:/Users/HXF/Desktop/yingxu-fpga">
     <Project_Created_Time></Project_Created_Time>
     <TD_Version>6.2.3.210850</TD_Version>
     <Name>AC201_AL_board_test</Name>
