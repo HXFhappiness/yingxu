@@ -116,7 +116,8 @@ class JPEG:
     blocks: list
     huffman_tables: dict
 
-def inspect_jpeg(data, *, collect_coefficients=False, collect_trace=False, max_bytes=40960):
+def inspect_jpeg(data, *, collect_coefficients=False, collect_trace=False, max_bytes=40960, coefficient_bits=12):
+    require(2 <= coefficient_bits <= 24, 'COEFFICIENT_PROFILE', 'signed coefficient width 2..24 required')
     require(len(data) <= max_bytes, 'FRAME_SIZE', f'{len(data)} > {max_bytes}')
     require(data[:2] == b'\xff\xd8', 'SOI', 'missing SOI')
     pos, quant, huff, desc, sof, dri = 2, {}, {}, {}, None, 0
@@ -216,7 +217,7 @@ def inspect_jpeg(data, *, collect_coefficients=False, collect_trace=False, max_b
             q = quant[sof[comp][2]]
             for k, index in enumerate(ZIGZAG):
                 coeff[index] *= q[k]
-                require(-2048 <= coeff[index] <= 2047, 'COEFFICIENT_RANGE',
+                require(-(1 << (coefficient_bits-1)) <= coeff[index] < (1 << (coefficient_bits-1)), 'COEFFICIENT_RANGE',
                         f'MCU {mcu}, component {comp}, coefficient {index}')
             blocks.append(Block(mcu,comp,sub,bits.huffman_bits-bh,ns,
                                 tuple(coeff) if collect_coefficients else None,
