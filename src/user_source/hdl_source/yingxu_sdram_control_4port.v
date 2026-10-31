@@ -10,7 +10,7 @@
 // This derivative reloads *_MAX_ADDR together with *_ADDR/*_LENGTH whenever
 // the corresponding *_LOAD is asserted.  The vendor original remains untouched.
 // -----------------------------------------------------------------------------
-module yingxu_sdram_control_4port(
+module yingxu_sdram_control_4port #(parameter MJPEG_PORT=0)(
 		//	HOST Side
         REF_CLK,
         RESET_N,
@@ -68,6 +68,9 @@ module yingxu_sdram_control_4port(
         DQM,
 		SDR_CLK,
 		//
+        MJ_ACTIVE, MJ_VALID, MJ_READY, MJ_WRITE, MJ_ADDR, MJ_WORDS,
+        MJ_WVALID, MJ_WREADY, MJ_WDATA, MJ_WLAST,
+        MJ_RVALID, MJ_RREADY, MJ_RDATA, MJ_RLAST, MJ_DONE, MJ_ERROR, MJ_IDLE,
 		test_oe
         );
 
@@ -189,6 +192,11 @@ output  [`DSIZE/8-1:0]          DQM;                    //SDRAM data mask lines
 output		wire				SDR_CLK;				//SDRAM clock
 
 output test_oe;
+input MJ_ACTIVE,MJ_VALID,MJ_WRITE,MJ_WVALID,MJ_WLAST,MJ_RREADY;
+input [20:0] MJ_ADDR;input [3:0] MJ_WORDS;input [31:0] MJ_WDATA;
+output MJ_READY,MJ_WREADY,MJ_RVALID,MJ_RLAST,MJ_DONE,MJ_ERROR,MJ_IDLE;
+output [31:0] MJ_RDATA;
+
 
 //	Internal Registers/Wires
 //	Controller
@@ -248,6 +256,24 @@ wire	[15:0]					write_side_fifo_rusedw1;
 wire	[15:0]					read_side_fifo_wusedw1;
 wire	[15:0]					write_side_fifo_rusedw2;
 wire	[15:0]					read_side_fifo_wusedw2;
+// D3: optional service port; default=0 retains legacy FIFO scheduling.
+wire mj_request,mj_write;wire [20:0] mj_addr;wire [3:0] mj_words;
+wire [31:0] mj_wdata;wire [3:0] mj_mask;reg mj_grant,mj_owner;
+generate if(MJPEG_PORT) begin: mj_port
+    yingxu_sdram_burst_port port_adapter(
+        .clk(CLK),.rst(!RESET_N),.enable(MJ_ACTIVE),
+        .cmd_valid(MJ_VALID),.cmd_ready(MJ_READY),.cmd_write(MJ_WRITE),.cmd_addr(MJ_ADDR),.cmd_words(MJ_WORDS),
+        .wvalid(MJ_WVALID),.wready(MJ_WREADY),.wdata(MJ_WDATA),.wlast(MJ_WLAST),
+        .rvalid(MJ_RVALID),.rready(MJ_RREADY),.rdata(MJ_RDATA),.rlast(MJ_RLAST),
+        .done(MJ_DONE),.error(MJ_ERROR),.idle(MJ_IDLE),
+        .request(mj_request),.grant(mj_grant),.write(mj_write),.addr(mj_addr),.words(mj_words),
+        .phy_wdata(mj_wdata),.phy_mask(mj_mask),.phy_in_req(IN_REQ && mj_owner),.phy_out_valid(OUT_VALID && mj_owner),
+        .phy_rdata(mDATAOUT),.phy_done((mWR_DONE || mRD_DONE) && mj_owner));
+end else begin: no_mj_port
+    assign MJ_READY=0;assign MJ_WREADY=0;assign MJ_RVALID=0;assign MJ_RLAST=0;
+    assign MJ_DONE=0;assign MJ_ERROR=0;assign MJ_IDLE=1;assign MJ_RDATA=0;
+    assign mj_request=0;assign mj_write=0;assign mj_addr=0;assign mj_words=0;assign mj_wdata=0;assign mj_mask=0;
+end endgenerate
 //	DRAM Internal Control
 wire    [`ASIZE-1:0]            saddr;
 wire                            load_mode;
@@ -343,7 +369,7 @@ Sdram_WR_FIFO 	write_fifo1(
 				//.aclr(WR1_LOAD),
 				.re(IN_REQ&WR_MASK[0]),
 				.clkr(CLK),
-				.do(mDATAIN1),
+				.\do (mDATAIN1),
 				.afull_flag(WR1_FULL), 
 				//.wrusedw(WR1_USE),
 				.aempty_flag(wr1_aempty_w)//(write_side_fifo_rusedw1)
@@ -358,13 +384,13 @@ Sdram_WR_FIFO 	write_fifo2(
 				//.aclr(WR2_LOAD),
 				.re(IN_REQ&WR_MASK[1]),
 				.clkr(CLK),
-				.do(mDATAIN2),
+				.\do (mDATAIN2),
 				.afull_flag(WR2_FULL),
 				//.wrusedw(WR2_USE),
 				.aempty_flag(wr2_aempty_w)//(write_side_fifo_rusedw2)
 				);
 				
-assign	mDATAIN	=	(WR_MASK[0])	?	mDATAIN1	:
+assign	mDATAIN	=	(MJPEG_PORT && mj_owner) ? mj_wdata : (WR_MASK[0])	?	mDATAIN1	:
 										mDATAIN2	;
 wire rd1_afull_w;
 
@@ -375,7 +401,7 @@ Sdram_RD_FIFO 	read_fifo1(
 				.rst(!RESET_N),//(RD1_LOAD),
 				.re(RD1),
 				.clkr(RD1_CLK),
-				.do(RD1_DATA),
+				.\do (RD1_DATA),
 				.afull_flag(rd1_afull_w),
 				.empty_flag(RD1_EMPTY)
 				//.rdusedw(RD1_USE)
@@ -388,7 +414,7 @@ Sdram_RD_FIFO 	read_fifo2(
 				.rst(!RESET_N),//(RD2_LOAD),
 				.re(RD2),
 				.clkr(RD2_CLK),
-				.do(RD2_DATA),
+				.\do (RD2_DATA),
 				.afull_flag(rd2_afull_w),
 				.empty_flag(RD2_EMPTY)
 				//.rdusedw(RD2_USE)
@@ -407,7 +433,7 @@ if(!RESET_N)
     WE_N    <= 1'b1;
 	PM_STOP	<= (ST==SC_CL+mLENGTH)			?	1'b1	:	1'b0;
 	PM_DONE	<= (ST==SC_CL+SC_RCD+mLENGTH+2)	?	1'b1	:	1'b0;
-	DQM		<= ( active && (ST>=SC_CL) )	?	(	((ST==SC_CL+mLENGTH) && Write)?	2'b11	:	2'b00	)	:	2'b11	;
+	DQM		<= MJPEG_PORT ? (mj_owner && mj_write ? mj_mask:4'b0000) : ( active && (ST>=SC_CL) )	?	(	((ST==SC_CL+mLENGTH) && Write)?	2'b11	:	2'b00	)	:	2'b11	;
 	mDATAOUT<= DQ;    
     end
 else
@@ -421,7 +447,7 @@ else
     WE_N    <= (ST==SC_CL+mLENGTH)			?	1'b0	:	IWE_N;
 	PM_STOP	<= (ST==SC_CL+mLENGTH)			?	1'b1	:	1'b0;
 	PM_DONE	<= (ST==SC_CL+SC_RCD+mLENGTH+2)	?	1'b1	:	1'b0;
-	DQM		<= ( active && (ST>=SC_CL) )	?	(	((ST==SC_CL+mLENGTH) && Write)?	2'b11	:	2'b00	)	:	2'b11	;
+	DQM		<= MJPEG_PORT ? (mj_owner && mj_write ? mj_mask:4'b0000) : ( active && (ST>=SC_CL) )	?	(	((ST==SC_CL+mLENGTH) && Write)?	2'b11	:	2'b00	)	:	2'b11	;
 	mDATAOUT<= DQ;    
     end
 
@@ -597,6 +623,7 @@ begin
 	if(!RESET_N)
 	begin
 		mWR		<=	0;
+        mj_owner<=0;mj_grant<=0;
 		mRD		<=	0;
 		mADDR	<=	0;
 		mLENGTH	<=	0;
@@ -605,13 +632,17 @@ begin
 	end
 	else
 	begin
-		if( (mWR==0) && (mRD==0) && (ST==0) &&
+        mj_grant<=0;
+        if(mWR_DONE || mRD_DONE) mj_owner<=0;
+		if( (mWR==0) && (mRD==0) && (ST==0) && !mj_owner &&
 			(WR_MASK==0)	&&	(RD_MASK==0) &&
 			(WR1_LOAD==0)	&&	(RD1_LOAD==0) &&
 			(WR2_LOAD==0)	&&	(RD2_LOAD==0) )
 		begin
 			//	Read Side 1
-			if( !rd1_afull_w/*(read_side_fifo_wusedw1 < rRD1_LENGTH)*/ )
+			if(MJPEG_PORT && MJ_ACTIVE && !rd2_afull_w) begin mADDR<=rRD2_ADDR;mLENGTH<=rRD2_LENGTH;RD_MASK<=2'b10;WR_MASK<=2'b00;mRD<=1;mWR<=0;end
+            else if(MJPEG_PORT && mj_request && mj_write) begin mADDR<=mj_addr;mLENGTH<={5'd0,mj_words};RD_MASK<=0;WR_MASK<=0;mRD<=!mj_write;mWR<=mj_write;mj_owner<=1;mj_grant<=1;end
+            else if( !rd1_afull_w/*(read_side_fifo_wusedw1 < rRD1_LENGTH)*/ && !(MJPEG_PORT && MJ_ACTIVE) )
 			begin
 				mADDR	<=	rRD1_ADDR;
 				mLENGTH	<=	rRD1_LENGTH;
@@ -631,7 +662,8 @@ begin
 				mRD		<=	1;
 			end
 			//	Write Side 1
-			else if( !wr1_aempty_w/*(write_side_fifo_rusedw1 >= rWR1_LENGTH)*/ && (rWR1_LENGTH!=0) )
+			else if(MJPEG_PORT && mj_request) begin mADDR<=mj_addr;mLENGTH<={5'd0,mj_words};RD_MASK<=0;WR_MASK<=0;mRD<=!mj_write;mWR<=mj_write;mj_owner<=1;mj_grant<=1;end
+            else if( !wr1_aempty_w/*(write_side_fifo_rusedw1 >= rWR1_LENGTH)*/ && (rWR1_LENGTH!=0) )
 			begin
 				mADDR	<=	rWR1_ADDR;
 				mLENGTH	<=	rWR1_LENGTH;

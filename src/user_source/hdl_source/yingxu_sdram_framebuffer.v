@@ -36,6 +36,7 @@
 //------------------------------------------------------------------------------
 
 module yingxu_sdram_framebuffer #(
+    parameter integer ENABLE_MJPEG = 0,
     parameter integer H_TOTAL  = 1650,
     parameter integer H_ACTIVE = 1280,
     parameter integer V_TOTAL  = 750,
@@ -81,7 +82,15 @@ module yingxu_sdram_framebuffer #(
     input  wire [8:0]    i_rd2_len,
     input  wire          i_rd2_load,
     output wire [31:0]   o_rd2_data,
-    output wire          o_rd2_empty
+    output wire          o_rd2_empty,
+    output wire          o_mem_clk,o_mem_ready,
+    input wire           i_mj_active,i_mj_valid,i_mj_write,
+    input wire [20:0]    i_mj_addr,input wire [3:0] i_mj_words,
+    output wire          o_mj_ready,
+    input wire           i_mj_wvalid,i_mj_wlast,input wire [31:0] i_mj_wdata,
+    output wire          o_mj_wready,o_mj_rvalid,o_mj_rlast,
+    output wire [31:0]   o_mj_rdata,input wire i_mj_rready,
+    output wire          o_mj_done,o_mj_error,o_mj_idle
 );
 
     // Dead-since-V0.4A-B media path: report "not ready, never accepted".
@@ -134,13 +143,18 @@ module yingxu_sdram_framebuffer #(
         if (por_cnt != 20'd999_999)
             por_cnt <= por_cnt + 20'd1;
     end
-    wire ctrl_reset_n = (por_cnt == 20'd999_999);   // ~10 ms @ 100 MHz
+    wire ctrl_reset_n = (por_cnt == 20'd999_999) && !(ENABLE_MJPEG && rst);   // ~10 ms @ 100 MHz
 
     // -------------------------------------------------------------------------
     // Vendor 4-port controller (contains Sdram_PLL: 50 MHz -> 100 MHz CTRL +
     // phase-shifted SDR_CLK). WR1/RD1 parked as described in the header.
     // -------------------------------------------------------------------------
-    yingxu_sdram_control_4port U_sdram_ctrl (
+    assign o_mem_clk=sdram_ctrl_clk;assign o_mem_ready=ctrl_reset_n;
+    yingxu_sdram_control_4port #(.MJPEG_PORT(ENABLE_MJPEG)) U_sdram_ctrl (
+        .MJ_ACTIVE(i_mj_active),.MJ_VALID(i_mj_valid),.MJ_READY(o_mj_ready),.MJ_WRITE(i_mj_write),
+        .MJ_ADDR(i_mj_addr),.MJ_WORDS(i_mj_words),.MJ_WVALID(i_mj_wvalid),.MJ_WREADY(o_mj_wready),
+        .MJ_WDATA(i_mj_wdata),.MJ_WLAST(i_mj_wlast),.MJ_RVALID(o_mj_rvalid),.MJ_RREADY(i_mj_rready),
+        .MJ_RDATA(o_mj_rdata),.MJ_RLAST(o_mj_rlast),.MJ_DONE(o_mj_done),.MJ_ERROR(o_mj_error),.MJ_IDLE(o_mj_idle),
         .REF_CLK      (sys_clk),
         .RESET_N      (ctrl_reset_n),
         .CLK          (sdram_ctrl_clk),
@@ -207,10 +221,10 @@ module yingxu_sdram_framebuffer #(
         .ba    (sdram_ba),
         .dq    (sdram_dq),
         .cs_n  (sdram_cs_n),
-        .dm0   (1'b0),
-        .dm1   (1'b0),
-        .dm2   (1'b0),
-        .dm3   (1'b0),
+        .dm0   (ENABLE_MJPEG ? sdram_dqm[0]:1'b0),
+        .dm1   (ENABLE_MJPEG ? sdram_dqm[1]:1'b0),
+        .dm2   (ENABLE_MJPEG ? sdram_dqm[2]:1'b0),
+        .dm3   (ENABLE_MJPEG ? sdram_dqm[3]:1'b0),
         .cke   (sdram_cke)
     );
 

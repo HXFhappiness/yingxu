@@ -143,6 +143,14 @@
                     <Attr Name="CompileOrder" Val="17"/>
                 </FileInfo>
             </File>
+            <File Path="src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="190"/>
+                </FileInfo>
+            </File>
             <File Path="src/user_source/hdl_source/yingxu_sdram_control_4port.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
