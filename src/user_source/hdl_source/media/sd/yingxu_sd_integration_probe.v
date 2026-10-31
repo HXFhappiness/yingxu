@@ -15,6 +15,7 @@
 module yingxu_sd_integration_probe #(
     parameter CLOCK_FREQ   = 50_000_000,
     parameter START_SECTOR = 28'd32672, // default only
+    parameter DYNAMIC_COUNT = 0,
     parameter SECTOR_COUNT = 16'd1
 ) (
     input  wire        clk,
@@ -22,6 +23,10 @@ module yingxu_sd_integration_probe #(
     input  wire        trigger_sw,
     input  wire [27:0] start_sector,
     input  wire        restart,
+    input wire dynamic_enable,
+    input wire [15:0] dynamic_count,
+    output wire transaction_done,
+
 
     // Byte stream export for the SD->SDRAM->HDMI display path.
     output wire [7:0]  out_stream_data,
@@ -82,6 +87,7 @@ module yingxu_sd_integration_probe #(
     wire trigger_rise;
     wire reader_start;
     wire reader_done;
+    assign transaction_done=reader_done;
     wire stream_first;
     wire stream_last;
     wire read_addr_done_pulse;
@@ -158,7 +164,7 @@ module yingxu_sd_integration_probe #(
         .rst                    (rst),
         .start                  (reader_start),
         .start_sector           (start_sector),
-        .sector_count           (SECTOR_COUNT),
+        .sector_count           ((DYNAMIC_COUNT && dynamic_enable) ? dynamic_count:SECTOR_COUNT),
         .stream_data            (dbg_stream_data),
         .stream_valid           (dbg_stream_valid),
         .stream_ready           (out_stream_ready),
