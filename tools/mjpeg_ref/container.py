@@ -36,6 +36,7 @@ def inspect_container(data, *, enforce_cycles=True):
     previous, end, reports = -1, foff, []
     for index in range(count):
         offset, size = struct.unpack_from('<II',data,toff+8*index)
+        require(index != 0 or offset == foff, 'YXV_TABLE','first frame must start at frames_off')
         require(offset % 512 == 0 and offset > previous and offset >= end,
                 'YXV_OVERLAP',f'frame {index} offset overlaps previous/table')
         require(0 < size <= 40960 and offset+align512(size) <= len(data),
@@ -48,7 +49,7 @@ def inspect_container(data, *, enforce_cycles=True):
                         'entropy_bytes':jpeg.entropy_bytes,'stuffed_bytes':jpeg.stuffed_bytes,
                         'sha256':hashlib.sha256(data[offset:offset+size]).hexdigest(), **timing})
         previous, end = offset, offset+align512(size)
-    require(abytes % 4 == 0 and end+abytes == len(data), 'YXV_AUDIO','audio length/alignment or trailing bytes')
+    require(abytes > 0 and abytes % 4 == 0 and end+abytes == len(data), 'YXV_AUDIO','audio length/alignment or trailing bytes')
     require(abs(count/fps-abytes/192000) < 0.1, 'AV_DURATION','audio/video differ by >=0.1s')
     worst = max(reports,key=lambda r:r['frame_cycles'])
     return {'width':width,'height':height,'fps':fps,'frames':count,'audio_rate':rate,

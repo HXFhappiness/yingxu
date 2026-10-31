@@ -142,7 +142,17 @@ class ContainerTests(unittest.TestCase):
         self.error('YXV_TABLE',inspect_container,b)
     def test_huge_extent(self):
         b=bytearray(self.data); struct.pack_into('<I',b,32,0xfffffe00)
+        self.error('YXV_TABLE',inspect_container,b)
+    def test_huge_later_extent(self):
+        data,_=build_container([self.frame,self.frame],bytes(16000))
+        b=bytearray(data); struct.pack_into('<I',b,40,0xfffffe00)
         self.error('YXV_FRAME_RANGE',inspect_container,b)
+    def test_empty_audio(self):
+        data,_=build_container([self.frame],b'')
+        self.error('YXV_AUDIO',inspect_container,data)
+    def test_first_frame_disagrees_with_header(self):
+        b=bytearray(self.data); struct.pack_into('<I',b,32,1024)
+        self.error('YXV_TABLE',inspect_container,b)
     def test_bad_header(self):
         b=bytearray(self.data); b[5]=1
         self.error('YXV_HEADER',inspect_container,b)
