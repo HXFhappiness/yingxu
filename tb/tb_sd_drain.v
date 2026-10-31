@@ -241,9 +241,10 @@ module tb_sd_cart;
     reg clk=0,pix=0; always #10 clk=~clk; always #6.818 pix=~pix;
     reg rst=1,en=0,go=0,requested=0;
     wire [7:0] data; wire valid,init_done,busy,done,restart,cart_ready;
-    wire [9:0] wc; integer i,bad=0,file_words; reg[23:0] gold;
+    wire [9:0] wc; integer i,bad=0,file_words,file_data_bytes; reg[23:0] gold;
+    reg [15:0] file_sectors=0;
     sd_drain_source #(.KIND(2)) source (
-        .clk(clk),.rst(rst),.go(go),.lba(28'd1000),.sectors(16'd4),.ready(cart_ready),
+        .clk(clk),.rst(rst),.go(go),.lba(28'd1000),.sectors(file_sectors),.ready(cart_ready),
         .data(data),.valid(valid),.first(),.last(),.offset(),.sector(),.sector_byte(),.ram_addr(),
         .init_done(init_done),.busy(busy),.done(done),.read_complete()
     );
@@ -260,25 +261,39 @@ module tb_sd_cart;
         if(!rst && restart && !requested) begin go<=1; requested<=1; end
     end
     initial begin
-        repeat(5) @(negedge clk); rst=0; en=1;
+        repeat(5) @(negedge clk);
+        // YXCA code_words is little-endian at offsets 8..9. Never infer
+        // expected WC from the DUT, documentation, or a fixed cartridge version.
+        if(source.nbytes<32 || {source.image[0],source.image[1],source.image[2],source.image[3]}!==32'h59584341)
+            $fatal(1,"invalid YXCA fixture header");
+        file_words={source.image[9],source.image[8]};
+        file_data_bytes={source.image[11],source.image[10]};
+        if(file_words<1 || file_words>768 || source.nbytes!=32+file_words*3+file_data_bytes)
+            $fatal(1,"invalid fixture code size/extent");
+        // This invaders loading regression expects no DATA section. A new
+        // fixture requiring DATA validation must fail explicitly, not pass zeros.
+        if(file_data_bytes!=0) $fatal(1,"fixture DATA section needs its own expected RAM image");
+        file_sectors=(source.nbytes+511)/512;
+        $display("CART_HEADER expected_words=%0d expected_WC_hex=%03h file_bytes=%0d sectors=%0d",
+                 file_words,file_words,source.nbytes,file_sectors);
+        rst=0; en=1;
         wait(done); wait(dut.loaded_s); repeat(8) @(negedge pix);
         $display("CART_DIAG wc=%0d words_r=%0d requested=%0d file_bytes=%0d loaded=%b state=%0d",
                  wc,dut.words_r,requested,source.nbytes,dut.loaded_s,dut.lstate);
-        // Diagnostic comparison follows the immutable file header. The strict
-        // user-requested WC=606 gate below is retained and must still fail at 604.
-        file_words={source.image[9],source.image[8]};
-        if(file_words<1 || file_words>768) $fatal(1,"invalid fixture header");
+        // Compare every instruction against the same immutable file bytes.
         for(i=0;i<file_words;i=i+1) begin
             gold={source.image[32+i*3],source.image[33+i*3],source.image[34+i*3]};
             if(dut.u_prog.ram[i]!==gold) bad=bad+1;
         end
-        $display("CART_WORDCHK: BADC0UNT=%0d of %0d; WC=%0d required=606",bad,file_words,wc);
+        $display("CART_WORDCHK: BADC0UNT=%0d of %0d; WC=%0d expected=%0d",bad,file_words,wc,file_words);
         if(bad) $fatal(1,"cart program mismatch");
         for(i=file_words;i<1023;i=i+1)
             if(dut.u_prog.ram[i]!==24'd0) $fatal(1,"cart padding mismatch word=%0d",i);
         if(dut.u_prog.ram[1023]!==0) $fatal(1,"cart metadata mismatch");
-        if(wc!=606 || dut.words_r!=606 || !requested) $fatal(1,"cart WC mismatch: strict 606 gate retained");
-        $display("CARTCHK: PASS BADC0UNT=0 of 606; cart_wcnt(WC)=606; padding/meta zero-diff");
+        if(wc!==file_words || dut.words_r!==file_words || !requested)
+            $fatal(1,"cart WC mismatch: actual=%0d parsed=%0d expected=%0d",wc,dut.words_r,file_words);
+        $display("CARTCHK: PASS BADC0UNT=0 of %0d; cart_wcnt(WC)=%0d (hex=%03h); padding/meta zero-diff",
+                 file_words,wc,wc);
         $finish;
     end
     initial begin #30_000_000; $fatal(1,"cart timeout"); end
