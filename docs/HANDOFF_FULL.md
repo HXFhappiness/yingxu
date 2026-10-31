@@ -71,12 +71,29 @@
 | ffmpeg | `tools\ffmpeg\ffmpeg-9.0.2-essentials_build\bin\`（**不入库**，需自行下载） |
 | Git | `C:\Users\HXF\mingit\cmd\git.exe`（MinGit 便携版，无凭据管理器） |
 
-### 2.3 构建与烧写
+### 2.3 唯一工作目录（**重要：一份源码，别搞成两份**）
+
+| 路径 | 角色 | 是否用于构建 |
+|---|---|---|
+| **`C:\Users\HXF\Desktop\yingxu-fpga`** | **Git 仓库 = 唯一源码真身 = 构建/烧录目录** | ✅ **是** |
+| `C:\Users\HXF\Desktop\YX` | 历史调试目录（`out/` 构建日志、旧 `Runs/`、数百个一次性补丁脚本、厂商资料 `YX-tool/`） | ❌ 不再使用 |
+
+**已验证（2026-10-31 14:32）**：在 `yingxu-fpga` 目录内用 TD 完整跑通
+`syn_1 + phy_1 + save_best_bits`，产出
+`yingxu-fpga\AC201_AL_board_test_Runs\best_result\AC201_AL_board_test.bit`
+（630,802 B，与冻结版同尺寸）。51 个工程引用文件全部齐备。
+
+> ⚠️ **坑**：`.al` 工程文件第 3 行 `<Project Path="...">` 是**绝对路径**。
+> 曾经它指向 `YX`——那时在仓库目录里打开工程，TD 仍会编译 `YX` 里的旧源码，
+> 表现为"改了代码但烧进去没变化"。现该字段已指向 `yingxu-fpga`。
+> **若发现"改了没生效"，第一件事就是查这一行。**
+
+### 2.4 构建与烧写（在 `yingxu-fpga` 内执行）
 
 ```powershell
 # 构建（全流程，约 2 分钟；注意：TD 布线引擎有约 50% 概率崩溃，见 §6 E1）
 echo import_device eagle_s20.db -package EG4S20BG256 > build_cmds.txt
-echo open_project C:/Users/HXF/Desktop/YX/AC201_AL_board_test.al >> build_cmds.txt
+echo open_project C:/Users/HXF/Desktop/yingxu-fpga/AC201_AL_board_test.al >> build_cmds.txt
 echo set_seed_param -disable >> build_cmds.txt
 echo reset_runs syn_1 >> build_cmds.txt
 echo launch_runs syn_1 phy_1 -jobs 2 >> build_cmds.txt
@@ -92,7 +109,7 @@ D:\Anlogic\TD_Release_2026.2.210.850\bin\td_commands_prompt.exe < build_cmds.txt
 
 # 烧写（约 26 秒）
 echo connect_cable -allink > flash.txt
-echo download -bit <ABS_PATH>/AC201_AL_board_test_Runs/best_result/AC201_AL_board_test.bit -mode program_spi -v -spd 7 -cable 0 -flashsize 128 >> flash.txt
+echo download -bit C:/Users/HXF/Desktop/yingxu-fpga/AC201_AL_board_test_Runs/best_result/AC201_AL_board_test.bit -mode program_spi -v -spd 7 -cable 0 -flashsize 128 >> flash.txt
 echo exit >> flash.txt
 D:\Anlogic\TD_Release_2026.2.210.850\bin\td_commands_prompt.exe < flash.txt > out\flash.log 2>&1
 ```
@@ -625,18 +642,54 @@ H.264 基线要 25–50K LUT（超预算 2–3 倍），**MJPEG 是唯一可行�
 
 ### 12.5 环境注意事项
 
+- **唯一工作目录**：`C:\Users\HXF\Desktop\yingxu-fpga`（构建、烧录、git 都在这里；详见 §2.3）
 - Python 无 pip → 只用标准库
 - 无 `git` 在 PATH → `C:\Users\HXF\mingit\cmd\git.exe`
 - ffmpeg 需自行下载到 `tools/ffmpeg/`
 - 采集卡与 OBS 互斥
+
+### 12.6 与 Codex 云端协作的正确姿势
+
+Codex 只能看到 **GitHub 上的仓库**，**不能直接烧板子**（板子、TD、SD 卡都在本地）。
+所以闭环是：
+
+```
+Codex 改 GitHub 仓库
+        ↓ 用户在 GitHub Desktop 里 Pull（或 git pull）
+C:\Users\HXF\Desktop\yingxu-fpga  ← 唯一源码真身，同时就是构建目录
+        ↓ TD 构建（§2.4）
+yingxu-fpga\AC201_AL_board_test_Runs\best_result\AC201_AL_board_test.bit
+        ↓ 核对时间戳后烧写
+板子
+```
+
+**给 Codex 的路径清单（它可以写进自己的说明里）**
+
+| 用途 | 路径（仓库内相对路径） |
+|---|---|
+| TD 工程 | `AC201_AL_board_test.al` |
+| 顶层 | `hardware_test_P0_UART_V5_CRC32.v` |
+| 自研 RTL | `src/user_source/hdl_source/yingxu_*.v` / `yx8_*.v` |
+| SD 层 | `src/user_source/hdl_source/media/sd/` |
+| 测试台 | `tb/*.v` + `tb/assets/*.yxm` |
+| 工具 | `tools/*.py` |
+| 约束 | `timing.sdc` / `IO.adc` |
+| 文档 | `docs/` |
+| 冻结固件 | `release/RELEASE_g32_FROZEN_20261031.bit` |
+
+**注意**：`hardware_test_*.v` 与 `design_top_wrapper.v` 在本地是 **GBK**，
+仓库里是 **UTF-8**（文本等价，已验证 `text_equal=True`）。Codex 改完推上来是 UTF-8，
+用户在本地构建没问题（TD 对注释编码不敏感）。若 Codex 需要本地 GBK 副本，
+用 `src/user_source/hdl_source/design_top_wrapper.v` 的 UTF-8 版即可，不要试图反向转码。
 
 ---
 
 ## 附录 A · 目录结构
 
 ```
-AC201_AL_board_test.al          TD 工程（相对路径，克隆即开）
-hardware_test_P0_UART_V5_CRC32.v 顶层（GBK 混合字节，用字节级编辑）
+AC201_AL_board_test.al          TD 工程（Path 属性 = 仓库自身绝对路径）
+AC201_AL_board_test_Runs/       TD 构建输出（gitignore；best_result/*.bit 就是要烧的文件）
+hardware_test_P0_UART_V5_CRC32.v 顶层（本地 GBK 混合字节 / 仓库 UTF-8，用字节级编辑）
 timing.sdc / IO.adc              时序 / 管脚约束
 src/user_source/hdl_source/      自研 RTL（yingxu_* / yx8_*）
   media/sd/                       SD 命令层（厂商）+ 流式读取层（自研）
