@@ -2,7 +2,8 @@
 // S1-B: the only modified DUT is sd_stream_reader_core.v.
 // Other modules are instantiated unchanged. All checks fail with $fatal.
 
-module sd_drain_source #(parameter MODE=1, KIND=0, BASE_LBA=1000)(
+module sd_drain_source #(parameter MODE=1, KIND=0, BASE_LBA=1000,
+    CTRLPHASE=0, COLLIDE_FINAL=0)(
     input clk, rst, go, input [27:0] lba, input [15:0] sectors,
     input ready, output [7:0] data, output valid, first, last,
     output [31:0] offset, output [27:0] sector,
@@ -10,9 +11,21 @@ module sd_drain_source #(parameter MODE=1, KIND=0, BASE_LBA=1000)(
     output init_done, busy, done, output read_complete
 );
     wire ctrl_start; wire [1:0] ctrl_mode; wire [27:0] ctrl_sector;
-    reg ctrl_done=0, filling=0; reg [8:0] fill_addr=0;
+    reg ctrl_done=0, filling=0, priming=0; reg [8:0] fill_addr=0;
     reg [27:0] fill_sector=0; integer init_wait=0;
-    wire [7:0] ram_data;
+    wire [7:0] ram_data, ram_a_data;
+    integer done_wait=0, local_cycle=0, last_write_cycle=0;
+    integer phase_checks=0, collisions=0;
+    reg last_write_valid=0;
+    // For collision coverage write address 0 LAST, after poisoning it first.
+    // All 512 final bytes are still the identical immutable source sector.
+    wire [8:0] write_addr = priming ? 9'd0 :
+        (COLLIDE_FINAL ? (fill_addr==511 ? 9'd0 : fill_addr+9'd1) : fill_addr);
+    wire [7:0] write_data = source_byte((fill_sector-BASE_LBA)*512+write_addr) ^
+        (priming ? 8'hFF : 8'h00);
+    reg [7:0] collision_old, collision_new;
+    initial if (!(CTRLPHASE==0 || CTRLPHASE==1 || CTRLPHASE==2 || CTRLPHASE==4))
+        $fatal(1,"unsupported CTRLPHASE");
     reg [7:0] image[0:131071]; integer fd, nbytes=0;
     reg [1023:0] filename;
     initial begin
@@ -57,28 +70,66 @@ module sd_drain_source #(parameter MODE=1, KIND=0, BASE_LBA=1000)(
     endfunction
     // Use the actual vendor RAM model: registered read, not a combinational stub.
     ram_dual_port_simple #(.data_width(8),.data_num(512)) rd_ram (
-        .douta(), .doutb(ram_data),
-        .dina(source_byte((fill_sector-BASE_LBA)*512+fill_addr)),
-        .addra(fill_addr), .addrb(ram_addr), .wea(filling), .clka(clk),.clkb(clk)
+        .douta(ram_a_data), .doutb(ram_data),
+        .dina(write_data),
+        .addra(write_addr), .addrb(ram_addr), .wea(filling || priming), .clka(clk),.clkb(clk)
     );
+    // Phase N means done is ASSERTED N edges after the final a-port write.
+    // The core samples that NBA-updated pulse one further edge later.
     always @(posedge clk) begin
-        if (rst) begin ctrl_done<=0; filling<=0; init_wait<=0; fill_addr<=0; end
-        else begin
+        local_cycle <= local_cycle+1;
+        if (rst) begin
+            ctrl_done<=0; filling<=0; priming<=0; init_wait<=0; fill_addr<=0;
+            done_wait<=0; last_write_valid<=0; phase_checks<=0;
+        end else begin
             ctrl_done<=0;
+            if (read_complete) begin
+                if (!last_write_valid || local_cycle-last_write_cycle!=CTRLPHASE+1)
+                    $fatal(1,"CTRLPHASE wrong stimulus requested=%0d sampled_gap=%0d",
+                           CTRLPHASE,local_cycle-last_write_cycle);
+                phase_checks<=phase_checks+1;
+            end
+            if (done_wait!=0) begin
+                done_wait<=done_wait-1;
+                if (done_wait==1) ctrl_done<=1;
+            end
             if (init_wait!=0) begin
                 init_wait<=init_wait-1;
                 if (init_wait==1) ctrl_done<=1;
             end
+            if (priming) begin priming<=0; filling<=1; end
             if (filling) begin
-                if (fill_addr==511) begin filling<=0; ctrl_done<=1; end
-                else fill_addr<=fill_addr+1;
+                if (fill_addr==511) begin
+                    filling<=0; last_write_cycle<=local_cycle; last_write_valid<=1;
+                    if (CTRLPHASE==0) ctrl_done<=1;
+                    else done_wait<=CTRLPHASE;
+                end else fill_addr<=fill_addr+1;
             end
             if (ctrl_start) begin
                 if (ctrl_mode==0) init_wait<=4;
                 else if (ctrl_mode==2) begin
-                    fill_sector<=ctrl_sector; fill_addr<=0; filling<=1;
+                    fill_sector<=ctrl_sector; fill_addr<=0; last_write_valid<=0;
+                    if (COLLIDE_FINAL) priming<=1;
+                    else filling<=1;
                 end else $fatal(1,"unexpected controller command");
             end
+        end
+    end
+    // The unmodified vendor RTL uses NBAs: same-edge reads get OLD data;
+    // memory gets NEW data after the edge. Assert both, never assume a bypass.
+    always @(posedge clk) begin
+        if (rst) collisions=0;
+        else if (COLLIDE_FINAL && filling && fill_addr==511) begin
+            if (write_addr!==ram_addr || ram_addr!==0)
+                $fatal(1,"collision stimulus did not hit b-port address 0");
+            collision_old=rd_ram.ram[write_addr]; collision_new=write_data;
+            if (collision_old!== (collision_new^8'hFF))
+                $fatal(1,"collision poison was not established");
+            #1;
+            if (ram_data!==collision_old || ram_a_data!==collision_old ||
+                rd_ram.ram[0]!==collision_new)
+                $fatal(1,"RAM collision old-read/new-memory semantics mismatch");
+            collisions=collisions+1;
         end
     end
     assign read_complete=ctrl_done && ctrl_mode==2;
@@ -93,7 +144,7 @@ module sd_drain_source #(parameter MODE=1, KIND=0, BASE_LBA=1000)(
     );
 endmodule
 
-module sd_drain_equiv_case #(parameter STALL=0, NSECT=1)(output reg finished=0);
+module sd_drain_equiv_case #(parameter STALL=0, NSECT=1, CTRLPHASE=0, COLLIDE_FINAL=0)(output reg finished=0);
     reg clk=0; always #10 clk=~clk;
     reg rst=1, go=0; reg [15:0] requested=0;
     wire [1:0] valid,first,last,init_done,busy,done,read_complete;
@@ -108,7 +159,7 @@ module sd_drain_equiv_case #(parameter STALL=0, NSECT=1)(output reg finished=0);
     integer tail_pause[0:1]; reg [31:0] rng[0:1];
     genvar g;
     generate for(g=0;g<2;g=g+1) begin: modes
-        sd_drain_source #(.MODE(g)) source (
+        sd_drain_source #(.MODE(g),.CTRLPHASE(CTRLPHASE),.COLLIDE_FINAL(COLLIDE_FINAL)) source (
             .clk(clk),.rst(rst),.go(go),.lba(28'd1000),.sectors(requested),
             .ready(ready[g]),.data(data[g]),.valid(valid[g]),.first(first[g]),.last(last[g]),
             .offset(offset[g]),.sector(sector[g]),.sector_byte(sb[g]),.ram_addr(addr[g]),
@@ -174,7 +225,7 @@ module sd_drain_equiv_case #(parameter STALL=0, NSECT=1)(output reg finished=0);
                 if(trace[0][i]!==trace[1][i]) $fatal(1,"A/B mismatch at %0d",i);
             if(!STALL && (elapsed[1]>520 || elapsed[1]<512 || elapsed[0]<1024 || elapsed[0]>1030))
                 $fatal(1,"DRAINCHK cycles fast=%0d old=%0d",elapsed[1],elapsed[0]);
-            $display("DRAINCHK: PASS sectors=%0d stall=%0d compare=%0d fast_last_sector=%0d old_last_sector=%0d",n,STALL,n*512,elapsed[1],elapsed[0]);
+            $display("DRAINCHK: PASS sectors=%0d stall=%0d phase=%0d collision=%0d compare=%0d fast_last_sector=%0d old_last_sector=%0d",n,STALL,CTRLPHASE,COLLIDE_FINAL,n*512,elapsed[1],elapsed[0]);
         end
     endtask
     initial begin
@@ -186,6 +237,11 @@ module sd_drain_equiv_case #(parameter STALL=0, NSECT=1)(output reg finished=0);
         launch(1); wait(count[1]>=17); @(negedge clk); rst=1;
         repeat(5) @(negedge clk); rst=0; wait(init_done==3);
         launch(1); compare(1);
+        if(modes[0].source.phase_checks!=1 || modes[1].source.phase_checks!=1)
+            $fatal(1,"CTRLPHASE replay completion not observed");
+        if(COLLIDE_FINAL && (modes[0].source.collisions!=1 || modes[1].source.collisions!=1))
+            $fatal(1,"collision replay coverage missing");
+        $display("CTRLPHASE: PASS phase=%0d collision=%0d stall=%0d modes=0,1 full-stream zero-diff replay_checks=1,1",CTRLPHASE,COLLIDE_FINAL,STALL);
         finished=1;
     end
     initial begin #4_000_000; $fatal(1,"drain case timeout"); end
@@ -198,13 +254,58 @@ module tb_sd_drain;
     initial begin wait(a&&b); $display("DRAIN_SUITE: PASS zero request, A/B, random+tail stalls, reset/replay"); $finish; end
 endmodule
 
-module tb_sd_bmp;
+// 4 done phases x 2 copy orders x 2 backpressure regimes x 2 DUT modes.
+module tb_sd_ctrlphase;
+    wire [15:0] finished;
+    genvar p,c,b;
+    generate for(p=0;p<4;p=p+1) begin: phases
+        for(c=0;c<2;c=c+1) begin: collisions
+            for(b=0;b<2;b=b+1) begin: stalls
+                sd_drain_equiv_case #(.CTRLPHASE(p==3 ? 4 : p),
+                    .COLLIDE_FINAL(c),.STALL(b),.NSECT(3)) testcase(finished[p*4+c*2+b]);
+            end
+        end
+    end endgenerate
+    initial begin
+        wait(&finished);
+        $display("CTRLPHASE_SUITE: PASS phases=0,1,2,4 collision=0,1 stall=0,1 modes=0,1 cases=32; old-read collision asserted; all bytes compared");
+        $finish;
+    end
+endmodule
+
+// Minimal P1 experiment capture: A is intentionally expected to corrupt data.
+module tb_sd_variant #(parameter EXPECT_BAD=0);
+    reg clk=0; always #10 clk=~clk;
+    reg rst=1,go=0; wire [7:0] data;
+    wire valid,done,init_done; integer count=0,bad=0;
+    sd_drain_source #(.MODE(1)) source (
+        .clk(clk),.rst(rst),.go(go),.lba(28'd1000),.sectors(16'd1),.ready(1'b1),
+        .data(data),.valid(valid),.first(),.last(),.offset(),.sector(),.sector_byte(),
+        .ram_addr(),.init_done(init_done),.busy(),.done(done),.read_complete()
+    );
+    always @(posedge clk) if(!rst && valid) begin
+        if(count<8) $display("VARIANT_BYTE index=%0d actual=%02h expected=%02h",count,data,source.pattern(count));
+        if(data!==source.pattern(count)) bad=bad+1;
+        count=count+1;
+    end
+    initial begin
+        repeat(5) @(negedge clk); rst=0; wait(init_done);
+        @(negedge clk); go=1; @(negedge clk); go=0;
+        wait(done); @(negedge clk);
+        if(count!=512 || (EXPECT_BAD ? bad==0 : bad!=0)) $fatal(1,"variant result differs from RTL prediction");
+        $display("VARIANT_CAPTURE: count=%0d mismatch=%0d expected_corruption=%0d (diagnostic, not board acceptance)",count,bad,EXPECT_BAD);
+        $finish;
+    end
+    initial begin #1_000_000; $fatal(1,"variant timeout"); end
+endmodule
+
+module tb_sd_bmp #(parameter MODE=0);
     reg clk=0; always #10 clk=~clk;
     reg rst=1, go=0, load_start=0;
     wire [7:0] data; wire valid,ready,init_done,busy,done;
     wire [31:0] wrdata; wire wr_en,loaded;
     wire [19:0] words; integer checked=0;
-    sd_drain_source #(.KIND(1)) source (
+    sd_drain_source #(.MODE(MODE),.KIND(1)) source (
         .clk(clk),.rst(rst),.go(go),.lba(28'd1000),.sectors(16'd5401),.ready(ready),
         .data(data),.valid(valid),.first(),.last(),.offset(),.sector(),.sector_byte(),.ram_addr(),
         .init_done(init_done),.busy(busy),.done(done),.read_complete()
@@ -237,13 +338,13 @@ module tb_sd_bmp;
     initial begin #200_000_000; $fatal(1,"BMP timeout"); end
 endmodule
 
-module tb_sd_cart;
+module tb_sd_cart #(parameter MODE=0);
     reg clk=0,pix=0; always #10 clk=~clk; always #6.818 pix=~pix;
     reg rst=1,en=0,go=0,requested=0;
     wire [7:0] data; wire valid,init_done,busy,done,restart,cart_ready;
     wire [9:0] wc; integer i,bad=0,file_words,file_data_bytes; reg[23:0] gold;
     reg [15:0] file_sectors=0;
-    sd_drain_source #(.KIND(2)) source (
+    sd_drain_source #(.MODE(MODE),.KIND(2)) source (
         .clk(clk),.rst(rst),.go(go),.lba(28'd1000),.sectors(file_sectors),.ready(cart_ready),
         .data(data),.valid(valid),.first(),.last(),.offset(),.sector(),.sector_byte(),.ram_addr(),
         .init_done(init_done),.busy(busy),.done(done),.read_complete()
@@ -299,14 +400,14 @@ module tb_sd_cart;
     initial begin #30_000_000; $fatal(1,"cart timeout"); end
 endmodule
 
-module tb_sd_wav;
+module tb_sd_wav #(parameter MODE=0);
     reg clk=0,pix=0; always #10 clk=~clk; always #6.818 pix=~pix;
     reg rst=1,active=0,go=0,pending=0,issued=0; reg[27:0] lba=2000000;
     wire [7:0] data; wire valid,ready,init_done,busy,done,restart;
     wire[27:0] base; wire[23:0] left,right; wire wav_active;
     reg tick=0; integer tc=0,oticks=0,pops=0,nz=0,zc=0,last_l=0,fed=0,chunks=0;
     integer ratio,expect_ratio;
-    sd_drain_source #(.KIND(3),.BASE_LBA(2000000)) source (
+    sd_drain_source #(.MODE(MODE),.KIND(3),.BASE_LBA(2000000)) source (
         .clk(clk),.rst(rst),.go(go),.lba(lba),.sectors(16'd16),.ready(ready),
         .data(data),.valid(valid),.first(),.last(),.offset(),.sector(),.sector_byte(),.ram_addr(),
         .init_done(init_done),.busy(busy),.done(done),.read_complete()
