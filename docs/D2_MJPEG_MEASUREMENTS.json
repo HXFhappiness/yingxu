@@ -1,0 +1,1220 @@
+{
+  "date": "2026-10-31 Asia/Shanghai",
+  "vector_commit": "f7b73e39adc36ee9e98b6cbc315464dee9cdb983",
+  "clock_hz": 100000000,
+  "board_spi_hz": 12500000,
+  "sd_measured_approx_bytes_s": 1300000,
+  "frame_reports": {
+    "budget": [
+      {
+        "frame": 0,
+        "bytes": 46373,
+        "words": 153600,
+        "cycles": 3150387,
+        "ratio_x10000": 7560,
+        "pressure": 1
+      },
+      {
+        "frame": 1,
+        "bytes": 46104,
+        "words": 153600,
+        "cycles": 3144753,
+        "ratio_x10000": 7547,
+        "pressure": 1
+      },
+      {
+        "frame": 2,
+        "bytes": 46027,
+        "words": 153600,
+        "cycles": 3142593,
+        "ratio_x10000": 7542,
+        "pressure": 1
+      },
+      {
+        "frame": 3,
+        "bytes": 46036,
+        "words": 153600,
+        "cycles": 3140593,
+        "ratio_x10000": 7537,
+        "pressure": 1
+      },
+      {
+        "frame": 4,
+        "bytes": 46084,
+        "words": 153600,
+        "cycles": 3140873,
+        "ratio_x10000": 7538,
+        "pressure": 1
+      },
+      {
+        "frame": 5,
+        "bytes": 46193,
+        "words": 153600,
+        "cycles": 3141993,
+        "ratio_x10000": 7540,
+        "pressure": 1
+      },
+      {
+        "frame": 6,
+        "bytes": 46218,
+        "words": 153600,
+        "cycles": 3145713,
+        "ratio_x10000": 7549,
+        "pressure": 1
+      },
+      {
+        "frame": 7,
+        "bytes": 46277,
+        "words": 153600,
+        "cycles": 3141073,
+        "ratio_x10000": 7538,
+        "pressure": 1
+      },
+      {
+        "frame": 8,
+        "bytes": 46380,
+        "words": 153600,
+        "cycles": 3142953,
+        "ratio_x10000": 7543,
+        "pressure": 1
+      },
+      {
+        "frame": 9,
+        "bytes": 46164,
+        "words": 153600,
+        "cycles": 3139977,
+        "ratio_x10000": 7535,
+        "pressure": 1
+      },
+      {
+        "frame": 10,
+        "bytes": 46391,
+        "words": 153600,
+        "cycles": 3143689,
+        "ratio_x10000": 7544,
+        "pressure": 1
+      },
+      {
+        "frame": 11,
+        "bytes": 46391,
+        "words": 153600,
+        "cycles": 3145433,
+        "ratio_x10000": 7549,
+        "pressure": 1
+      },
+      {
+        "frame": 12,
+        "bytes": 46912,
+        "words": 153600,
+        "cycles": 3151793,
+        "ratio_x10000": 7564,
+        "pressure": 1
+      },
+      {
+        "frame": 13,
+        "bytes": 46336,
+        "words": 153600,
+        "cycles": 3145473,
+        "ratio_x10000": 7549,
+        "pressure": 1
+      },
+      {
+        "frame": 14,
+        "bytes": 45990,
+        "words": 153600,
+        "cycles": 3146033,
+        "ratio_x10000": 7550,
+        "pressure": 1
+      },
+      {
+        "frame": 15,
+        "bytes": 46062,
+        "words": 153600,
+        "cycles": 3145633,
+        "ratio_x10000": 7549,
+        "pressure": 1
+      },
+      {
+        "frame": 16,
+        "bytes": 46065,
+        "words": 153600,
+        "cycles": 3144873,
+        "ratio_x10000": 7547,
+        "pressure": 1
+      },
+      {
+        "frame": 17,
+        "bytes": 46320,
+        "words": 153600,
+        "cycles": 3149993,
+        "ratio_x10000": 7559,
+        "pressure": 1
+      },
+      {
+        "frame": 18,
+        "bytes": 46143,
+        "words": 153600,
+        "cycles": 3148273,
+        "ratio_x10000": 7555,
+        "pressure": 1
+      },
+      {
+        "frame": 19,
+        "bytes": 46328,
+        "words": 153600,
+        "cycles": 3150593,
+        "ratio_x10000": 7561,
+        "pressure": 1
+      },
+      {
+        "frame": 20,
+        "bytes": 46190,
+        "words": 153600,
+        "cycles": 3150257,
+        "ratio_x10000": 7560,
+        "pressure": 1
+      },
+      {
+        "frame": 21,
+        "bytes": 46327,
+        "words": 153600,
+        "cycles": 3145081,
+        "ratio_x10000": 7548,
+        "pressure": 1
+      },
+      {
+        "frame": 22,
+        "bytes": 46031,
+        "words": 153600,
+        "cycles": 3147113,
+        "ratio_x10000": 7553,
+        "pressure": 1
+      },
+      {
+        "frame": 23,
+        "bytes": 46561,
+        "words": 153600,
+        "cycles": 3149041,
+        "ratio_x10000": 7557,
+        "pressure": 1
+      },
+      {
+        "frame": 24,
+        "bytes": 46871,
+        "words": 153600,
+        "cycles": 3156609,
+        "ratio_x10000": 7575,
+        "pressure": 1
+      },
+      {
+        "frame": 25,
+        "bytes": 46670,
+        "words": 153600,
+        "cycles": 3146577,
+        "ratio_x10000": 7551,
+        "pressure": 1
+      },
+      {
+        "frame": 26,
+        "bytes": 46378,
+        "words": 153600,
+        "cycles": 3145137,
+        "ratio_x10000": 7548,
+        "pressure": 1
+      },
+      {
+        "frame": 27,
+        "bytes": 46377,
+        "words": 153600,
+        "cycles": 3144929,
+        "ratio_x10000": 7547,
+        "pressure": 1
+      },
+      {
+        "frame": 28,
+        "bytes": 46523,
+        "words": 153600,
+        "cycles": 3149553,
+        "ratio_x10000": 7558,
+        "pressure": 1
+      },
+      {
+        "frame": 29,
+        "bytes": 46810,
+        "words": 153600,
+        "cycles": 3149073,
+        "ratio_x10000": 7557,
+        "pressure": 1
+      },
+      {
+        "frame": 30,
+        "bytes": 46490,
+        "words": 153600,
+        "cycles": 3145633,
+        "ratio_x10000": 7549,
+        "pressure": 1
+      },
+      {
+        "frame": 31,
+        "bytes": 46403,
+        "words": 153600,
+        "cycles": 3144433,
+        "ratio_x10000": 7546,
+        "pressure": 1
+      },
+      {
+        "frame": 32,
+        "bytes": 46654,
+        "words": 153600,
+        "cycles": 3149233,
+        "ratio_x10000": 7558,
+        "pressure": 1
+      },
+      {
+        "frame": 33,
+        "bytes": 46644,
+        "words": 153600,
+        "cycles": 3147217,
+        "ratio_x10000": 7553,
+        "pressure": 1
+      },
+      {
+        "frame": 34,
+        "bytes": 46525,
+        "words": 153600,
+        "cycles": 3149009,
+        "ratio_x10000": 7557,
+        "pressure": 1
+      },
+      {
+        "frame": 35,
+        "bytes": 46761,
+        "words": 153600,
+        "cycles": 3150313,
+        "ratio_x10000": 7560,
+        "pressure": 1
+      }
+    ],
+    "stress": [
+      {
+        "frame": 0,
+        "bytes": 61000,
+        "words": 153600,
+        "cycles": 3215707,
+        "ratio_x10000": 7717,
+        "pressure": 1
+      },
+      {
+        "frame": 1,
+        "bytes": 60848,
+        "words": 153600,
+        "cycles": 3206665,
+        "ratio_x10000": 7695,
+        "pressure": 1
+      },
+      {
+        "frame": 2,
+        "bytes": 60713,
+        "words": 153600,
+        "cycles": 3206161,
+        "ratio_x10000": 7694,
+        "pressure": 1
+      },
+      {
+        "frame": 3,
+        "bytes": 60677,
+        "words": 153600,
+        "cycles": 3198833,
+        "ratio_x10000": 7677,
+        "pressure": 1
+      },
+      {
+        "frame": 4,
+        "bytes": 60772,
+        "words": 153600,
+        "cycles": 3198793,
+        "ratio_x10000": 7677,
+        "pressure": 1
+      },
+      {
+        "frame": 5,
+        "bytes": 60858,
+        "words": 153600,
+        "cycles": 3203433,
+        "ratio_x10000": 7688,
+        "pressure": 1
+      },
+      {
+        "frame": 6,
+        "bytes": 60930,
+        "words": 153600,
+        "cycles": 3204993,
+        "ratio_x10000": 7691,
+        "pressure": 1
+      },
+      {
+        "frame": 7,
+        "bytes": 60997,
+        "words": 153600,
+        "cycles": 3206833,
+        "ratio_x10000": 7696,
+        "pressure": 1
+      },
+      {
+        "frame": 8,
+        "bytes": 61043,
+        "words": 153600,
+        "cycles": 3203713,
+        "ratio_x10000": 7688,
+        "pressure": 1
+      },
+      {
+        "frame": 9,
+        "bytes": 60727,
+        "words": 153600,
+        "cycles": 3199217,
+        "ratio_x10000": 7678,
+        "pressure": 1
+      },
+      {
+        "frame": 10,
+        "bytes": 61024,
+        "words": 153600,
+        "cycles": 3202689,
+        "ratio_x10000": 7686,
+        "pressure": 1
+      },
+      {
+        "frame": 11,
+        "bytes": 60978,
+        "words": 153600,
+        "cycles": 3207033,
+        "ratio_x10000": 7696,
+        "pressure": 1
+      },
+      {
+        "frame": 12,
+        "bytes": 61481,
+        "words": 153600,
+        "cycles": 3217913,
+        "ratio_x10000": 7722,
+        "pressure": 1
+      },
+      {
+        "frame": 13,
+        "bytes": 61051,
+        "words": 153600,
+        "cycles": 3205353,
+        "ratio_x10000": 7692,
+        "pressure": 1
+      },
+      {
+        "frame": 14,
+        "bytes": 60661,
+        "words": 153600,
+        "cycles": 3204905,
+        "ratio_x10000": 7691,
+        "pressure": 1
+      },
+      {
+        "frame": 15,
+        "bytes": 60789,
+        "words": 153600,
+        "cycles": 3207601,
+        "ratio_x10000": 7698,
+        "pressure": 1
+      },
+      {
+        "frame": 16,
+        "bytes": 60539,
+        "words": 153600,
+        "cycles": 3205113,
+        "ratio_x10000": 7692,
+        "pressure": 1
+      },
+      {
+        "frame": 17,
+        "bytes": 60948,
+        "words": 153600,
+        "cycles": 3210265,
+        "ratio_x10000": 7704,
+        "pressure": 1
+      },
+      {
+        "frame": 18,
+        "bytes": 60859,
+        "words": 153600,
+        "cycles": 3209721,
+        "ratio_x10000": 7703,
+        "pressure": 1
+      },
+      {
+        "frame": 19,
+        "bytes": 61002,
+        "words": 153600,
+        "cycles": 3209113,
+        "ratio_x10000": 7701,
+        "pressure": 1
+      },
+      {
+        "frame": 20,
+        "bytes": 60740,
+        "words": 153600,
+        "cycles": 3209513,
+        "ratio_x10000": 7702,
+        "pressure": 1
+      },
+      {
+        "frame": 21,
+        "bytes": 60882,
+        "words": 153600,
+        "cycles": 3207033,
+        "ratio_x10000": 7696,
+        "pressure": 1
+      },
+      {
+        "frame": 22,
+        "bytes": 60727,
+        "words": 153600,
+        "cycles": 3207457,
+        "ratio_x10000": 7697,
+        "pressure": 1
+      },
+      {
+        "frame": 23,
+        "bytes": 61034,
+        "words": 153600,
+        "cycles": 3211001,
+        "ratio_x10000": 7706,
+        "pressure": 1
+      },
+      {
+        "frame": 24,
+        "bytes": 61475,
+        "words": 153600,
+        "cycles": 3217177,
+        "ratio_x10000": 7721,
+        "pressure": 1
+      },
+      {
+        "frame": 25,
+        "bytes": 61317,
+        "words": 153600,
+        "cycles": 3210209,
+        "ratio_x10000": 7704,
+        "pressure": 1
+      },
+      {
+        "frame": 26,
+        "bytes": 61014,
+        "words": 153600,
+        "cycles": 3204025,
+        "ratio_x10000": 7689,
+        "pressure": 1
+      },
+      {
+        "frame": 27,
+        "bytes": 61010,
+        "words": 153600,
+        "cycles": 3206081,
+        "ratio_x10000": 7694,
+        "pressure": 1
+      },
+      {
+        "frame": 28,
+        "bytes": 61160,
+        "words": 153600,
+        "cycles": 3210073,
+        "ratio_x10000": 7704,
+        "pressure": 1
+      },
+      {
+        "frame": 29,
+        "bytes": 61260,
+        "words": 153600,
+        "cycles": 3208153,
+        "ratio_x10000": 7699,
+        "pressure": 1
+      },
+      {
+        "frame": 30,
+        "bytes": 61228,
+        "words": 153600,
+        "cycles": 3205761,
+        "ratio_x10000": 7693,
+        "pressure": 1
+      },
+      {
+        "frame": 31,
+        "bytes": 61098,
+        "words": 153600,
+        "cycles": 3204057,
+        "ratio_x10000": 7689,
+        "pressure": 1
+      },
+      {
+        "frame": 32,
+        "bytes": 61274,
+        "words": 153600,
+        "cycles": 3206289,
+        "ratio_x10000": 7695,
+        "pressure": 1
+      },
+      {
+        "frame": 33,
+        "bytes": 61422,
+        "words": 153600,
+        "cycles": 3210713,
+        "ratio_x10000": 7705,
+        "pressure": 1
+      },
+      {
+        "frame": 34,
+        "bytes": 61283,
+        "words": 153600,
+        "cycles": 3211785,
+        "ratio_x10000": 7708,
+        "pressure": 1
+      },
+      {
+        "frame": 35,
+        "bytes": 61368,
+        "words": 153600,
+        "cycles": 3210313,
+        "ratio_x10000": 7704,
+        "pressure": 1
+      }
+    ]
+  },
+  "negative": [
+    {
+      "case": "truncated",
+      "frame": 0,
+      "fault": 1,
+      "code": "20",
+      "cycles": 3145907,
+      "partial_words": 153376
+    },
+    {
+      "case": "baddht",
+      "frame": 0,
+      "fault": 2,
+      "code": "0c",
+      "cycles": 467,
+      "partial_words": 0
+    },
+    {
+      "case": "read_error",
+      "frame": 0,
+      "fault": 4,
+      "code": "82",
+      "cycles": 90,
+      "partial_words": 0
+    },
+    {
+      "case": "write_error",
+      "frame": 0,
+      "fault": 5,
+      "code": "82",
+      "cycles": 6163,
+      "partial_words": 0
+    },
+    {
+      "case": "bad_rlast",
+      "frame": 0,
+      "fault": 6,
+      "code": "81",
+      "cycles": 90,
+      "partial_words": 0
+    },
+    {
+      "case": "zero_quant",
+      "frame": 0,
+      "fault": 3,
+      "code": "0a",
+      "cycles": 99,
+      "partial_words": 0
+    },
+    {
+      "case": "bad_rst",
+      "frame": 0,
+      "fault": 3,
+      "code": "25",
+      "cycles": 2326,
+      "partial_words": 0
+    },
+    {
+      "case": "progressive",
+      "frame": 0,
+      "fault": 3,
+      "code": "04",
+      "cycles": 340,
+      "partial_words": 0
+    },
+    {
+      "case": "missing_dht",
+      "frame": 0,
+      "fault": 3,
+      "code": "12",
+      "cycles": 452,
+      "partial_words": 0
+    },
+    {
+      "case": "non420",
+      "frame": 0,
+      "fault": 3,
+      "code": "10",
+      "cycles": 350,
+      "partial_words": 0
+    },
+    {
+      "case": "bad_run",
+      "frame": 0,
+      "fault": 3,
+      "code": "23",
+      "cycles": 816,
+      "partial_words": 0
+    },
+    {
+      "case": "invalid_code",
+      "frame": 0,
+      "fault": 3,
+      "code": "21",
+      "cycles": 806,
+      "partial_words": 0
+    },
+    {
+      "case": "trailing",
+      "frame": 0,
+      "fault": 3,
+      "code": "26",
+      "cycles": 3072779,
+      "partial_words": 153416
+    },
+    {
+      "case": "segment_extent",
+      "frame": 0,
+      "fault": 3,
+      "code": "05",
+      "cycles": 33,
+      "partial_words": 0
+    },
+    {
+      "case": "duplicate_symbol",
+      "frame": 0,
+      "fault": 3,
+      "code": "0e",
+      "cycles": 483,
+      "partial_words": 0
+    },
+    {
+      "case": "quant_precision",
+      "frame": 0,
+      "fault": 3,
+      "code": "09",
+      "cycles": 98,
+      "partial_words": 0
+    }
+  ],
+  "psnr": [
+    {
+      "vector": "budget",
+      "frame": 0,
+      "psnr_bitrep_db": 39.37546732480525,
+      "psnr_zeroextend_db": 37.05388153809992
+    },
+    {
+      "vector": "stress",
+      "frame": 0,
+      "psnr_bitrep_db": 39.42123577364431,
+      "psnr_zeroextend_db": 37.00881011191461
+    },
+    {
+      "vector": "stress",
+      "frame": 1,
+      "psnr_bitrep_db": 39.38841025596496,
+      "psnr_zeroextend_db": 37.006991103623044
+    }
+  ],
+  "resource": {
+    "td_measured": false,
+    "scope": "decoder RAM map; DSP-blackboxed LUT proxy; mailbox/arbiter estimated separately",
+    "bram_structural_map": 5,
+    "lut_proxy_cell_counts": {
+      "$scopeinfo": 3,
+      "AL_MAP_ADDER": 2611,
+      "AL_MAP_LUT1": 208,
+      "AL_MAP_LUT2": 872,
+      "AL_MAP_LUT3": 727,
+      "AL_MAP_LUT4": 1062,
+      "AL_MAP_LUT5": 185,
+      "AL_MAP_LUT6": 80,
+      "AL_MAP_SEQ": 2251,
+      "EG_LOGIC_DRAM16X4": 16,
+      "EG_PHY_BRAM": 5,
+      "MJPEG_DSP_PROXY": 13
+    },
+    "conservative_lut4_charge": 6234,
+    "wide_product_adder_estimate": 344,
+    "mailbox_arbiter_reserve": 450,
+    "combined_lut_estimate": 7028,
+    "dsp18_estimate": 21,
+    "td_timing_ns": null,
+    "sources_sha256": {
+      "src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v": "1d67de42dd1edcc9bbb5bc2f37898ed95e4604dd45553c0fd6cfa53c1d573168",
+      "src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v": "2f06ce524c8d6f517effb02a956f9977bc18aa2924177f08e00c770e472cbb40",
+      "src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v": "531de1018b0fe28cbccc387a5d5ecf7c309522cf4a083cd5a875c6d27eb50cc7",
+      "src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v": "2916347d4f675583435d8999502c48dab3895b698fc30da386b291beec0c87d0",
+      "src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v": "3035c815be03fa8c8f1d695238068f1b5425f822a60526ec3bc02a7777de0630",
+      "src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_mailbox.v": "280fc24108d672a3cbd9a362c24dcbff97b4eae6dbf4789d3a98f057c2ec6801"
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "/workspace/.yingxu-env/verilator/usr/bin/verilator",
+        "--binary",
+        "--timing",
+        "-j",
+        "4",
+        "-Wno-fatal",
+        "--top-module",
+        "tb_mjpeg_core",
+        "--Mdir",
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_core",
+        "tb/tb_mjpeg_core.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_mailbox.v"
+      ],
+      "exit": 0,
+      "log": "tb_mjpeg_core.build.log",
+      "seconds": 8.212836930997582
+    },
+    {
+      "argv": [
+        "/workspace/.yingxu-env/verilator/usr/bin/verilator",
+        "--binary",
+        "--timing",
+        "-j",
+        "4",
+        "-Wno-fatal",
+        "--top-module",
+        "tb_mjpeg_sdram",
+        "--Mdir",
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram",
+        "tb/tb_mjpeg_sdram.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_mailbox.v"
+      ],
+      "exit": 0,
+      "log": "tb_mjpeg_sdram.build.log",
+      "seconds": 10.481405264999921
+    },
+    {
+      "argv": [
+        "/workspace/.yingxu-env/verilator/usr/bin/verilator",
+        "--binary",
+        "--timing",
+        "-j",
+        "4",
+        "-Wno-fatal",
+        "--top-module",
+        "tb_mjpeg_arbiter",
+        "--Mdir",
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_arbiter",
+        "tb/tb_mjpeg_bus.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_mailbox.v"
+      ],
+      "exit": 0,
+      "log": "tb_mjpeg_arbiter.build.log",
+      "seconds": 10.285835497001244
+    },
+    {
+      "argv": [
+        "/workspace/.yingxu-env/verilator/usr/bin/verilator",
+        "--binary",
+        "--timing",
+        "-j",
+        "4",
+        "-Wno-fatal",
+        "--top-module",
+        "tb_mjpeg_mailbox",
+        "--Mdir",
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_mailbox",
+        "tb/tb_mjpeg_bus.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v",
+        "/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_mailbox.v"
+      ],
+      "exit": 0,
+      "log": "tb_mjpeg_mailbox.build.log",
+      "seconds": 10.415294438000274
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_core/Vtb_mjpeg_core",
+        "+prefix=out/mjpeg_d2/stress_1",
+        "+length=60848",
+        "+stalls=1"
+      ],
+      "exit": 0,
+      "log": "stress_1_core.log",
+      "seconds": 2.1818378460011445
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_core/Vtb_mjpeg_core",
+        "+prefix=out/mjpeg_d2/stress_0",
+        "+length=61000",
+        "+stalls=1"
+      ],
+      "exit": 0,
+      "log": "stress_0_core.log",
+      "seconds": 5.144351104001544
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_core/Vtb_mjpeg_core",
+        "+prefix=out/mjpeg_d2/budget_0",
+        "+length=46373",
+        "+stalls=1"
+      ],
+      "exit": 0,
+      "log": "budget_0_core.log",
+      "seconds": 5.145943616997101
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_core/Vtb_mjpeg_core",
+        "+prefix=out/mjpeg_d2/wide",
+        "+length=4665",
+        "+stalls=1"
+      ],
+      "exit": 0,
+      "log": "wide_core.log",
+      "seconds": 5.572585809000884
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=tb/testvectors/testvec_stress.yxv",
+        "+gold=out/mjpeg_d2/stress.rgb565be",
+        "+first=1",
+        "+limit=1",
+        "+pressure=1",
+        "+dump=out/mjpeg_d2/stress_f1_rtl.rgb565be"
+      ],
+      "exit": 0,
+      "log": "stress1.log",
+      "seconds": 2.433709144999739
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=tb/testvectors/testvec_budget.yxv",
+        "+gold=out/mjpeg_d2/budget.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=1",
+        "+expect_code=32"
+      ],
+      "exit": 0,
+      "log": "truncated.log",
+      "seconds": 4.685291278001387
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=tb/testvectors/testvec_budget.yxv",
+        "+gold=out/mjpeg_d2/budget.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=2",
+        "+expect_code=12"
+      ],
+      "exit": 0,
+      "log": "baddht.log",
+      "seconds": 2.4253569610009436
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=tb/testvectors/testvec_budget.yxv",
+        "+gold=out/mjpeg_d2/budget.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=4",
+        "+expect_code=130"
+      ],
+      "exit": 0,
+      "log": "read_error.log",
+      "seconds": 8.468592876997718
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=tb/testvectors/testvec_budget.yxv",
+        "+gold=out/mjpeg_d2/budget.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=5",
+        "+expect_code=130"
+      ],
+      "exit": 0,
+      "log": "write_error.log",
+      "seconds": 6.37424780800211
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=tb/testvectors/testvec_budget.yxv",
+        "+gold=out/mjpeg_d2/budget.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=6",
+        "+expect_code=129"
+      ],
+      "exit": 0,
+      "log": "bad_rlast.log",
+      "seconds": 5.1093344670007355
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/synthetic.yxv",
+        "+gold=out/mjpeg_d2/synthetic.rgb565be",
+        "+limit=6",
+        "+pressure=1"
+      ],
+      "exit": 0,
+      "log": "synthetic.log",
+      "seconds": 32.917789499999344
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/zero_quant.yxv",
+        "+gold=out/mjpeg_d2/zero_quant.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=10"
+      ],
+      "exit": 0,
+      "log": "zero_quant.log",
+      "seconds": 2.295970828999998
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/bad_rst.yxv",
+        "+gold=out/mjpeg_d2/bad_rst.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=37"
+      ],
+      "exit": 0,
+      "log": "bad_rst.log",
+      "seconds": 6.2304303829987475
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/progressive.yxv",
+        "+gold=out/mjpeg_d2/progressive.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=4"
+      ],
+      "exit": 0,
+      "log": "progressive.log",
+      "seconds": 5.092016336999222
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/missing_dht.yxv",
+        "+gold=out/mjpeg_d2/missing_dht.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=18"
+      ],
+      "exit": 0,
+      "log": "missing_dht.log",
+      "seconds": 2.1403138910027337
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/non420.yxv",
+        "+gold=out/mjpeg_d2/non420.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=16"
+      ],
+      "exit": 0,
+      "log": "non420.log",
+      "seconds": 7.601955128000554
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/bad_run.yxv",
+        "+gold=out/mjpeg_d2/bad_run.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=35"
+      ],
+      "exit": 0,
+      "log": "bad_run.log",
+      "seconds": 3.879756381000334
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/invalid_code.yxv",
+        "+gold=out/mjpeg_d2/invalid_code.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=33"
+      ],
+      "exit": 0,
+      "log": "invalid_code.log",
+      "seconds": 6.174995089997537
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/trailing.yxv",
+        "+gold=out/mjpeg_d2/trailing.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=38"
+      ],
+      "exit": 0,
+      "log": "trailing.log",
+      "seconds": 6.084183081002266
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/segment_extent.yxv",
+        "+gold=out/mjpeg_d2/segment_extent.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=5"
+      ],
+      "exit": 0,
+      "log": "segment_extent.log",
+      "seconds": 5.794937818998733
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/duplicate_symbol.yxv",
+        "+gold=out/mjpeg_d2/duplicate_symbol.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=14"
+      ],
+      "exit": 0,
+      "log": "duplicate_symbol.log",
+      "seconds": 6.937714473999222
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_arbiter/Vtb_mjpeg_arbiter"
+      ],
+      "exit": 0,
+      "log": "arbiter.log",
+      "seconds": 0.011258637001446914
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_mailbox/Vtb_mjpeg_mailbox"
+      ],
+      "exit": 0,
+      "log": "mailbox.log",
+      "seconds": 0.01426385900049354
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=out/mjpeg_d2/quant_precision.yxv",
+        "+gold=out/mjpeg_d2/quant_precision.rgb565be",
+        "+limit=2",
+        "+pressure=1",
+        "+fault=3",
+        "+expect_code=9"
+      ],
+      "exit": 0,
+      "log": "quant_precision.log",
+      "seconds": 5.7655200109984435
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=tb/testvectors/testvec_budget.yxv",
+        "+gold=out/mjpeg_d2/budget.rgb565be",
+        "+limit=36",
+        "+pressure=1",
+        "+dump=out/mjpeg_d2/budget_f0_rtl.rgb565be"
+      ],
+      "exit": 0,
+      "log": "budget36.log",
+      "seconds": 135.15671399499843
+    },
+    {
+      "argv": [
+        "/workspace/yingxu-fpga/out/mjpeg_d2/build_tb_mjpeg_sdram/Vtb_mjpeg_sdram",
+        "+file=tb/testvectors/testvec_stress.yxv",
+        "+gold=out/mjpeg_d2/stress.rgb565be",
+        "+limit=36",
+        "+pressure=1",
+        "+dump=out/mjpeg_d2/stress_f0_rtl.rgb565be"
+      ],
+      "exit": 0,
+      "log": "stress36.log",
+      "seconds": 134.64191793999998
+    }
+  ],
+  "source_sha256": {
+    "src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v": "1d67de42dd1edcc9bbb5bc2f37898ed95e4604dd45553c0fd6cfa53c1d573168",
+    "src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v": "2f06ce524c8d6f517effb02a956f9977bc18aa2924177f08e00c770e472cbb40",
+    "src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v": "531de1018b0fe28cbccc387a5d5ecf7c309522cf4a083cd5a875c6d27eb50cc7",
+    "src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v": "2916347d4f675583435d8999502c48dab3895b698fc30da386b291beec0c87d0",
+    "src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v": "3035c815be03fa8c8f1d695238068f1b5425f822a60526ec3bc02a7777de0630",
+    "src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_mailbox.v": "280fc24108d672a3cbd9a362c24dcbff97b4eae6dbf4789d3a98f057c2ec6801",
+    "tb/tb_mjpeg_core.v": "69ed71b1b699377169a14e732180f580e0488b6b0d970582021b5885c7cd32af",
+    "tb/tb_mjpeg_sdram.v": "b5affe4e37ca10877af6608be0d6cb02f0fec6ad85e52989b6cfb5c27964b750",
+    "tb/tb_mjpeg_bus.v": "050c0743050b14c18de407ceb40d5ba41ff529155b731cd86138f19452ec46a5"
+  },
+  "python_tests": 55,
+  "td_and_board_tested": false,
+  "physical_controller_adapter_connected": false
+}
