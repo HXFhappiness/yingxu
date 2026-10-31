@@ -23,3 +23,13 @@ SCANOUTCHK: PASS centered640x480 high-half-first both banks pixels=306240/305602
 ```
 
 该单元测试覆盖窗口内部并剔除流水边沿，完整图像/帧率/AV仍以最终顶层3秒TB为门禁。
+
+## 音频单元
+
+PCM读口经100/50MHz异步FIFO，生成32B虚拟YXMA头，直接使用原WAV解析、FIFO、增益及输出逻辑。仅增加真实pop观测端口，不改变原WAV消费行为；EOF后再次发头，连续循环。
+
+```text
+PCMCHK: PASS pops=512 source_samples=128 loops=4 zero-diff L/R including EOF virtual-header reuse-WAV 48k
+```
+
+完整顶层正在接线，尚未宣布3秒集成门禁通过。

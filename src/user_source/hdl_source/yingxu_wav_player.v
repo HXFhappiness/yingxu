@@ -56,6 +56,7 @@ module yingxu_wav_player #(
     output wire [15:0] dbg_lastl,       // 最近写入的 L 样本
     output wire [15:0] dbg_outp_cnt,    // out_tick 计数（测 PSG 节拍）
     output wire [15:0] dbg_byte_cnt,    // 字节握手计数（测 SD 吞吐）
+    output wire dbg_pop,              // actual stereo sample consumption (pix)
     output wire [15:0] dbg_rate         // YXMA 头解析出的 rate
 );
 
@@ -170,6 +171,7 @@ module yingxu_wav_player #(
     assign dbg_outp_cnt = outp_cnt;
     assign dbg_byte_cnt = byte_cnt;
     assign dbg_rate     = rate;
+    assign dbg_pop      = pop;
 
     // ---- sys_clk 域: SD 消费 + YXMA 解析 + 打包 + 分块 -----------------------
     localparam [1:0] S_HDR = 2'd0, S_PLAY = 2'd1, S_DONE = 2'd2;

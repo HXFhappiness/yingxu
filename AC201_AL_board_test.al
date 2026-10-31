@@ -168,6 +168,7 @@
                 </FileInfo>
             </File>
             <File Path="src/user_source/hdl_source/media/mjpeg/yingxu_yxv_scanout.v">
+            <File Path="src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
