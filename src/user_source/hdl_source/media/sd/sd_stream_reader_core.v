@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 `default_nettype none
+// P1 experiment C: diagnostic source only; not an accepted firmware.
 
 //------------------------------------------------------------------------------
 // 项目名称 : 映序 YingXu
@@ -85,7 +86,7 @@ module sd_stream_reader_core #(
     wire drain_advance = (DRAIN_1CYC != 0) &&
                          (state == ST_DRAIN_GET) && stream_ready &&
                          (drain_addr != 9'd511);
-    assign ctrl_rd_ram_addr = drain_advance ? (drain_addr + 9'd1) : drain_addr;
+    assign ctrl_rd_ram_addr = drain_addr;
 
     // stream_valid 只有在同步 RAM 数据已经准备好的 GET 状态有效。
     assign stream_valid           = (state == ST_DRAIN_GET);
@@ -196,7 +197,7 @@ module sd_stream_reader_core #(
                             // 当前 Byte 接收完成，准备下一个 RAM 地址。
                             byte_count <= byte_count + 32'd1;
                             drain_addr <= drain_addr + 9'd1;
-                            state      <= (DRAIN_1CYC != 0) ? ST_DRAIN_GET : ST_DRAIN_SET;
+                            state      <= ST_DRAIN_SET;
                         end
                     end
                 end
