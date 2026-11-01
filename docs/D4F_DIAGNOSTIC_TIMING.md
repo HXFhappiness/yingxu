@@ -1,5 +1,7 @@
 # D4f：诊断快照分拍、恢复 mem_clk 时序验收（2026-11-01）
 
+> 最新TD门禁：用户确认D4f FAIL，20条mem负slack仍存在，最差−0.765ns。以下是当时的源码/软件证据，不能作TD时序通过结论。D4g按用户优先级删除word/index数据快照，见 [D4G_COMPACT_DIAGNOSTICS.md](D4G_COMPACT_DIAGNOSTICS.md)。
+
 基线 feat/mjpeg@0018a81（D4e）。用户提供TD对照：mem_clk=100MHz域新增10条负slack，全部从loader/assembly_reg到D4d引入的debug寄存器，最差−0.765ns；冻结P0同域零违例。另10条TMDS/LVDS历史违例独立，不将它们混入本次判决。
 
 **D4f优先修诊断时序，生产RTL只改 `yingxu_yxv_loader.v`。不将尚未证明的SD协议假设写进修复，也不叠加新的物理遥测。TD与板测尚未执行；不能先宣称mem_clk已零违例或楔死已消失。**

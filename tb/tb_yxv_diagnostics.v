@@ -45,10 +45,10 @@ module tb_yxv_diagnostics;
             for(i=0;i<512;i=i+1)data[i]=original[i];
         end
     endtask
-    task failure(input [15:0] expected,input [7:0] why,input integer cnt,input integer idx,input [31:0] value,input [1:0] terminal);
+    task failure(input [15:0] expected,input [7:0] why,input integer cnt,input [1:0] terminal);
         begin
             rst=0;wait(failed && !owned);repeat(20)@(negedge sys);
-            if(diagnosis!==expected || detail[15:8]!==why || count!==cnt || badindex!==idx || badword!==value || code!==expected[7:0])
+            if(diagnosis!==expected || detail[15:8]!==why || count!==cnt || badindex!==0 || badword!==0 || code!==expected[7:0])
                 $fatal(1,"diagnostic mismatch got=%h reason=%h count=%d idx=%d word=%h",diagnosis,detail,count,badindex,badword);
             if({detail[7],detail[6]}!==terminal)$fatal(1,"rx/ack mismatch");
             if(!dut.local_rst || dut.fault_code!=0 || !failed)$fatal(1,"snapshot not checked after MEM reset");
@@ -72,46 +72,46 @@ module tb_yxv_diagnostics;
                 3:begin data[12]=0;data[13]=0;data[14]=0;data[15]=0;end
                 4:data[16]=0;5:data[20]=data[20]^1;6:data[24]=0;7:data[28]=data[28]^1;endcase
             expected_word={data[j*4+3],data[j*4+2],data[j*4+1],data[j*4]};
-            failure(16'h3992,j+1,512,(j<4 ? 0:486),expected_word,2'b11);
+            failure(16'h3992,j+1,512,2'b11);
         end
         // Real board incident: ffmpeg added 3996 trailing PCM bytes.
         prepare(0,512,0);expected_word=486*8000+3996;
         data[20]=expected_word[7:0];data[21]=expected_word[15:8];data[22]=expected_word[23:16];data[23]=expected_word[31:24];
-        failure(16'h3992,8'h06,512,486,expected_word,2'b11);
+        failure(16'h3992,8'h06,512,2'b11);
         prepare(0,512,0);data[32]=data[32]^1;expected_word={data[35],data[34],data[33],data[32]};
-        failure(16'h3993,8'h11,512,0,expected_word,2'b11);
+        failure(16'h3993,8'hB8,512,2'b11);
         // First bad entry ends at the final byte of the first sector. The
         // extra diagnostic stage must beat fault/abort even with early done.
         for(j=0;j<3;j=j+1)begin
             case(j)0:phase=-4;1:phase=0;2:phase=16;endcase
             prepare(phase,512,0);data[511]=1;
             expected_word={data[511],data[510],data[509],data[508]};
-            failure(16'h3993,8'h13,512,59,expected_word,2'b11);
+            failure(16'h3993,8'hB8,512,2'b11);
         end
-        // Exercise the staged priority and all reachable table reasons.
+        // All former table subreasons now intentionally report coarse B8.
         prepare(0,512,0);data[35]=8'h10;
-        failure(16'h3993,8'h12,512,0,32'h10001000,2'b11);
+        failure(16'h3993,8'hB8,512,2'b11);
         prepare(0,512,0);data[33]=8'h12;
-        failure(16'h3993,8'h14,512,0,32'h00001200,2'b11);
+        failure(16'h3993,8'hB8,512,2'b11);
         prepare(0,512,0);data[40]=data[32];data[41]=data[33];data[42]=data[34];data[43]=data[35];
-        failure(16'h3993,8'h15,512,1,32'h00001000,2'b11);
+        failure(16'h3993,8'hB8,512,2'b11);
         prepare(0,512,0);
         data[28]=0;data[29]=8'hfe;data[30]=8'hff;data[31]=8'h0f;
         data[32]=0;data[33]=8'hfe;data[34]=8'hff;data[35]=8'h0f;
-        failure(16'h3993,8'h16,512,0,32'h0ffffe00,2'b11);
+        failure(16'h3993,8'hB8,512,2'b11);
         prepare(0,512,0);
         data[12]=1;data[13]=0;data[14]=0;data[15]=0;
         data[20]=8'h40;data[21]=8'h1f;data[22]=0;data[23]=0;
         data[28]=0;data[29]=8'hfc;data[30]=8'hff;data[31]=8'h0f;
         data[32]=0;data[33]=8'hfc;data[34]=8'hff;data[35]=8'h0f;
         data[36]=4;data[37]=0;data[38]=0;data[39]=0;
-        failure(16'h3993,8'h17,512,0,32'h0008000f,2'b11);
+        failure(16'h3993,8'hB8,512,2'b11);
         prepare(0,512,0);data[32]=data[32]^1;data[39]=1;
-        failure(16'h3993,8'h11,512,0,32'h00001001,2'b11);
-        prepare(0,512,1);failure(16'h189F,0,512,0,0,2'b10);
-        prepare(0,511,0);failure(16'h109F,0,511,0,0,2'b01);
+        failure(16'h3993,8'hB8,512,2'b11);
+        prepare(0,512,1);failure(16'h189F,0,512,2'b10);
+        prepare(0,511,0);failure(16'h109F,0,511,2'b01);
         if(cases!=27)$fatal(1,"vacuous cases");
-        $display("DIAGCHK: PASS 27 cases; six done phases, eight header words, PCM tail +3996, all reachable table reasons/priority and final-byte errors, lost done, lost byte");$finish;
+        $display("DIAGCHK: PASS 27 cases; six done phases, eight header words, PCM tail +3996, coarse B8 table cases and final-byte errors; all word/index outputs zero, lost done, lost byte");$finish;
     end
     initial begin #1000000;$fatal(1,"diagnostic timeout");end
 endmodule

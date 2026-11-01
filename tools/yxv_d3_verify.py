@@ -60,9 +60,9 @@ def main():
                 assert d['SP']>>8==(0 if a.noinit else 1),d
                 assert d['WC']==0 and (d['I0']&0x200000),d
             assert all(c['ACC']==(0 if a.noinit else 512)for c in cs),cs
-            assert all(((b['RDT']<<24)|d['I1'])==(0 if a.noinit else 0x31565800)for b,d in zip(bs,ds)),(bs,ds)
-            if a.bad==1:assert all(b['RSP']==0xD531565800 for b in bs),bs
-            print('DIAG_UARTCHK: PASS retained phase/error/reason/count/index/bad-word on real UART pad',flush=True)
+            assert all(((b['RDT']<<24)|d['I1'])==0 for b,d in zip(bs,ds)),(bs,ds)
+            if a.bad==1:assert all(b['RSP']==0xD400585631 for b in bs),bs
+            print('DIAG_UARTCHK: PASS retained phase/error/reason/count; disabled word/index, no D5 on real UART pad',flush=True)
         if not a.bad and not a.noinit and not a.pending and a.frames>=72:
             rows=[{k:int(v,16)for k,v in re.findall(r'(\w+)=([0-9A-F]+)',line)}for line in uart.read_text().splitlines()if line.startswith('D ')]
             owned=[d for d in rows if d.get('I0',0)&0x800000]

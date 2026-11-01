@@ -966,7 +966,7 @@ wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? (video_d
         .i_p18   (t_p18),
         .i_ctrl  (sd_dbg_ctrl_state),
         .i_init  (sd_dbg_init_state),
-        .i_rsp   (video_diag_valid && video_detail[15:8]!=0 ? {8'hD5,video_fail_word}:video_first_count==4 ? {8'hD4,video_first_bytes}:sd_dbg_init_response),
+        .i_rsp   (video_first_count==4 ? {8'hD4,video_first_bytes}:sd_dbg_init_response),
         .i_rd    (sd_dbg_read_state),
         .i_rdt   (video_diag_valid ? video_fail_word[31:24]:sd_dbg_read_spi_rec_data),
         .i_div   (sd_dbg_spi_div_value),

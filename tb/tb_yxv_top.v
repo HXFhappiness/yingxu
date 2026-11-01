@@ -139,12 +139,12 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
             if(noinit)begin
                 if(dut.t_mise!==16'h069F)$fatal(1,"acquire diagnostic not on MISE");
             end else if(negative==1)begin
-                if(dut.t_mise!==16'h3992 || dut.t_sprc[15:8]!==8'd1 || dut.video_fail_count!=512 || dut.video_fail_word!==32'h31565800)
+                if(dut.t_mise!==16'h3992 || dut.t_sprc[15:8]!==8'd1 || dut.video_fail_count!=512 || dut.video_fail_word!==0 || dut.video_fail_index!==0)
                     $fatal(1,"header diagnostic not retained");
             end
             #250000000;
             if(!dut.video_failed || dut.video_owned)$fatal(1,"fault snapshot cleared while photo runs");
-            $display("DIAGWIRECHK: MISE=%h SP=%h ACC=%h WC=%h RDT_I1=%h",dut.t_mise,dut.t_sprc,dut.video_fail_count,dut.video_fail_index,dut.video_fail_word);
+            $display("DIAGWIRECHK: MISE=%h SP=%h ACC=%h WC=%h DATA_DISABLED=%h",dut.t_mise,dut.t_sprc,dut.video_fail_count,dut.video_fail_index,dut.video_fail_word);
             $display("FALLBACKCHK: PASS bad-header=%0d no-init=%0d finite reject owned=0 failed=1 photo-reloads=1 next-LBA=%0d",negative,noinit,dut.img_lba);$finish;
         end
         wait(pops>=frames_goal*2000+1);
