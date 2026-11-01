@@ -121,8 +121,10 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
         #200;rst_n=1;
         // D5 boots into the menu. Exercise the physical DIP escape before
         // the existing D4 direct-mode playback/fault regressions.
-        repeat(10)@(negedge clk);sw[0]=~sw[0];
-        repeat(10)@(negedge clk);sw[0]=~sw[0];
+        wait(dut.sw_real_valid);
+        @(negedge clk);sw[0]=~sw[0];
+        wait(!dut.menu_override);
+        @(negedge clk);sw[0]=~sw[0];
         if(pending)begin
             // Test-only injection: keep a memory command pending, then inject
             // the same no-progress fault tested by tb_yxv_fault_pending.
@@ -148,6 +150,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
         if(negative || noinit)begin
             wait(dut.video_failed && !dut.video_owned);repeat(20)@(posedge clk);
             if(reloads!=1 || !dut.video_failed || dut.game_mode || !dut.sd_dbg_busy)$fatal(1,"fallback did not reload photo reloads=%0d busy=%b",reloads,dut.sd_dbg_busy);
+            if(dut.img_lba!=28'd76032)$fatal(1,"fallback menu LBA invalid load_idx=%0d LBA=%0d",dut.load_idx,dut.img_lba);
             if(noinit && `VIDEO.error_code!=8'h9F)$fatal(1,"no-init acquisition watchdog wrong error");
             if(noinit)begin
                 if(dut.t_mise!==16'h069F)$fatal(1,"acquire diagnostic not on MISE");

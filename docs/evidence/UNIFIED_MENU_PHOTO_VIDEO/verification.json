@@ -1,0 +1,29 @@
+{
+  "branch": "feat/unified-menu-photo-video",
+  "photo_base": "e2c16b584a9e7b365b654ad857451622eaa60f39",
+  "video_original": "add974266c02854d345151e88f30ea485e1b4127",
+  "video_rebased": "c218ed110c1fa971664ba9a068460fd05a700b62",
+  "rebase_patch_identical": true,
+  "video_production_RTL_unchanged": true,
+  "checks": {
+    "menu_paths_4_stable_4_with_glitch": "pass; >20ms in each mode before return",
+    "hold_terminal_and_no_reconfirm": "pass; elapsed hold counter accelerated",
+    "all_8_physical_pin_spikes": "pass",
+    "DIP_bounce_resets_stability_interval": "pass; real 20ms counter, not accelerated",
+    "stable_DIP_maintenance_and_new_baseline_on_return": "pass",
+    "baseline_c218ed1": "expected failure on one-cycle physical SW spike; stable four modes pass",
+    "menu_bar_and_wipe": "pass",
+    "normal_actual_top_video": "pass on final runtime split: 4001 PCM/4000 HDMI, no spurious replay, 0 ppm",
+    "full_PCM_replay": "pass: 7594 sectors, 972032 words zero-diff",
+    "TD_input_binding": "pass: 63 registered inputs, 124 source/IP hashes, tracked .al unchanged",
+    "fallback_pre_runtime_split": "expected failure: load_idx15 -> LBA0",
+    "fallback_menu_LBA": "pass: 76032, actual top and UART"
+  },
+  "new_code_TD_executed": false,
+  "bitstream_generated": false,
+  "board_cause_of_prior_menu_escape_confirmed": false,
+  "photo_startup_sentinel_and_init_gate_preserved": true,
+  "photo_LBA_table_unchanged": true,
+  "photo_TR_tail_except_reset_index_unchanged": true,
+  "video_runtime_reset_index_corrected": 0
+}

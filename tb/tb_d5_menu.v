@@ -47,6 +47,7 @@ module tb_d5_menu;
         #200;rst_n=1;repeat(20)@(negedge clk);
         if(!dut.menu_ui || dut.menu_sel!=0 || dut.lba_rom[0]!=76032 ||
            dut.lba_rom[1]!=32672 || dut.lba_rom[8]!=70560)$fatal(1,"boot/menu image table");
+        wait(dut.sw_real_valid);
         wait(!dut.design_top_wrapper.S_rst_pix);
         wait(!dut.design_top_wrapper.boot_wipe && !dut.design_top_wrapper.clr_active);
         repeat(20)@(negedge clk);
@@ -71,7 +72,7 @@ module tb_d5_menu;
         repeat(4)press(1);press(0);
         if(!dut.menu_ui || dut.menu_sel!=4)$fatal(1,"about placeholder");
         // DIP change must escape even while the key lock is active.
-        @(negedge clk);sw=8'h6f;repeat(20)@(negedge clk);
+        @(negedge clk);sw=8'h6f;repeat(1000016)@(negedge clk);
         if(dut.menu_override || !dut.music_on_w)$fatal(1,"physical DIP escape");
         back_to_menu();
         press(1);press(1);press(0);
@@ -82,6 +83,6 @@ module tb_d5_menu;
         $display("D5_MENUCHK: PASS boot LBA, five rows/wrap, wipe repair, photo/cart/video/music, about, hold return, DIP escape, video failure");
         $finish;
     end
-    initial begin #30000000;$fatal(1,"menu timeout");end
+    initial begin #100000000;$fatal(1,"menu timeout");end
 endmodule
 

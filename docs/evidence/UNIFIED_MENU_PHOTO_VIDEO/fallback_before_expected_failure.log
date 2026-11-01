@@ -1,0 +1,3 @@
+[40395450000000] %Fatal: tb_yxv_top.v:153: Assertion failed in tb_yxv_top: fallback menu LBA invalid load_idx=15 LBA=0
+%Error: tb/tb_yxv_top.v:153: Verilog $stop
+Aborting...

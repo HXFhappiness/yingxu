@@ -446,7 +446,35 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         end else menu_hold_cnt <= 27'd0;
     end
     wire menu_ui = menu_override && (menu_pattern == MENU_PAT_PHOTO) && (img_idx == 4'd0);
-    wire menu_real_change = menu_override && sw_real_valid && (sw_real_q != sw);
+    // Only a stable physical DIP move may leave the virtual-switch menu.
+    // sw_eff/menu_pattern changes are deliberately outside this detector.
+    (* async_reg="true" *) reg [7:0] menu_sw_meta,menu_sw_sync;
+    reg [7:0] menu_sw_candidate;
+    reg [19:0] menu_sw_count;
+    reg menu_sw_changed;
+    localparam [19:0] MENU_SW_STABLE_MAX = 20'd999_999; // 20 ms @ 50 MHz
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)begin
+            menu_sw_meta<=8'hFF;menu_sw_sync<=8'hFF;menu_sw_candidate<=8'hFF;
+            sw_real_q<=8'hFF;sw_real_valid<=0;menu_sw_count<=0;menu_sw_changed<=0;
+        end else begin
+            menu_sw_meta<=sw;menu_sw_sync<=menu_sw_meta;menu_sw_changed<=0;
+            if(!menu_override)begin
+                // Re-entering the menu establishes a fresh physical baseline;
+                // a DIP move made in direct mode must not eject the menu later.
+                menu_sw_candidate<=menu_sw_sync;sw_real_q<=menu_sw_sync;
+                sw_real_valid<=0;menu_sw_count<=0;
+            end else if(menu_sw_sync!=menu_sw_candidate)begin
+                menu_sw_candidate<=menu_sw_sync;menu_sw_count<=0;
+            end else if(!sw_real_valid || menu_sw_candidate!=sw_real_q)begin
+                if(menu_sw_count==MENU_SW_STABLE_MAX)begin
+                    sw_real_q<=menu_sw_candidate;sw_real_valid<=1;menu_sw_count<=0;
+                    menu_sw_changed<=sw_real_valid;
+                end else menu_sw_count<=menu_sw_count+20'd1;
+            end else menu_sw_count<=0;
+        end
+    end
+    wire menu_real_change = menu_override && menu_sw_changed;
 
     // ------------------------------------------------------------------
     // Key handling: edge detect + short lockout (the validated baseline).
@@ -490,7 +518,6 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             menu_override <= 1'b1;
             menu_pattern <= MENU_PAT_PHOTO;
             menu_sel <= 3'd0;
-            sw_real_q <= 8'hFF;sw_real_valid <= 1'b0;
             img_idx     <= 4'd0;
             img_restart <= 1'b0;
             key0_p      <= 1'b1;
@@ -503,7 +530,6 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         else begin
             key0_p      <= key_0;
             key1_p      <= key_1;
-            sw_real_q <= sw;sw_real_valid <= 1'b1;
             sw6_sync    <= {sw6_sync[0], sw_eff[6]};
             sw6_p       <= sw6_sync[1];
             img_restart <= 1'b0;
@@ -628,10 +654,10 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n || video_requested || video_owned) begin
-            // D5boot: reset to 15 so img_idx(0) != load_idx triggers the first
-            // load at power-on. Menu mode gates the carousel, so nothing else
-            // would ever start the initial menu background load.
-            load_idx     <= 4'd15;
+            // Only power-on needs the sentinel. During video, keep a valid
+            // menu index for the photo-reload pulse on failure/exit.
+            if(!rst_n) load_idx <= 4'd15;
+            else       load_idx <= 4'd0;
             tr_state     <= TR_IDLE;
             fade_shift_r <= 4'd0;
             tr_ms        <= 20'd0;

@@ -1,0 +1,3 @@
+top_build.log: exit=0 seconds=11.02
+top_sw77_72_bad1.log: exit=0 seconds=89.56
+DIAG_UARTCHK: PASS retained phase/error/reason/count; disabled word/index, no D5 on real UART pad

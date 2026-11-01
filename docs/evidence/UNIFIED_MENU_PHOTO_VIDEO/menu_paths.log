@@ -1,0 +1,13 @@
+MENU_PATHCHK: PASS sel=0 glitch=0 confirm, effective mode, hold boundary, return, override retained
+MENU_PATHCHK: PASS sel=1 glitch=0 confirm, effective mode, hold boundary, return, override retained
+MENU_PATHCHK: PASS sel=2 glitch=0 confirm, effective mode, hold boundary, return, override retained
+MENU_PATHCHK: PASS sel=3 glitch=0 confirm, effective mode, hold boundary, return, override retained
+MENU_PATHCHK: PASS sel=0 glitch=1 confirm, effective mode, hold boundary, return, override retained
+MENU_PATHCHK: PASS sel=1 glitch=1 confirm, effective mode, hold boundary, return, override retained
+MENU_PATHCHK: PASS sel=2 glitch=1 confirm, effective mode, hold boundary, return, override retained
+MENU_PATHCHK: PASS sel=3 glitch=1 confirm, effective mode, hold boundary, return, override retained
+MENU_RACECHK: PASS cases=8 stable raw pins plus switch-time spikes, all 8 single-cycle pin spikes rejected, bounce resets 20ms window, deliberate DIP escape retained
+- tb/tb_menu_mode_paths.v:136: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 420ms; walltime 73.722 s; speed 5.706 ms/s
+- Verilator: cpu 73.688 s on 1 threads; alloced 44 MB
