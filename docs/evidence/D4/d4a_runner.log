@@ -1,0 +1,7 @@
+top_build.log: exit=0 seconds=19.19
+top_2_bad0.log: exit=-6 seconds=88.39
+TOP_FRAMECHK tag=0 cycles=2458703 pixels=307200/307200 zero-diff t=292880975000000
+[306455443000000] %Fatal: tb_yxv_top.v:105: Assertion failed in tb_yxv_top: actual replay/compositor video mux mismatch
+%Error: tb/tb_yxv_top.v:105: Verilog $stop
+Aborting...
+

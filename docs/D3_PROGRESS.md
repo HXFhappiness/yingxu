@@ -51,3 +51,8 @@ scanout在第一帧发布/预充之前禁止RD2弹出，避免启动空FIFO被�
 ## 最终顶层交付
 
 696bde3已推。最终3秒actual-top门禁通过：144001音频采样、0/72丢帧、AV1849/2000采样、实际HDMI音频144000采样零diff、14条真实UART D帧；坏头/初始化超时回退均通过。完整报告及原始输出见 [D3_MJPEG_REPORT.md](D3_MJPEG_REPORT.md)。估计8740 LUT / 7 BRAM / 21 DSP，未做TD与板测，资源余量341 LUT须本地严守门禁。
+
+
+## D4a / D4b审查（2026-11-01）
+
+已快进合入372005d/612fe6c，仅补文档。SW77实际top短测在帧0正确解码后触发compositor mismatch，退出非零；入口restart并非直接初始化触发，且新组合下照片回退被game_mode门控。用户TD实测余7414 LUT，撤下旧341余量的当前结论；完整decoder保留和时钟归属待报告。详见 [D4_REVIEW.md](D4_REVIEW.md)，不标D4验收通过。
