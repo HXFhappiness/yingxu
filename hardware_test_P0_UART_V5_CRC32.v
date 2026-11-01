@@ -423,6 +423,18 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         lba_rom[7] = 28'd70560;   // img8.bmp
     end
 
+    reg [26:0] menu_hold_cnt;
+    wire       menu_hold_2s = (menu_hold_cnt == 27'd100_000_000);
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) menu_hold_cnt <= 27'd0;
+        else if (!video_requested && !video_owned && !key_0) begin
+            if (menu_hold_cnt == 27'd100_000_000) menu_hold_cnt <= 27'd0;
+            else menu_hold_cnt <= menu_hold_cnt + 27'd1;
+        end else menu_hold_cnt <= 27'd0;
+    end
+    wire menu_ui = menu_override && (menu_pattern == MENU_PAT_PHOTO) && (img_idx == 4'd0);
+    wire menu_real_change = menu_override && (sw_real_q != sw);
+
     // ------------------------------------------------------------------
     // Key handling: edge detect + short lockout (the validated baseline).
     // ------------------------------------------------------------------
@@ -474,7 +486,11 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         else begin
             key0_p      <= key_0;
             key1_p      <= key_1;
+            if (menu_real_change && key_lock == 24'd0) begin
+                menu_override <= 1'b0; img_idx <= 4'd0;
+            end
             sw6_sync    <= {sw6_sync[0], sw_eff[6]};
+            sw_real_q   <= sw;
             sw6_p       <= sw6_sync[1];
             img_restart <= 1'b0;
 
@@ -503,6 +519,30 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
                 key_lock    <= 24'hFFFFFF;
                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
                 img_restart <= 1'b1;
+            end
+            else if (menu_override && menu_pattern == MENU_PAT_PHOTO && img_idx == 4'd0 &&
+                     key_lock == 24'd0 && key1_p && !key_1) begin
+                key_lock <= 24'hFFFFFF;
+                menu_sel <= (menu_sel == 3'd4) ? 3'd0 : menu_sel + 3'd1;
+            end
+            else if (menu_override && menu_pattern == MENU_PAT_PHOTO && img_idx == 4'd0 &&
+                     key_lock == 24'd0 && key0_p && !key_0) begin
+                key_lock <= 24'hFFFFFF;
+                case (menu_sel)
+                    3'd1: menu_pattern <= MENU_PAT_GAME;
+                    3'd2: menu_pattern <= MENU_PAT_VIDEO;
+                    3'd3: menu_pattern <= MENU_PAT_MUSIC;
+                    3'd0: menu_override <= 1'b0;
+                    default: ;
+                endcase
+            end
+            else if (menu_override && menu_pattern != MENU_PAT_PHOTO && menu_hold_2s) begin
+                menu_pattern <= MENU_PAT_PHOTO; img_idx <= 4'd0;
+            end
+            else if (!game_mode && !video_requested && !video_owned && !menu_override &&
+                     !key_0 && menu_hold_2s) begin
+                menu_override <= 1'b1; menu_pattern <= MENU_PAT_PHOTO;
+                menu_sel <= 3'd0; img_idx <= 4'd0;
             end
 
             // The timer only runs while idle in photo mode; every key press (which
