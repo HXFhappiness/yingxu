@@ -662,9 +662,7 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
             menu_ctx_q<=I_menu_ctx;menu_ctx_qq<=menu_ctx_q;
             menu_sel_q<=I_menu_sel;menu_sel_qq<=menu_sel_q;
             bar_refresh<=bar_refresh+1'b1;
-            bar_we_q<=bar_fire;
-            bar_y_q<=I_menu_sel==3'd0?10'd268:I_menu_sel==3'd1?10'd355:
-                     I_menu_sel==3'd2?10'd442:I_menu_sel==3'd3?10'd529:10'd616;
+            bar_we_q<=1'b0;   // bisect v6: writes disabled
         end
     end
     wire        sel_menu      = menu_ctx_q;
