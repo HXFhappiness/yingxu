@@ -94,13 +94,27 @@ module hardware_test #(
     // One bit per image: which indicator segments are valid.
     localparam [7:0] SEG_MASK = (8'hFF >> (8 - IMG_COUNT));
 
+    // D5: menu interaction layer (docs/D5_MENU_TASK.md). menu_override=1
+    // replaces the DIP decode with menu_pattern (virtual switches). Boot
+    // enters the menu; key1 cycles the selection, key0 confirms; a real DIP
+    // change or a 2 s key0 hold in a mode returns to the menu.
+    reg        menu_override;
+    reg [7:0]  menu_pattern;
+    reg [2:0]  menu_sel;
+    reg [7:0]  sw_real_q;
+    wire [7:0] sw_eff = menu_override ? menu_pattern : sw;
+    localparam [7:0] MENU_PAT_PHOTO = 8'hFF;   // SW7 OFF: photo / menu
+    localparam [7:0] MENU_PAT_GAME  = 8'h3F;   // SW7 ON + SW5 ON: cart
+    localparam [7:0] MENU_PAT_VIDEO = 8'h77;   // SW7 ON + SW3 ON: video
+    localparam [7:0] MENU_PAT_MUSIC = 8'h7F;   // SW7 ON + SW4 ON: music
+
     // SW7 selects the mode. The DIP switch reads inverted on this board, so
     // switch OFF (pin high) selects the game and ON selects the photo browser.
-    wire switch_game_mode = ~sw[7];
+    wire switch_game_mode = ~sw_eff[7];
     reg video_photo_mode;
     wire game_mode = switch_game_mode && !video_requested && !video_owned && !video_photo_mode;
     reg [1:0] video_sw3;
-    always @(posedge clk or negedge rst_n)begin if(!rst_n)video_sw3<=2'b11;else video_sw3<={video_sw3[0],sw[3]};end
+    always @(posedge clk or negedge rst_n)begin if(!rst_n)video_sw3<=2'b11;else video_sw3<={video_sw3[0],sw_eff[3]};end
     // 77 is the demo entry; E7 remains a diagnostic compatibility entry.
     wire video_requested=!video_sw3[1] && sw5_s[1] && sw6_sync[1] &&
         ((switch_game_mode && !music_sw4) || (!switch_game_mode && music_sw4));
@@ -111,8 +125,8 @@ module hardware_test #(
         if(!rst_n)begin video_quiesced<=0;video_photo_mode<=0;video_base_q<=0;end
         else begin
             video_quiesced<=video_handoff ? {video_quiesced[0],1'b1}:2'b00;
-            video_base_q<={sw[7],sw4_s[1],sw5_s[1],sw6_sync[1]};
-            if(video_requested || video_base_q!={sw[7],sw4_s[1],sw5_s[1],sw6_sync[1]})video_photo_mode<=0;
+            video_base_q<={sw_eff[7],sw4_s[1],sw5_s[1],sw6_sync[1]};
+            if(video_requested || video_base_q!={sw_eff[7],sw4_s[1],sw5_s[1],sw6_sync[1]})video_photo_mode<=0;
             if((video_owned && !video_requested)||(!video_failed_q && video_failed))video_photo_mode<=1;
         end
     end
@@ -152,12 +166,12 @@ module hardware_test #(
     reg  [1:0] sw5_s;
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) sw5_s <= 2'b00;
-        else        sw5_s <= {sw5_s[0], sw[5]};
+        else        sw5_s <= {sw5_s[0], sw_eff[5]};
     end
     reg  [1:0] sw4_s;
 always @(posedge clk) begin
     if (!rst_n) sw4_s <= 2'b00;
-    else        sw4_s <= {sw4_s[0], sw[4]};
+    else        sw4_s <= {sw4_s[0], sw_eff[4]};
 end
 wire music_sw4 = ~sw4_s[1];                      // SW4 ON = 音乐
 reg  [1:0] sw6_sync;   // G6: moved up (game_sel2/music_on_w both use it)
@@ -274,6 +288,8 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .I_img_index    (img_index),
         .I_game_mode    (game_mode),
         .I_music_en     (music_on_w & ~cart_busy_w),
+        .I_menu_ctx     (menu_ui),
+        .I_menu_sel     (menu_sel),
         .O_wav_base     (wav_base_w),
         .O_wav_restart  (wav_restart_w),
         .O_wav_sstate   (wav_dbg_sstate_w),
@@ -417,6 +433,20 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         lba_rom[7] = 28'd70560;   // img8.bmp
     end
 
+    // D5: 2 s key0 hold -> menu (works from photo, cart, music; video exits
+    // through its own fallback first).
+    reg [26:0] menu_hold_cnt;
+    wire       menu_hold_2s = (menu_hold_cnt == 27'd100_000_000);
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) menu_hold_cnt <= 27'd0;
+        else if (!video_requested && !video_owned && !key_0) begin
+            if (menu_hold_cnt == 27'd100_000_000) menu_hold_cnt <= 27'd0;
+            else menu_hold_cnt <= menu_hold_cnt + 27'd1;
+        end else menu_hold_cnt <= 27'd0;
+    end
+    wire menu_ui = menu_override && (menu_pattern == MENU_PAT_PHOTO) && (img_idx == 4'd0);
+    wire menu_real_change = menu_override && (sw_real_q != sw);
+
     // ------------------------------------------------------------------
     // Key handling: edge detect + short lockout (the validated baseline).
     // ------------------------------------------------------------------
@@ -468,7 +498,10 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         else begin
             key0_p      <= key_0;
             key1_p      <= key_1;
-            sw6_sync    <= {sw6_sync[0], sw[6]};
+            if (menu_real_change && key_lock == 24'd0) begin
+                menu_override <= 1'b0; img_idx <= 4'd0;   // DIP change: direct mode
+            end
+            sw6_sync    <= {sw6_sync[0], sw_eff[6]};
             sw6_p       <= sw6_sync[1];
             img_restart <= 1'b0;
 
@@ -476,32 +509,58 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
                 key_lock <= key_lock - 24'd1;
 
             // SW6: reload the current image (must also re-arm the loader).
-            if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && (sw6_sync[1] ^ sw6_p)) begin
+            if (!game_mode && !video_requested && !video_owned && !menu_override && key_lock == 24'd0 && (sw6_sync[1] ^ sw6_p)) begin
                 key_lock    <= 24'hFFFFFF;
                 img_restart <= 1'b1;
             end
-            else if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && key1_p && !key_1) begin
+            else if (!game_mode && !video_requested && !video_owned && !menu_override && key_lock == 24'd0 && key1_p && !key_1) begin
                 key_lock    <= 24'hFFFFFF;
                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
                 img_restart <= 1'b1;
             end
-            else if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && key0_p && !key_0) begin
+            else if (!game_mode && !video_requested && !video_owned && !menu_override && key_lock == 24'd0 && key0_p && !key_0) begin
                 key_lock    <= 24'hFFFFFF;
                 img_idx     <= (img_idx == 4'd0) ? (IMG_COUNT - 1) : (img_idx - 4'd1);
                 img_restart <= 1'b1;
             end
             // Auto carousel: advance when the timer expires and nothing else is
             // holding the loader.
-            else if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && !sd_dbg_busy &&
+            else if (!game_mode && !video_requested && !video_owned && !menu_override && key_lock == 24'd0 && !sd_dbg_busy &&
                      carousel_cnt == CAROUSEL_MAX) begin
                 key_lock    <= 24'hFFFFFF;
                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
                 img_restart <= 1'b1;
             end
+            // D5 menu: key1 cycles the selection, key0 confirms. The photo
+            // browse/carousel branches above are gated off by menu_override.
+            else if (menu_override && menu_pattern == MENU_PAT_PHOTO && img_idx == 4'd0 &&
+                     key_lock == 24'd0 && key1_p && !key_1) begin
+                key_lock <= 24'hFFFFFF;
+                menu_sel <= (menu_sel == 3'd4) ? 3'd0 : menu_sel + 3'd1;
+            end
+            else if (menu_override && menu_pattern == MENU_PAT_PHOTO && img_idx == 4'd0 &&
+                     key_lock == 24'd0 && key0_p && !key_0) begin
+                key_lock <= 24'hFFFFFF;
+                case (menu_sel)
+                    3'd1: menu_pattern <= MENU_PAT_GAME;
+                    3'd2: menu_pattern <= MENU_PAT_VIDEO;
+                    3'd3: menu_pattern <= MENU_PAT_MUSIC;
+                    3'd0: menu_override <= 1'b0;    // 图片: photo browsing
+                    default: ;                       // 关于: v2
+                endcase
+            end
+            else if (menu_override && menu_pattern != MENU_PAT_PHOTO && menu_hold_2s) begin
+                menu_pattern <= MENU_PAT_PHOTO; img_idx <= 4'd0;   // 2 s key0: menu
+            end
+            else if (!game_mode && !video_requested && !video_owned && !menu_override &&
+                     !key_0 && menu_hold_2s) begin
+                menu_override <= 1'b1; menu_pattern <= MENU_PAT_PHOTO;
+                menu_sel <= 3'd0; img_idx <= 4'd0;                 // 2 s key0: menu
+            end
 
             // The timer only runs while idle in photo mode; every key press (which
             // sets key_lock) or a load in progress clears it.
-            if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && !sd_dbg_busy)
+            if (!game_mode && !video_requested && !video_owned && !menu_override && key_lock == 24'd0 && !sd_dbg_busy)
                 carousel_cnt <= carousel_cnt + 28'd1;
             else
                 carousel_cnt <= 28'd0;
