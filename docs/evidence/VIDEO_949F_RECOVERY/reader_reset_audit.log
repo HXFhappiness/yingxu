@@ -1,0 +1,74 @@
+INIT_ONCE_PROOF: PASS arbitrary start/count/ready/done; after initialization, no init_done drop or mode0 until reset
+CART_RESTARTCHK: PASS 38 separate reads init_commands=1 init_done remains 1; DNE clears for each new transaction, final DNE=1 bytes=19456/19456
+VIDEO_RESTARTCHK: PASS counts=1/7/7594; total reads=7640 bytes=3911680/3911680 zero-diff stalls; init_commands=1 init_done_drops=0 DNE_clears=40/40
+/workspace/yingxu-fpga/tb/tb_sd_restart_semantics.v:46: $finish called at 167364380000 (1ps)
+VENDOR_IDLECHK: PASS actual controller CTRL=4 SEL=0 DIV=3E init_start=0; low divider is not initialization evidence
+VENDOR_SELECTCHK: PASS mode=2 stays read CTRL=3 SEL=2 DIV=02 with absent card response, init_start=0
+- /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:19: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 82us; walltime 0.001 s; speed 52.367 ms/s
+- Verilator: cpu 0.002 s on 1 threads; alloced 32 MB
+preload_build.log: exit=0
+preload_486_block1.log: exit=0
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=1 MISE=949f SP=0001 ACC=020 sent=0 phy_state=1 position=0 ST=0 reset=1 F=a
+SD_RESET_ORDERCHK: PASS init_commands=1 fault=4530905000000 then abort_reset=4530950000000 then init_drop=4530950000000; DNE was cleared at PCM request
+WRITE_DIAGCHK: PASS block=1 I1=00dc1010 sent=0 state=1 position=0 inner=101 outer=110 RP/LR/CV/CR/WV/WR=000010
+PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:117: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 5ms; walltime 0.817 s; speed 5.551 ms/s
+- Verilator: cpu 0.817 s on 1 threads; alloced 57 MB
+preload_486_block4.log: exit=0
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=4 MISE=949f SP=0001 ACC=020 sent=8 phy_state=0 position=8 ST=0 reset=1 F=a
+SD_RESET_ORDERCHK: PASS init_commands=1 fault=4530905000000 then abort_reset=4530950000000 then init_drop=4530950000000; DNE was cleared at PCM request
+WRITE_DIAGCHK: PASS block=4 I1=00dc2408 sent=8 state=0 position=8 inner=101 outer=110 RP/LR/CV/CR/WV/WR=000100
+PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:117: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 5ms; walltime 0.740 s; speed 6.127 ms/s
+- Verilator: cpu 0.740 s on 1 threads; alloced 57 MB
+preload_486_block6.log: exit=0
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=6 MISE=949f SP=0001 ACC=020 sent=8 phy_state=3 position=8 ST=0 reset=1 F=a
+SD_RESET_ORDERCHK: PASS init_commands=1 fault=4530905000000 then abort_reset=4530950000000 then init_drop=4530950000000; DNE was cleared at PCM request
+WRITE_DIAGCHK: PASS block=6 I1=00dc0438 sent=8 state=3 position=8 inner=101 outer=110 RP/LR/CV/CR/WV/WR=000000
+PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:117: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 5ms; walltime 0.880 s; speed 5.154 ms/s
+- Verilator: cpu 0.879 s on 1 threads; alloced 57 MB
+preload_486_block7.log: exit=0
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=7 MISE=949f SP=0001 ACC=020 sent=0 phy_state=0 position=0 ST=0 reset=1 F=a
+SD_RESET_ORDERCHK: PASS init_commands=1 fault=4530905000000 then abort_reset=4530950000000 then init_drop=4530950000000; DNE was cleared at PCM request
+WRITE_DIAGCHK: PASS block=7 I1=00dd3000 sent=0 state=0 position=0 inner=101 outer=110 RP/LR/CV/CR/WV/WR=100110
+PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:117: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 5ms; walltime 0.692 s; speed 6.545 ms/s
+- Verilator: cpu 0.692 s on 1 threads; alloced 57 MB
+preload_build.log: exit=0
+preload_486_block7_norecovery.log: exit=0
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=7 MISE=949f SP=0001 ACC=020 sent=0 phy_state=0 position=0 ST=0 reset=1 F=a
+SD_RESET_ORDERCHK: PASS init_commands=1 fault=4530905000000 then abort_reset=4530950000000 then init_drop=4530950000000; DNE was cleared at PCM request
+WRITE_DIAGCHK: PASS block=7 I1=00dc3000 sent=0 state=0 position=0 inner=101 outer=110 RP/LR/CV/CR/WV/WR=000110
+PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:117: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 5ms; walltime 0.686 s; speed 6.610 ms/s
+- Verilator: cpu 0.686 s on 1 threads; alloced 57 MB
+REPLAY_BOUNDCHK: PASS persistent loss still faults at the same watchdog tick; at most one replay
+preload_fast_build.log: exit=0
+preload_486_block8_fast.log: exit=0
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PRELOAD_PROGRESS block=8 owned=1 init=1 busy=1 start=0 requests=          3 phase=94 count=161472 sdvalid=1 ready=1 diag=0000 model=          0 FIFO= 68/ 64
+WRITE_REPLAYCHK: PASS one lost command recovered once; buffer/addr unchanged, full PCM zero-diff, no SD reset or repeated initialization
+PCM_FULLCHK: PASS frames=486 sectors=7594 payload=3888000 padded=3888128 bursts=121504/121504 words=972032/972032 zero-diff init_done=1 failed=0
+WRITE_RATIOCHK: PASS first_latency=31 max_latency=31/1000 cycles display_words=128
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:132: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 235ms; walltime 31.414 s; speed 7.480 ms/s
+- Verilator: cpu 31.404 s on 1 threads; alloced 57 MB

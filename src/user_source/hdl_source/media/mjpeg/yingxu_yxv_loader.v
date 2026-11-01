@@ -4,6 +4,7 @@
 // All external signals here are in mem_clk=100MHz; SD CDC is outside.
 module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
     input wire clk,rst,enable,abort,
+    input wire retry_write,
     output wire sd_valid,input wire sd_ready,output reg [27:0] sd_lba,output reg [15:0] sd_sectors,
     input wire sd_done,input wire [7:0] sd_byte,input wire sd_byte_valid,output wire sd_byte_ready,
     output wire idle,
@@ -89,7 +90,10 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
             case(mstate)
                 0: if(filled==8) begin mstate<=1;sent<=0;end
                 1: if(cmd_ready) mstate<=2;
-                2: begin
+                2: if(retry_write && sent==0 && !mem_done && !mem_error)begin
+                    // Buffer/cursor/filled are untouched; no byte was sent.
+                    mstate<=1;
+                end else begin
                     if(wvalid && wready) sent<=sent+1'b1;
                     if(mem_done || mem_error) begin
                         mstate<=0;filled<=0;cursor<=cursor+8;

@@ -61,6 +61,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
             if((`CTRL.mADDR<'h40000)==!`VIDEO.front_bank)
                 $fatal(1,"front buffer overwritten");
         end
+        if(`VIDEO.replay_write && !negative && !noinit && !pending)$fatal(1,"healthy transaction replayed");
         if(`VIDEO.fault && !negative && !noinit && !pending)$fatal(1,"video fault=%h samples=%0d decoded=%0d display=%0d SDslots=%b",`VIDEO.fault_code,`VIDEO.sample_count,`VIDEO.completed,`VIDEO.present_number,`VIDEO.slots);
     end
     reg [10:0] old_x;reg [9:0] old_y;reg [23:0] pixel_expected;
@@ -138,8 +139,8 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
             if(!dut.video_owned || dut.video_failed || !dut.video_sd_reset || !dut.sd_rst || dut.sd_dbg_init_done || !dut.sd_dbg_busy)
                 $fatal(1,"pending fault signature");
             if(dut.video_diagnosis[7:0]!=8'h9f || !dut.video_diag_valid)$fatal(1,"pending diagnostic absent");
-            if(pending==2 && (dut.video_diagnosis!=16'h949f || dut.video_fail_word!=32'h214))
-                $fatal(1,"half-write snapshot not on actual top");
+            if(pending==2 && (dut.video_diagnosis!=16'h949f || dut.video_fail_word!=32'hdc0214))
+                $fatal(1,"half-write snapshot not on actual top I1=%h",dut.video_fail_word);
             #250000000;
             if(dut.video_failed || !dut.video_owned || dut.video_diagnosis[7:0]!=8'h9f)$fatal(1,"pending fault unstable");
             $display("PENDING_UARTCHK: PASS held SD reset owned=1 failed=0 init_done=0; fault visible before release MISE=%h SP=%h LS=6 F=A",dut.video_diagnosis,dut.video_detail);$finish;

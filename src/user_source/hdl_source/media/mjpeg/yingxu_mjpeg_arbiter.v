@@ -12,9 +12,11 @@ module yingxu_mjpeg_arbiter(
     output wire mvalid,input wire mready,output wire mwrite,output wire [20:0] maddr,output wire [3:0] mwords,
     output wire mwvalid,input wire mwready,output wire [31:0] mwdata,output wire mwlast,
     input wire mrvalid,output wire mrready,input wire [31:0] mrdata,input wire mrlast,
+    output wire [2:0] debug_owner,
     input wire mdone,merror
 );
     reg active;reg [1:0] owner;
+    assign debug_owner={active,owner};
     reg held;reg [1:0] chosen;
     wire [1:0] priority_owner=cvalid[0] ? 2'd0:cvalid[1] ? 2'd1:2'd2;
     wire [1:0] select_owner=held ? chosen:priority_owner;

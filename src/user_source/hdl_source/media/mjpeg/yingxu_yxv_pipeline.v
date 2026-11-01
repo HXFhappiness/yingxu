@@ -3,7 +3,8 @@
 // Board-integrated scheduler: one physical RAM, one SD controller, one WAV chain.
 module yingxu_yxv_pipeline #(
     parameter integer STALL_LIMIT=500_000_000,
-    parameter integer ACQUIRE_LIMIT=250_000_000
+    parameter integer ACQUIRE_LIMIT=250_000_000,
+    parameter integer RECOVER_LOST_WRITE=1
 )(
     input wire sys_clk,clk,pix_clk,rst,enable,mem_ready,
     input wire sd_init,sd_busy,sd_done,input wire [7:0] sd_data,input wire sd_data_valid,
@@ -30,11 +31,26 @@ module yingxu_yxv_pipeline #(
     wire [7:0] lp,lf,lr;wire [10:0] lc;
     reg diag_frozen;reg [7:0] frozen_phase,frozen_reason,frozen_flags;
     reg [10:0] frozen_count;
+    wire lv,lready,lwrite,lwv,lwr,lwl,lrv,lrr,lrl,ldone,lerror;
     wire [3:0] loader_sent;
-    reg [10:0] frozen_write,fail_write;
+    reg [23:0] frozen_write,fail_write;
+    wire [2:0] inner_owner_debug,outer_owner_debug;
+    reg write_replayed;
+    // No data beat was acknowledged to the loader. Both
+    // arbiters own THIS loader write, so neither can discard another client.
+    // Retry once; do not reset the progress watchdog or the SD transaction.
+    wire replay_write = RECOVER_LOST_WRITE && !local_rst && !fault && !write_replayed &&
+        lp[2:1]==2'd2 && loader_sent==0 && port_idle &&
+        inner_owner_debug==3'b101 && outer_owner_debug==3'b110 &&
+        !cmd_valid && cmd_ready && wvalid && !wready && !mem_done && !mem_error;
+    always @(posedge clk)begin
+        if(local_rst || ldone || lerror)write_replayed<=0;
+        else if(replay_write)write_replayed<=1;
+    end
     // D4g data/word/index snapshots stay removed. Reuse the old word port
-    // for only 11 existing control bits, frozen with the first MEM fault.
-    assign fail_index=10'd0;assign fail_word={21'd0,fail_write};
+    // for control bits only: low 11 retain D4i, high 13 identify the
+    // write-command/owner handshake. Freeze with the first MEM fault.
+    assign fail_index=10'd0;assign fail_word={8'd0,fail_write};
     // Capture before abort changes loader state. Held until common release;
     // fault_sys gives multiple clocks of stability before the SYS snapshot.
     always @(posedge clk)begin
@@ -43,7 +59,13 @@ module yingxu_yxv_pipeline #(
             diag_frozen<=1;
             frozen_phase<=fault_code==8'h95 ? 8'h0E:fault_code==8'h9E ? 8'h1E:
                 (fault_code==8'h91 || fault_code==8'h92 || fault_code==8'h93 || fault_code==8'h9F) ? lp:8'h16;
-            frozen_write<={loader_sent,port_debug_write};
+            // Write-wait extension uses only existing registered ownership
+            // and scalar handshakes. Keep the original low 11 control bits.
+            if(lp[2:1]==2'd2)
+                frozen_write<={1'b1,inner_owner_debug,outer_owner_debug,
+                               write_replayed,lready,cmd_valid,cmd_ready,wvalid,wready,
+                               loader_sent,port_debug_write};
+            else frozen_write<={13'd0,loader_sent,port_debug_write};
             frozen_reason<=lr;frozen_flags<=lf;frozen_count<=lc;
         end
     end
@@ -107,14 +129,13 @@ module yingxu_yxv_pipeline #(
         .rvalid(byte_valid),.rready(byte_ready),.rdata(byte_data),.wlevel(byte_level));
     wire dv,dready,dwrite,dwv,dwr,dwl,drv,drr,drl,ddone,derror;
     wire [20:0] daddr;wire [3:0] dwords;wire [31:0] dwd,drd;
-    wire lv,lready,lwrite,lwv,lwr,lwl,lrv,lrr,lrl,ldone,lerror;
     wire [20:0] laddr;wire [3:0] lwords;wire [31:0] lwd,lrd;
     wire pv,pready,pwrite,pwv,pwr,pwl,prv,prr,prl,pdone,perror;
     wire [20:0] paddr;wire [3:0] pwords;wire [31:0] pwd,prd;
     wire ov,oready,owrite,owv,owr,owl,orv,orr,orl,odone,oerror;
     wire [20:0] oaddr;wire [3:0] owords;wire [31:0] owd,ord;
 
-    yingxu_yxv_loader loader(.clk(clk),.rst(local_rst),.enable(request_sync[1] && !fault),.abort(fault),
+    yingxu_yxv_loader loader(.clk(clk),.rst(local_rst),.retry_write(replay_write),.enable(request_sync[1] && !fault),.abort(fault),
         .sd_valid(sdv),.sd_ready(sdr),.sd_lba(sdlba),.sd_sectors(sdn),.sd_done(sdd),
         .sd_byte(byte_data),.sd_byte_valid(byte_valid),.sd_byte_ready(byte_ready),
         .debug_sent(loader_sent),.debug_phase(lp),.debug_flags(lf),.debug_reason(lr),.debug_word(),.debug_index(),.debug_count(lc),
@@ -216,7 +237,7 @@ module yingxu_yxv_pipeline #(
     // display is higher priority inside the four-port controller.
     wire [2:0] ir,iwready,irvalid,idone,ierror;
     wire [31:0] inner_rdata;wire inner_rlast;
-    yingxu_mjpeg_arbiter other_arb(.clk(clk),.rst(local_rst),
+    yingxu_mjpeg_arbiter other_arb(.clk(clk),.rst(local_rst || replay_write),.debug_owner(inner_owner_debug),
         .cvalid({dv&&!dwrite,lv,pv}),.cready(ir),.cwrite(3'b010),.caddr({daddr,laddr,paddr}),.cwords({dwords,lwords,pwords}),
         .cwvalid({1'b0,lwv,1'b0}),.cwready(iwready),.cwdata({32'd0,lwd,32'd0}),.cwlast({1'b0,lwl,1'b0}),
         .crvalid(irvalid),.crready({drr,1'b1,prr}),.crdata(inner_rdata),.crlast(inner_rlast),.cdone(idone),.cerror(ierror),
@@ -226,7 +247,7 @@ module yingxu_yxv_pipeline #(
     assign prv=irvalid[0];assign prd=inner_rdata;assign prl=inner_rlast;assign pdone=idone[0];assign perror=ierror[0];
     assign ldone=idone[1];assign lerror=ierror[1];
     wire [2:0] er,ewready,ervalid,edone,eerror;wire [31:0] external_rdata;wire external_rlast;
-    yingxu_mjpeg_arbiter write_arb(.clk(clk),.rst(local_rst),
+    yingxu_mjpeg_arbiter write_arb(.clk(clk),.rst(local_rst || replay_write),.debug_owner(outer_owner_debug),
         .cvalid({ov,dv&&dwrite,1'b0}),.cready(er),.cwrite({owrite,1'b1,1'b0}),.caddr({oaddr,daddr,21'd0}),.cwords({owords,dwords,4'd0}),
         .cwvalid({owv,dwv,1'b0}),.cwready(ewready),.cwdata({owd,dwd,32'd0}),.cwlast({owl,dwl,1'b0}),
         .crvalid(ervalid),.crready({orr,1'b1,1'b0}),.crdata(external_rdata),.crlast(external_rlast),.cdone(edone),.cerror(eerror),

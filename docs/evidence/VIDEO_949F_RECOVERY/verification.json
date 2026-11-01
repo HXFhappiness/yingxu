@@ -1,0 +1,21 @@
+{
+  "baseline": "0863c4174d551d0f9b86e5623457f5aefc6bf141",
+  "scope": "video only; no photo/menu changes",
+  "hardware_trigger_source_proven": false,
+  "current_code_TD_or_board_validated": false,
+  "checks": {
+    "init_once_induction": "pass",
+    "full_7594_sector_reader_restart": "pass",
+    "fault_reset_causal_order": "pass",
+    "replay_disabled_reproduces_949F_low_I1_zero": "pass",
+    "single_transient_command_loss_full_7594_sector_PCM": "pass: 972032 words zero-diff, one replay, no SD reset",
+    "persistent_command_loss_bounded": "pass: one replay, unchanged watchdog tick",
+    "six_other_write_waits": "pass: no replay",
+    "normal_video_no_replay": "pass: 4001 samples, 0 ppm, no replay",
+    "real_UART_extended_I1": "pass: MISE=949F I1=DC0214",
+    "header_table_diagnostics": "pass: 27 cases",
+    "physical_loader512_scanout_PCM_units": "pass",
+    "Yosys_hierarchy_proc_check": "pass: zero problems"
+  },
+  "models": "7594-sector PCM uses accelerated transaction card service; not SPI pin/card electrical validation"
+}

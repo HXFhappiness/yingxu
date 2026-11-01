@@ -1,0 +1,9 @@
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=6 MISE=949f SP=0001 ACC=020 sent=8 phy_state=3 position=8 ST=0 reset=1 F=a
+SD_RESET_ORDERCHK: PASS init_commands=1 fault=4530905000000 then abort_reset=4530950000000 then init_drop=4530950000000; DNE was cleared at PCM request
+WRITE_DIAGCHK: PASS block=6 I1=00dc0438 sent=8 state=3 position=8 inner=101 outer=110 RP/LR/CV/CR/WV/WR=000000
+PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:117: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 5ms; walltime 0.880 s; speed 5.154 ms/s
+- Verilator: cpu 0.879 s on 1 threads; alloced 57 MB

@@ -9,7 +9,7 @@ module tb_yxv_loader;
     reg [7:0] source[0:16777215];reg [31:0] memory[0:2097151];
     integer fd,nfile,i,j,off,nbytes,base=0,p=0,left=0,cycle=0,cmds=0,midx=0,delay_done=0;
     reg reading=0,writing=0;reg [20:0] maddr;reg [1023:0] filename;
-    yingxu_yxv_loader dut(.clk(clk),.rst(rst),.enable(en),.abort(1'b0),.sd_valid(sv),.sd_ready(sr),.sd_lba(lba),.sd_sectors(sectors),
+    yingxu_yxv_loader dut(.clk(clk),.rst(rst),.retry_write(1'b0),.enable(en),.abort(1'b0),.sd_valid(sv),.sd_ready(sr),.sd_lba(lba),.sd_sectors(sectors),
         .sd_done(sdone),.sd_byte(data),.sd_byte_valid(valid),.sd_byte_ready(ready),
         .ready(meta),.failed(fail),.error_code(error),.frames(frames),.pcm_bytes(pcm),
         .slot_valid(slots),.slot_release(release_slot),.slot_tag0(tag0),.slot_tag1(tag1),.slot_len0(len0),.slot_len1(len1),
