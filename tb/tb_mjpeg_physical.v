@@ -5,7 +5,7 @@ module tb_mjpeg_physical;
     reg [20:0] ca=0;reg [3:0] cn=0;reg [31:0] wd=0;reg wl=0;
     wire cr,wr,rv,rl,done,error,idle;wire [31:0] rd;wire [31:0] dq;
     wire [31:0] display_data;reg display_pop=0;
-    integer n,i,j,cycles=0,disp=0,trans=0;
+    integer n,i,j,cycles=0,disp=0,trans=0;reg [20:0] address_override=0;
     yingxu_sdram_control_4port #(.MJPEG_PORT(1)) dut(
         .REF_CLK(refclk),.RESET_N(reset_n),.CLK(clk),
         .WR1_DATA(32'd0),.WR1(1'b0),.WR1_ADDR(21'd0),.WR1_MAX_ADDR(21'd128),.WR1_LENGTH(9'd128),.WR1_LOAD(1'b0),.WR1_CLK(clk),
@@ -21,11 +21,11 @@ module tb_mjpeg_physical;
         cycles<=cycles+1;
         if(reset_n && dut.mj_grant && !dut.rd2_afull_w) $fatal(1,"display priority violated");
         if(reset_n && dut.OUT_VALID && dut.RD_MASK[1]) disp<=disp+1;
-        if(reset_n && error) $fatal(1,"adapter error");
+        if(reset_n && error && address_override==0) $fatal(1,"adapter error");
     end
     task command(input integer write_mode,input integer count);
         begin
-            @(negedge clk);cw=write_mode;cn=count;ca=21'd4096+count*16;cv=1;
+            @(negedge clk);cw=write_mode;cn=count;ca=address_override!=0 ? address_override:21'd4096+count*16;cv=1;
             do @(posedge clk); while(!cr);
             @(negedge clk);cv=0;
         end
@@ -52,6 +52,20 @@ module tb_mjpeg_physical;
             end
             wait(done);@(negedge clk);trans=trans+2;
         end
+        // Aligned address+1..8 words cannot overflow a 21-bit address space.
+        // Exercise the very last physical word and reject unaligned/zero/9-word.
+        address_override=21'h1ffff8;
+        for(i=0;i<8;i=i+1)model.memory[21'h1ffff8+i]=32'hFACE0000+i;
+        command(0,8);rr=0;wait(rv);@(negedge clk);
+        for(i=0;i<8;i=i+1)begin
+            if(rd!==32'hFACE0000+i || rl!==(i==7))$fatal(1,"last SDRAM burst boundary");
+            rr=1;@(negedge clk);rr=0;
+        end
+        wait(done);@(negedge clk);
+        address_override=21'h1ffff9;command(0,8);wait(done);if(!error)$fatal(1,"unaligned accepted");@(negedge clk);
+        address_override=21'h1ffff8;command(0,0);wait(done);if(!error)$fatal(1,"zero length accepted");@(negedge clk);
+        command(0,9);wait(done);if(!error)$fatal(1,"9 words accepted");@(negedge clk);
+        $display("PHYBOUNDCHK: PASS last 8MB word read; unaligned/zero/9-word rejected without transaction");
         if(disp<128 || trans!=16) $fatal(1,"vacuous coverage");
         $display("PHYPORTCHK: PASS transactions=%0d 1..8word write/read zero-diff stalls owner real-controller done; display_words=%0d",trans,disp);$finish;
     end

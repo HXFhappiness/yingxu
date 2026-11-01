@@ -19,7 +19,9 @@
 // design_top_wrapper ?????HDMI PLL??DRAM controller??????????// media source??SD/Overlay ???????????//------------------------------------------------------------------------------
 
 module hardware_test #(
-    parameter integer IMG_COUNT = 8
+    parameter integer IMG_COUNT = 8,
+    parameter integer SIM_FAST_BOOT = 0,
+    parameter integer VIDEO_ACQUIRE_LIMIT = 250_000_000
 )(
     input  wire                             clk,
     input  wire                             rst_n,
@@ -95,6 +97,19 @@ module hardware_test #(
     // SW7 selects the mode. The DIP switch reads inverted on this board, so
     // switch OFF (pin high) selects the game and ON selects the photo browser.
     wire game_mode = ~sw[7];
+    reg [1:0] video_sw3;
+    always @(posedge clk or negedge rst_n)begin if(!rst_n)video_sw3<=2'b11;else video_sw3<={video_sw3[0],sw[3]};end
+    wire video_requested=sw[7] && music_sw4 && !video_sw3[1];
+    wire video_owned,video_failed,video_sd_start,video_sd_reset,video_sd_done;
+    wire [27:0] video_sd_lba;wire [15:0] video_sd_sectors,video_sd_occupancy;
+    wire [31:0] video_decoded,video_displayed,video_dropped,video_samples;wire [23:0] video_status;
+    reg video_owned_q,video_failed_q;reg video_photo_reload;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin video_owned_q<=0;video_failed_q<=0;video_photo_reload<=0;end
+        else begin video_owned_q<=video_owned;video_failed_q<=video_failed;
+            video_photo_reload<=((video_owned_q&&!video_owned)||(!video_failed_q&&video_failed))&&!game_mode;end
+    end
+
 
     // G4b: DIP reads 0 when physically ON (same as SW7). Direct select:
     //   SW5 ON  -> cartridge (YX-8)
@@ -201,7 +216,12 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
                            (inv_lives == 2'd1) ? 3'b001 : 3'b000;
     wire [7:0] invader_mask = {1'b0, lives_nib, wave_nib};
 
-    design_top_wrapper design_top_wrapper (
+    design_top_wrapper #(.VIDEO_ACQUIRE_LIMIT(VIDEO_ACQUIRE_LIMIT)) design_top_wrapper (
+        .I_video_mode(video_requested),.I_video_sd_init(sd_dbg_init_done),.I_video_sd_busy(sd_dbg_busy),.I_video_sd_done(video_sd_done),
+        .O_video_owned(video_owned),.O_video_failed(video_failed),.O_video_sd_start(video_sd_start),.O_video_sd_reset(video_sd_reset),
+        .O_video_sd_lba(video_sd_lba),.O_video_sd_sectors(video_sd_sectors),.O_video_decoded(video_decoded),.O_video_displayed(video_displayed),
+        .O_video_dropped(video_dropped),.O_video_samples(video_samples),.O_video_sd_occupancy(video_sd_occupancy),.O_video_status(video_status),
+        .I_wr_base(21'h100000),.I_rd_base(21'h100000),
         .I_sys_clk      (clk),
 
         .I_key_in       (1'b0),
@@ -213,7 +233,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .I_bmp_sd_data  (sd_bmp_sd_data),
         .I_bmp_sd_valid (sd_bmp_sd_valid),
         .O_bmp_sd_ready (sd_bmp_sd_ready),
-        .I_bmp_start    (sd_bmp_start_pulse),
+        .I_bmp_start    (sd_bmp_start_pulse | video_photo_reload),
         .I_sd_fail      (sd_fail),
         .I_img_index    (img_index),
         .I_game_mode    (game_mode),
@@ -257,7 +277,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         // The DIP switches read inverted on this board: physically OFF = pin high.
         .I_bright       (~sw[0]),
         .I_contrast     (~sw[1]),
-        .I_seg_enable   (seg_mask_final),
+        .I_seg_enable   (video_owned ? 8'd0:seg_mask_final),
 
         .O_dbg_fb_ready     (diag_fb_ready),
         .O_dbg_fb_underflow (diag_fb_underflow),
@@ -712,7 +732,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     // "card never answers CMD0" failures.
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)                       sd_por_cnt <= 27'd0;
-        else if (sd_por_cnt != 27'd100_000_000) sd_por_cnt <= sd_por_cnt + 27'd1;
+        else if (sd_por_cnt != (SIM_FAST_BOOT ? 27'd1000:27'd100_000_000)) sd_por_cnt <= sd_por_cnt + 27'd1;
     end
 
     // ------------------------------------------------------------------
@@ -725,7 +745,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     // the card back in idle, which is the recovery sequence from the SD spec.
     // Runs on every retry as well.
     // ------------------------------------------------------------------
-    wire por_done = (sd_por_cnt == 27'd100_000_000);
+    wire por_done = (sd_por_cnt == (SIM_FAST_BOOT ? 27'd1000:27'd100_000_000));
 
     localparam [7:0]  FLUSH_HALF  = 8'd125;      // ~400 kHz at 50 MHz
     localparam [15:0] FLUSH_CLKS  = 16'd65536;   // 160 ms of clocks, enough to force any state out
@@ -762,7 +782,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
                 flush_half <= 8'd0;
                 flush_clk  <= ~flush_clk;
                 if (flush_clk) begin
-                    if (flush_clks == FLUSH_CLKS - 16'd1)
+                    if (flush_clks == (SIM_FAST_BOOT ? 16'd63:FLUSH_CLKS - 16'd1))
                         flush_active <= 1'b0;
                     else
                         flush_clks <= flush_clks + 16'd1;
@@ -775,7 +795,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     end
 
 
-    wire sd_rst = ~rst_n | !por_done | flush_active | (sd_retry_pulse != 4'd0) |
+    wire sd_rst = video_sd_reset | ~rst_n | !por_done | flush_active | (sd_retry_pulse != 4'd0) |
                   (busy_kill != 4'd0);
 
     // While the flush runs the card must see CS high and a clean clock, so the
@@ -787,13 +807,14 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     assign sd_cs_n = flush_active ? 1'b1      : sd_cs_n_p;
 
     // Constant mask of valid indicator segments (one bit per image).
-    yingxu_sd_integration_probe #(.CLOCK_FREQ(50_000_000), .SECTOR_COUNT(16'd5401)) U_SD_INTEGRATION (
+    yingxu_sd_integration_probe #(.CLOCK_FREQ(50_000_000), .DYNAMIC_COUNT(1), .SECTOR_COUNT(16'd5401)) U_SD_INTEGRATION (
         .clk                       (clk),
         .rst                       (sd_rst),
+        .dynamic_enable(video_owned),.dynamic_count(video_sd_sectors),.transaction_done(video_sd_done),
         .trigger_sw                (1'b0),   // SW6 is handled in the top now
-        .start_sector              (cart_busy_w ? cart_lba_sel :
+        .start_sector              (video_owned ? video_sd_lba : cart_busy_w ? cart_lba_sel :
                              music_on_w ? wav_base_w : img_lba),
-        .restart                   (load_start | cart_restart_w | cart_swap | wav_restart_w),
+        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? 1'b0 : (load_start | video_photo_reload | cart_restart_w | cart_swap | wav_restart_w)),
         .out_stream_data           (sd_bmp_sd_data),
         .out_stream_valid          (sd_bmp_sd_valid),
         .out_stream_ready          (sd_bmp_sd_ready),
@@ -872,22 +893,22 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     // SD init + full multi-sector read verified on board (build6/7, seeds 29/36).
     // RE-ADDED 2026-10-26: cart-mode loader stall diagnosis. Remove after G4 closes.
 // G6diag: music mode -> telemetry carries wav internals instead of cart debug
-wire [9:0]  t_pc  = music_on_w ? wav_dbg_rptr_w[9:0] : cart_pc_w;
-wire [15:0] t_dwc = music_on_w ? wav_dbg_pops_w    : cart_dwc_w;
-wire [23:0] t_p0  = music_on_w ? {wav_dbg_sstate_w, wav_dbg_occ_w, wav_dbg_wptr_w}
+wire [9:0]  t_pc  = (video_requested || video_owned || video_failed) ? (video_displayed[9:0]-10'd1) : music_on_w ? wav_dbg_rptr_w[9:0] : cart_pc_w;
+wire [15:0] t_dwc = (video_requested || video_owned || video_failed) ? video_dropped[15:0] : music_on_w ? wav_dbg_pops_w    : cart_dwc_w;
+wire [23:0] t_p0  = (video_requested || video_owned || video_failed) ? video_status : music_on_w ? {wav_dbg_sstate_w, wav_dbg_occ_w, wav_dbg_wptr_w}
                                 : cart_prog0_w;
-wire [15:0] t_rc  = music_on_w ? wav_dbg_wcnt_w    : cart_retire_w;
-wire [23:0] t_p18 = music_on_w ? {8'd0, wav_dbg_lastl_w} : cart_p18_w;
-wire [15:0] t_mise = music_on_w ? wav_dbg_outp_w : cart_rst_cnt;
-wire [15:0] t_sce  = music_on_w ? wav_dbg_byte_w : gate_cnt;
-wire [15:0] t_sprc = music_on_w ? wav_dbg_rate_w : spr_cnt_w;
+wire [15:0] t_rc  = (video_requested || video_owned || video_failed) ? video_displayed[15:0] : music_on_w ? wav_dbg_wcnt_w    : cart_retire_w;
+wire [23:0] t_p18 = (video_requested || video_owned || video_failed) ? video_samples[23:0] : music_on_w ? {8'd0, wav_dbg_lastl_w} : cart_p18_w;
+wire [15:0] t_mise = (video_requested || video_owned || video_failed) ? video_decoded[15:0] : music_on_w ? wav_dbg_outp_w : cart_rst_cnt;
+wire [15:0] t_sce  = (video_requested || video_owned || video_failed) ? video_sd_occupancy : music_on_w ? wav_dbg_byte_w : gate_cnt;
+wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? 16'd48000 : music_on_w ? wav_dbg_rate_w : spr_cnt_w;
 
     yx8_uart_telem U_TELEM (
         .i_clk   (clk),
         .i_rst_n (rst_n),
         .i_seen  (sd_seen),
         .i_busy  (sd_dbg_busy),
-        .i_err   (sd_dbg_error_latched),
+        .i_err   ((video_requested || video_owned || video_failed) ? video_failed:sd_dbg_error_latched),
         .i_dne   (sd_dbg_done_latched),
         .i_por   (por_done),
         .i_flu   (flush_active),

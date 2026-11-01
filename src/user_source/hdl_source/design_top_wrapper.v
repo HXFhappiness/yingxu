@@ -1,5 +1,5 @@
 
-module design_top_wrapper (
+module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
     input  wire                             I_sys_clk                               ,
 
     input  wire                             I_key_in                                ,
@@ -15,6 +15,11 @@ module design_top_wrapper (
     input  wire                             I_bmp_start                             ,
     input  wire                             I_sd_fail                              ,
     input  wire [3:0]                       I_img_index                            ,
+    input wire I_video_mode,I_video_sd_init,I_video_sd_busy,I_video_sd_done,
+    output wire O_video_owned,O_video_failed,O_video_sd_start,O_video_sd_reset,
+    output wire [27:0] O_video_sd_lba,output wire [15:0] O_video_sd_sectors,
+    output wire [31:0] O_video_decoded,O_video_displayed,O_video_dropped,O_video_samples,
+    output wire [15:0] O_video_sd_occupancy,output wire [23:0] O_video_status,
     input  wire                             I_game_mode                            ,
     input  wire                             I_music_en                             ,
     output wire [27:0]                      O_wav_base                             ,
@@ -88,6 +93,34 @@ module design_top_wrapper (
     output wire         [   3: 0]           O_hdmi_debug                            
 );
 
+    // D3: mode controls cross through synchronizers; RGB selection uses the
+    // existing replay output register, preserving the compositor logic depth.
+    wire video_mem_clk,video_mem_ready,video_port_idle;
+    wire vm_valid,vm_ready,vm_write,vm_wvalid,vm_wready,vm_wlast,vm_rvalid,vm_rready,vm_rlast,vm_done,vm_error;
+    wire [20:0] vm_addr;wire [3:0] vm_words;wire [31:0] vm_wdata,vm_rdata;
+    wire video_sd_byte_ready,video_audio_enable,video_audio_valid,video_actual_pop;
+    wire [7:0] video_audio_data;wire [23:0] video_rgb;
+    wire video_rd_en,video_rd_load;wire [20:0] video_rd_addr,video_rd_max;wire [8:0] video_rd_len;
+    reg [1:0] video_owned_pix,video_audio_pix,video_go_pix;
+    reg video_owned_prev_sys,video_owned_prev_pix,video_go_sys;
+    wire video_reset_sys=S_rst || !I_key2_n;
+    wire wav_reset_sys=video_reset_sys || (O_video_owned && !video_audio_enable) || (O_video_owned ^ video_owned_prev_sys);
+    wire wav_reset_pix=S_rst_pix || !I_key2_n || (video_owned_pix[1] && !video_audio_pix[1]) || (video_owned_pix[1] ^ video_owned_prev_pix);
+    always @(posedge I_sys_clk) begin
+        if(video_reset_sys)begin video_owned_prev_sys<=0;video_go_sys<=0;end
+        else begin
+            video_owned_prev_sys<=O_video_owned;
+            if(!O_video_owned || !video_audio_enable)video_go_sys<=0;
+            else if(O_wav_occ>=256)video_go_sys<=1;
+        end
+    end
+    always @(posedge S_pixel_clk) begin
+        if(S_rst_pix || !I_key2_n)begin video_owned_pix<=0;video_audio_pix<=0;video_go_pix<=0;video_owned_prev_pix<=0;end
+        else begin
+            video_owned_pix<={video_owned_pix[0],O_video_owned};video_audio_pix<={video_audio_pix[0],video_audio_enable};
+            video_go_pix<={video_go_pix[0],video_go_sys};video_owned_prev_pix<=video_owned_pix[1];
+        end
+    end
     wire S_pll_lock                                 ;
     wire S_rst                                      ;
     wire                               S_pixel_clk                                ; 
@@ -327,7 +360,7 @@ reg [1:0] S_rst_g, S_rst_v, S_rst_t;
     wire        bmp_sd_ready;
     // G6: 音乐播放时把背压权交给播放器（探针一次 restart 连读 5401 扇区，
 // 不背压会冲爆 1024 样本 FIFO）
-assign O_bmp_sd_ready = I_music_en ? wav_sd_ready : bmp_sd_ready;
+assign O_bmp_sd_ready = O_video_owned ? video_sd_byte_ready : I_music_en ? wav_sd_ready : bmp_sd_ready;
 
     wire [23:0] S_player_rgb;
 
@@ -341,7 +374,7 @@ assign O_bmp_sd_ready = I_music_en ? wav_sd_ready : bmp_sd_ready;
         .start                              (I_bmp_start                         ),
         .i_base                             (I_wr_base                           ),
         .sd_data                            (I_bmp_sd_data                       ),
-        .sd_valid                           (I_bmp_sd_valid                      ),
+        .sd_valid                           (I_bmp_sd_valid && !O_video_owned     ),
         .sd_ready                           (bmp_sd_ready                        ),
 
         .wr2_data                           (S_wr2_data                          ),
@@ -357,11 +390,13 @@ assign O_bmp_sd_ready = I_music_en ? wav_sd_ready : bmp_sd_ready;
     );
 
     yingxu_sdram_video_player #(
+        .VIDEO_MUX(1),
         .H_ACTIVE                           (1280                                ),
         .V_ACTIVE                           (720                                 ),
         .H_TOTAL                            (1650                                ),
         .V_TOTAL                            (750                                 )
     ) U_yingxu_sdram_video_player (
+        .i_video_en(video_owned_pix[1]),.i_video_rgb(video_rgb),
         .pixel_clk                          (S_pixel_clk                         ),
         .i_base                             (I_rd_base                           ),
         .rst                                (S_rst                               ),
@@ -369,7 +404,7 @@ assign O_bmp_sd_ready = I_music_en ? wav_sd_ready : bmp_sd_ready;
         .pixel_x                            (S_pixel_x                           ),
         .pixel_y                            (S_pixel_y                           ),
         .pixel_active                       (S_pixel_active                      ),
-        .loaded                             (S_bmp_done                          ),
+        .loaded                             (S_bmp_done && !video_owned_pix[1]    ),
 
         .rd2_data                           (S_rd2_data                          ),
         .rd2_empty                          (S_rd2_empty                         ),
@@ -481,7 +516,7 @@ assign O_bmp_sd_ready = I_music_en ? wav_sd_ready : bmp_sd_ready;
         .ev_paddle   (ev_paddle  ),
         .ev_lose     (ev_lose    ),
         .ev_win      (ev_win     ),
-        .enable      (I_game_mode),
+        .enable      (I_game_mode || video_owned_pix[1]),
         .audio_valid (psg_valid  ),
         .audio_left  (psg_l      ),
         .audio_right (psg_r      )
@@ -502,10 +537,10 @@ assign O_bmp_sd_ready = I_music_en ? wav_sd_ready : bmp_sd_ready;
 
     yingxu_wav_player u_wav (
         .sys_clk      (I_sys_clk     ),
-        .sys_rst      (S_rst         ),
+        .sys_rst      (wav_reset_sys ),
         .pix_clk      (S_pixel_clk   ),
-        .pix_rst      (S_rst_pix     ),
-        .music_active (I_music_en    ),
+        .pix_rst      (wav_reset_pix ),
+        .music_active (I_music_en || video_audio_enable),
         .wav_base     (O_wav_base    ),
         .wav_restart  (O_wav_restart ),
         .dbg_sstate   (O_wav_sstate   ),
@@ -519,18 +554,18 @@ assign O_bmp_sd_ready = I_music_en ? wav_sd_ready : bmp_sd_ready;
         .dbg_outp_cnt (O_wav_outp_cnt ),
         .dbg_byte_cnt (O_wav_byte_cnt ),
         .dbg_rate     (O_wav_rate     ),
-        .sd_data      (I_bmp_sd_data ),
-        .sd_valid     (I_bmp_sd_valid),
+        .sd_data      (O_video_owned ? video_audio_data:I_bmp_sd_data),
+        .sd_valid     (O_video_owned ? video_audio_valid:I_bmp_sd_valid),
         .sd_ready     (wav_sd_ready  ),
-        .out_tick     (psg_valid     ),
+        .out_tick     (psg_valid && (!video_owned_pix[1] || video_go_pix[1])),
         .wav_l        (wav_l         ),
         .wav_r        (wav_r         ),
-        .wav_active   (wav_active    )
+        .wav_active   (wav_active    ),.dbg_pop(video_actual_pop)
     );
 
-    assign A_valid = I_game_mode ? psg_valid : S_audio_valid;
-    assign A_left  = I_game_mode ? mix_l_sat : S_audio_left_data;
-    assign A_right = I_game_mode ? mix_r_sat : S_audio_right_data;
+    assign A_valid = (I_game_mode || video_owned_pix[1]) ? psg_valid : S_audio_valid;
+    assign A_left  = video_owned_pix[1] ? wav_l_m : I_game_mode ? mix_l_sat : S_audio_left_data;
+    assign A_right = video_owned_pix[1] ? wav_r_m : I_game_mode ? mix_r_sat : S_audio_right_data;
 
     // -------------------------------------------------------------------------
     // Sprite overlay layer (v1). Sits after the replay stage and before HDMI.
@@ -729,7 +764,7 @@ wire        c_spr_we;
         .en             (sel_cart      ),
         .sd_ready       (I_sd_ready    ),
         .sd_data        (I_bmp_sd_data ),
-        .sd_valid       (I_bmp_sd_valid),
+        .sd_valid       (I_bmp_sd_valid && !O_video_owned),
         .key0_n         (I_key0_n      ),
         .key1_n         (I_key1_n      ),
         .pix_frame_tick (frame_tick    ),
@@ -797,14 +832,20 @@ assign O_inv_wave  = 4'd0;
     // V0.3C-A SDRAM double framebuffer sink.
     // -------------------------------------------------------------------------
     yingxu_sdram_framebuffer #(
+        .ENABLE_MJPEG(1),
         .H_TOTAL                            (1650                                ),
         .H_ACTIVE                           (1280                                ),
         .V_TOTAL                            (750                                 ),
         .V_ACTIVE                           (720                                 )
     ) U_yingxu_sdram_framebuffer (
+        .o_mem_clk(video_mem_clk),.o_mem_ready(video_mem_ready),
+        .i_mj_active(O_video_owned),.i_mj_valid(vm_valid),.o_mj_ready(vm_ready),.i_mj_write(vm_write),
+        .i_mj_addr(vm_addr),.i_mj_words(vm_words),.i_mj_wvalid(vm_wvalid),.o_mj_wready(vm_wready),
+        .i_mj_wdata(vm_wdata),.i_mj_wlast(vm_wlast),.o_mj_rvalid(vm_rvalid),.i_mj_rready(vm_rready),
+        .o_mj_rdata(vm_rdata),.o_mj_rlast(vm_rlast),.o_mj_done(vm_done),.o_mj_error(vm_error),.o_mj_idle(video_port_idle),
         .sys_clk                            (I_sys_clk                           ),
         .pixel_clk                          (S_pixel_clk                         ),
-        .rst                                (S_rst                               ),
+        .rst                                (video_reset_sys                     ),
 
         .pixel_x                            (S_pixel_x                           ),
         .pixel_y                            (S_pixel_y                           ),
@@ -833,15 +874,27 @@ assign O_inv_wave  = 4'd0;
         .i_wr2_load                         (S_wr2_load                          ),
         .o_wr2_full                         (S_wr2_full                          ),
 
-        .i_rd2_en                           (S_rd2_en                            ),
-        .i_rd2_addr                         (S_rd2_addr                          ),
-        .i_rd2_max_addr                     (S_rd2_max                           ),
-        .i_rd2_len                          (S_rd2_len                           ),
-        .i_rd2_load                         (S_rd2_load                          ),
+        .i_rd2_en                           (video_owned_pix[1] ? video_rd_en:S_rd2_en                            ),
+        .i_rd2_addr                         (video_owned_pix[1] ? video_rd_addr:S_rd2_addr                          ),
+        .i_rd2_max_addr                     (video_owned_pix[1] ? video_rd_max:S_rd2_max                           ),
+        .i_rd2_len                          (video_owned_pix[1] ? video_rd_len:S_rd2_len                           ),
+        .i_rd2_load                         (video_owned_pix[1] ? video_rd_load:S_rd2_load                          ),
         .o_rd2_data                         (S_rd2_data                          ),
         .o_rd2_empty                        (S_rd2_empty                         )
     );
 
+
+    yingxu_yxv_pipeline #(.ACQUIRE_LIMIT(VIDEO_ACQUIRE_LIMIT)) U_VIDEO(
+        .sys_clk(I_sys_clk),.clk(video_mem_clk),.pix_clk(S_pixel_clk),.rst(video_reset_sys),.enable(I_video_mode),.mem_ready(video_mem_ready),
+        .sd_init(I_video_sd_init),.sd_busy(I_video_sd_busy),.sd_done(I_video_sd_done),.sd_data(I_bmp_sd_data),.sd_data_valid(I_bmp_sd_valid),
+        .sd_data_ready(video_sd_byte_ready),.sd_start(O_video_sd_start),.sd_lba(O_video_sd_lba),.sd_sectors(O_video_sd_sectors),.sd_reset(O_video_sd_reset),
+        .owned(O_video_owned),.failed(O_video_failed),.error_code(),.audio_enable(video_audio_enable),
+        .audio_data(video_audio_data),.audio_valid(video_audio_valid),.audio_ready(wav_sd_ready),.audio_pop(video_actual_pop),
+        .x(S_pixel_x),.y(S_pixel_y),.pixel_active(S_pixel_active),.rd2_data(S_rd2_data),.rd2_empty(S_rd2_empty),
+        .rd2_en(video_rd_en),.rd2_load(video_rd_load),.rd2_addr(video_rd_addr),.rd2_max(video_rd_max),.rd2_len(video_rd_len),.rgb(video_rgb),
+        .cmd_valid(vm_valid),.cmd_ready(vm_ready),.cmd_write(vm_write),.cmd_addr(vm_addr),.cmd_words(vm_words),
+        .wvalid(vm_wvalid),.wready(vm_wready),.wdata(vm_wdata),.wlast(vm_wlast),.rvalid(vm_rvalid),.rready(vm_rready),.rdata(vm_rdata),.rlast(vm_rlast),.mem_done(vm_done),.mem_error(vm_error),.port_idle(video_port_idle),
+        .decoded_frames(O_video_decoded),.displayed_frames(O_video_displayed),.dropped_frames(O_video_dropped),.played_samples(O_video_samples),.sd_occupancy(O_video_sd_occupancy),.status(O_video_status));
 
     hdmi_1_4b_transmitter_core_wrapper#(
     .DEVICE                             ("EG"                                ),

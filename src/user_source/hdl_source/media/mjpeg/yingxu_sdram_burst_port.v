@@ -34,8 +34,11 @@ module yingxu_sdram_burst_port(
             done<=0;error<=0;
             case(state)
                 IDLE: if(cmd_valid && cmd_ready) begin
-                    wr<=cmd_write;address<=cmd_addr;length<=cmd_words;position<=0;bad<=0;
-                    if(cmd_addr[2:0]!=0 || cmd_words==0 || cmd_words>8 || {1'b0,cmd_addr}+{18'd0,cmd_words}>22'h200000) begin done<=1;error<=1;end
+                    wr<=cmd_write;address<={cmd_addr[20:3],3'd0};length<=cmd_words;position<=0;bad<=0;
+                    // A 21-bit, 8-word-aligned start is <=0x1ffff8.
+                    // With 1..8 words the end is <=0x200000 by construction;
+                    // a second 22-bit end-address adder/comparator is redundant.
+                    if(cmd_addr[2:0]!=0 || cmd_words==0 || cmd_words>8) begin done<=1;error<=1;end
                     else state<=cmd_write ? COLLECT:WAIT;
                 end
                 COLLECT: if(wvalid && wready) begin
