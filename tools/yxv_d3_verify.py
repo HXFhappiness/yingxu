@@ -42,6 +42,20 @@ def main():
     if not a.build_only:
         uart=OUT/(label+'.uart.txt')
         run([build/'Vtb_yxv_top','+file=tb/testvectors/testvec_budget.yxv','+gold=out/mjpeg_d2/budget.rgb565be',f'+sw={a.sw:02x}',f'+frames={a.frames}',f'+bad={a.bad}',f'+noinit={int(a.noinit)}',f'+uart={uart}'],label+'.log')
+        if a.bad==1 or a.noinit:
+            wire=uart.read_text()
+            ds=[{k:int(v,16)for k,v in re.findall(r'(\w+)=([0-9A-F]+)',ln)}for ln in wire.splitlines()if ln.startswith('D ')]
+            bs=[{k:int(v,16)for k,v in re.findall(r'(\w+)=([0-9A-F]+)',ln)}for ln in wire.splitlines()if ln.startswith('B ')]
+            cs=[{k:int(v,16)for k,v in re.findall(r'(\w+)=([0-9A-F]+)',ln)}for ln in wire.splitlines()if ln.startswith('C ')]
+            assert ds and bs and cs,'No physical UART fault report'
+            for d in ds:
+                assert d['MISE']==(0x069F if a.noinit else 0x3992),d
+                assert d['SP']>>8==(0 if a.noinit else 1),d
+                assert d['WC']==0 and (d['I0']&0x200000),d
+            assert all(c['ACC']==(0 if a.noinit else 512)for c in cs),cs
+            assert all(((b['RDT']<<24)|d['I1'])==(0 if a.noinit else 0x31565800)for b,d in zip(bs,ds)),(bs,ds)
+            if a.bad==1:assert all(b['RSP']==0xD531565800 for b in bs),bs
+            print('DIAG_UARTCHK: PASS retained phase/error/reason/count/index/bad-word on real UART pad',flush=True)
         if not a.bad and not a.noinit and a.frames>=72:
             rows=[{k:int(v,16)for k,v in re.findall(r'(\w+)=([0-9A-F]+)',line)}for line in uart.read_text().splitlines()if line.startswith('D ')]
             owned=[d for d in rows if d.get('I0',0)&0x800000]

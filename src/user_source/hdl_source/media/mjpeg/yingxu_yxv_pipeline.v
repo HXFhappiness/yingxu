@@ -10,6 +10,8 @@ module yingxu_yxv_pipeline #(
     output wire sd_data_ready,output reg sd_start,output reg [27:0] sd_lba,output reg [15:0] sd_sectors,
     output wire sd_reset,
     output reg owned,failed,output reg [7:0] error_code,
+    output reg [15:0] diagnosis,detail,output reg [10:0] fail_count,
+    output reg [9:0] fail_index,output reg [31:0] fail_word,
     output wire audio_enable,output wire [7:0] audio_data,output wire audio_valid,input wire audio_ready,
     input wire audio_pop,input wire [10:0] x,input wire [9:0] y,input wire pixel_active,
     input wire [31:0] rd2_data,input wire rd2_empty,
@@ -25,6 +27,20 @@ module yingxu_yxv_pipeline #(
     wire local_rst=rst || !owned || !mem_ready;
     reg fault;reg [7:0] fault_code;reg [28:0] stall;reg last_sample;
     reg audio_run;wire [31:0] sample_count;
+    wire [7:0] lp,lf,lr;wire [31:0] lw;wire [9:0] li;wire [10:0] lc;
+    reg diag_frozen;reg [7:0] frozen_phase,frozen_reason,frozen_flags;
+    reg [10:0] frozen_count;reg [9:0] frozen_index;reg [31:0] frozen_word;
+    // Capture before abort changes loader state. Held until common release;
+    // fault_sys gives multiple clocks of stability before the SYS snapshot.
+    always @(posedge clk)begin
+        if(local_rst)begin diag_frozen<=0;frozen_phase<=0;frozen_reason<=0;frozen_flags<=0;frozen_count<=0;frozen_index<=0;frozen_word<=0;end
+        else if(fault && !diag_frozen)begin
+            diag_frozen<=1;
+            frozen_phase<=fault_code==8'h95 ? 8'h0E:fault_code==8'h9E ? 8'h1E:
+                (fault_code==8'h91 || fault_code==8'h92 || fault_code==8'h93 || fault_code==8'h9F) ? lp:8'h16;
+            frozen_reason<=lr;frozen_flags<=lf;frozen_count<=lc;frozen_index<=li;frozen_word<=lw;
+        end
+    end
     wire loader_idle,loader_ready,loader_failed,pcm_failed,pcm_idle;
     wire [7:0] loader_code;wire [9:0] frames;wire [31:0] pcm_bytes;
     wire [1:0] slots;reg [1:0] slot_release;
@@ -40,18 +56,20 @@ module yingxu_yxv_pipeline #(
     wire quiet;reg [1:0] quiet_sys,fault_sys;
     reg [1:0] audio_sys;reg [27:0] acquire_wait;
     always @(posedge sys_clk) begin
-        if(rst) begin owned<=0;failed<=0;error_code<=0;quiet_sys<=0;fault_sys<=0;audio_sys<=0;abort_sys<=0;acquire_wait<=0;end
+        if(rst) begin owned<=0;failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;fail_index<=0;fail_word<=0;quiet_sys<=0;fault_sys<=0;audio_sys<=0;abort_sys<=0;acquire_wait<=0;end
         else begin
             quiet_sys<={quiet_sys[0],quiet};fault_sys<={fault_sys[0],fault};
             audio_sys<={audio_sys[0],audio_run};abort_sys<={abort_sys[0],fault};
-            if(!owned && !enable) begin failed<=0;error_code<=0;end
+            if(!owned && !enable) begin failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;fail_index<=0;fail_word<=0;end
             if(owned || !enable || failed)acquire_wait<=0;
             else if(sd_init && !sd_busy) begin owned<=1;acquire_wait<=0;end
-            else if(acquire_wait==ACQUIRE_LIMIT-1)begin failed<=1;error_code<=8'h9F;end
+            else if(acquire_wait==ACQUIRE_LIMIT-1)begin failed<=1;error_code<=8'h9F;diagnosis<=16'h069F;detail<=0;fail_count<=0;fail_index<=0;fail_word<=0;end
             else acquire_wait<=acquire_wait+1'b1;
             if(owned && (!enable || fault_sys[1]) && quiet_sys[1] && !sd_inflight) begin
                 owned<=0;
-                if(fault_sys[1]) begin failed<=1;error_code<=fault_code;end
+                if(fault_sys[1]) begin failed<=1;error_code<=fault_code;
+                    diagnosis<={frozen_phase,fault_code};detail<={frozen_reason,frozen_flags};
+                    fail_count<=frozen_count;fail_index<=frozen_index;fail_word<=frozen_word;end
             end
         end
     end
@@ -86,6 +104,7 @@ module yingxu_yxv_pipeline #(
     yingxu_yxv_loader loader(.clk(clk),.rst(local_rst),.enable(request_sync[1] && !fault),.abort(fault),
         .sd_valid(sdv),.sd_ready(sdr),.sd_lba(sdlba),.sd_sectors(sdn),.sd_done(sdd),
         .sd_byte(byte_data),.sd_byte_valid(byte_valid),.sd_byte_ready(byte_ready),
+        .debug_phase(lp),.debug_flags(lf),.debug_reason(lr),.debug_word(lw),.debug_index(li),.debug_count(lc),
         .idle(loader_idle),.ready(loader_ready),.failed(loader_failed),.error_code(loader_code),.frames(frames),.pcm_bytes(pcm_bytes),
         .slot_valid(slots),.slot_release(slot_release),.slot_tag0(slot_tag0),.slot_tag1(slot_tag1),.slot_len0(slot_len0),.slot_len1(slot_len1),
         .sd_accepted(sd_accepted),.sd_ticks(sd_ticks),

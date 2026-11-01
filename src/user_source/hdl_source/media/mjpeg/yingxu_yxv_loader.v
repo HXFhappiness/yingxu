@@ -7,6 +7,9 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
     output wire sd_valid,input wire sd_ready,output reg [27:0] sd_lba,output reg [15:0] sd_sectors,
     input wire sd_done,input wire [7:0] sd_byte,input wire sd_byte_valid,output wire sd_byte_ready,
     output wire idle,
+    output wire [7:0] debug_phase,debug_flags,
+    output reg [7:0] debug_reason,output reg [31:0] debug_word,
+    output reg [9:0] debug_index,output wire [10:0] debug_count,
     output reg ready,failed,output reg [7:0] error_code,
     output reg [9:0] frames,output reg [31:0] pcm_bytes,
     output reg [1:0] slot_valid,input wire [1:0] slot_release,
@@ -36,10 +39,22 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
     wire [19:0] entry_end={1'b0,entry_off[27:9]}+{12'd0,rounded_size[16:9]};
     wire [13:0] pcm_sectors={1'b0,pcm_bytes[21:9]}+{13'd0,(|pcm_bytes[8:0])};
     wire [19:0] audio_end=entry_end+{6'd0,pcm_sectors};
+    wire [7:0] entry_reason=entry_index>=512 ? 8'h10 : entry_off[8:0]!=0 ? 8'h11 :
+        entry_off[31:28]!=0 ? 8'h12 : (entry_size[31:16]!=0 || entry_size[15:0]<4) ? 8'h13 :
+        (entry_index==0 && entry_off[27:9]!=frame_start) ? 8'h14 :
+        (entry_index!=0 && entry_off[27:9]<previous_end) ? 8'h15 : entry_end[19] ? 8'h16 : 8'h17;
+    wire [31:0] entry_observed=entry_reason==8'h13 ? entry_size : entry_reason==8'h17 ? {12'd0,audio_end}:entry_off;
     wire [31:0] complete_word={sd_byte,word[23:0]};
     // Fixed shifts keep the 8000*frames duration check out of DSPs.
     wire [22:0] expected_pcm={frames,13'd0}-{6'd0,frames,7'd0}-{7'd0,frames,6'd0};
     wire [12:0] minimum_frame_start=(13'd32+{frames,3'd0}+13'd511)&13'h1E00;
+    assign debug_phase={purpose,state,mstate,invalid};
+    assign debug_flags={rx_complete,ack,sd_done,sd_valid,sd_ready,(filled==0),(mstate==0),sd_byte_valid};
+    assign debug_count=count[10:0];
+    // Observation only: preserve the first validation failure, never change flow.
+    task remember(input [7:0] why,input [31:0] observed,input [9:0] index);
+        begin if(debug_reason==0)begin debug_reason<=why;debug_word<=observed;debug_index<=index;end end
+    endtask
     assign sd_valid=state==SDREQ;
     assign sd_byte_ready=abort || (state==RECEIVE && (meta || invalid || filled<8));
     assign idle=(state==IDLE || state==SELECT || state==FAIL) && mstate==0;
@@ -52,6 +67,7 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
     endtask
     always @(posedge clk) begin
         if(rst) begin
+            debug_reason<=0;debug_word<=0;debug_index<=0;
             state<=IDLE;purpose<=0;sd_lba<=VIDEO_LBA;sd_sectors<=0;ready<=0;failed<=0;error_code<=0;
             frames<=0;pcm_bytes<=0;slot_valid<=0;slot_tag0<=0;slot_tag1<=0;slot_len0<=0;slot_len1<=0;
             sd_accepted<=0;sd_ticks<=0;next_local<=0;next_tag<=0;selected<=0;
@@ -69,7 +85,7 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
                     if(wvalid && wready) sent<=sent+1'b1;
                     if(mem_done || mem_error) begin
                         mstate<=0;filled<=0;cursor<=cursor+8;
-                        if(mem_error) begin invalid<=1;error_code<=8'h91;end
+                        if(mem_error) begin invalid<=1;error_code<=8'h91;remember(8'h20,{11'd0,cursor},10'd0);end
                     end
                 end
                 default:mstate<=0;
@@ -83,23 +99,23 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
                         word<={sd_byte,word[23:8]};
                         if(count[1:0]==3) begin
                             case(absolute[4:2])
-                                0:if(complete_word!=32'h31565859)begin invalid<=1;error_code<=8'h92;end
-                                1:if(complete_word!=32'h02800201)begin invalid<=1;error_code<=8'h92;end
-                                2:if(complete_word!=32'h001801E0)begin invalid<=1;error_code<=8'h92;end
+                                0:if(complete_word!=32'h31565859)begin invalid<=1;error_code<=8'h92;remember(8'd1,complete_word,(absolute[4:2]==3 ? complete_word[9:0]:frames));end
+                                1:if(complete_word!=32'h02800201)begin invalid<=1;error_code<=8'h92;remember(8'd2,complete_word,(absolute[4:2]==3 ? complete_word[9:0]:frames));end
+                                2:if(complete_word!=32'h001801E0)begin invalid<=1;error_code<=8'h92;remember(8'd3,complete_word,(absolute[4:2]==3 ? complete_word[9:0]:frames));end
                                 3:begin
                                     frames<=complete_word[9:0];
-                                    if(complete_word==0 || complete_word>512)begin invalid<=1;error_code<=8'h92;end
+                                    if(complete_word==0 || complete_word>512)begin invalid<=1;error_code<=8'h92;remember(8'd4,complete_word,(absolute[4:2]==3 ? complete_word[9:0]:frames));end
                                 end
-                                4:if(complete_word!=48000)begin invalid<=1;error_code<=8'h92;end
+                                4:if(complete_word!=48000)begin invalid<=1;error_code<=8'h92;remember(8'd5,complete_word,(absolute[4:2]==3 ? complete_word[9:0]:frames));end
                                 5:begin
                                     pcm_bytes<={10'd0,complete_word[21:0]};
-                                    if(complete_word!={9'd0,expected_pcm})begin invalid<=1;error_code<=8'h92;end
+                                    if(complete_word!={9'd0,expected_pcm})begin invalid<=1;error_code<=8'h92;remember(8'd6,complete_word,(absolute[4:2]==3 ? complete_word[9:0]:frames));end
                                 end
-                                6:if(complete_word!=32)begin invalid<=1;error_code<=8'h92;end
+                                6:if(complete_word!=32)begin invalid<=1;error_code<=8'h92;remember(8'd7,complete_word,(absolute[4:2]==3 ? complete_word[9:0]:frames));end
                                 7:begin
                                     frame_start<=complete_word[27:9];
                                     if(complete_word[31:28]!=0 || complete_word[8:0]!=0 || complete_word<minimum_frame_start)
-                                        begin invalid<=1;error_code<=8'h92;end
+                                        begin invalid<=1;error_code<=8'h92;remember(8'd8,complete_word,(absolute[4:2]==3 ? complete_word[9:0]:frames));end
                                 end
                             endcase
                         end
@@ -110,7 +126,7 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
                             if(entry_index>=512 || entry_off[8:0]!=0 || entry_off[31:28]!=0 || entry_size[31:16]!=0 || entry_size[15:0]<16'd4 ||
                                (entry_index==0 ? entry_off[27:9]!=frame_start : entry_off[27:9]<previous_end) || entry_end[19] ||
                                (entry_index+10'd1==frames && audio_end>20'h80000)) begin
-                                invalid<=1;error_code<=8'h93;
+                                invalid<=1;error_code<=8'h93;remember(entry_reason,entry_observed,entry_index);
                             end else begin
                                 frame_table[entry_index[8:0]]<={entry_size[15:0],entry_off[27:9]};previous_end<=entry_end[18:0];
                                 if(entry_index+10'd1==frames) audio_off<=entry_end[18:0];

@@ -73,3 +73,8 @@ pull feat/mjpeg，TD打开AC201_AL_board_test.al；SIM_FAST_BOOT保持默认0。
 用户486帧素材有3888000B PCM，按1.30MB/s预载约3秒，另加原上电/flush/init等待与首两帧准备；上电约5秒以上才出声是本版预载策略的估计，不应只凭初始背景判死锁。预载期间I0位20为0、DNE=0可以正常，RSP首头及帧数可先到达。
 
 烧写后首先查看OFF/WC/RSP首请求证据；再要求MISE/RC/PC持续增长、DW=0、I1按48k推进，观察视频不被背景覆盖、退出/坏头可回到照片。保留77和E7各至少10秒原始A/B/C/D及准确bit版本。板测未通过之前仅称软件回归交付。
+
+
+## D4c板测后续
+
+用户确认首读OFF/RSP/count及回退sticky生效，失败收窄到首扇区后；不能从归零计数断言fault码。后续D4d诊断字段与完整首扇区状态顺序见 [D4D_DIAGNOSTICS.md](D4D_DIAGNOSTICS.md)，失败时MISE/SP/WC/ACC/RSP解释以D4d为准。
