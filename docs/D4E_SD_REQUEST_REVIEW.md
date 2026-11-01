@@ -61,3 +61,10 @@ MEM已有首fault冻结寄存器保持不变；SYS收到两级fault后立即把�
 5. 顶层正常短程和坏头回退回归，确认提前显示不改变正常出图、音频和回退。未执行TD/板测，不把本次软件通过称为板上楔死已修复。
 
 本轮仅SYS诊断寄存器写使能及UART选择改变，没有新RAM/DSP或像素域路径；面积/时序仍需本地TD实测。原始输出见本轮evidence目录。
+
+
+## 最终软件结果
+
+源码44ad637。上述restart、真实vendor idle/selection、pending故障前后、18项诊断和真实UART断言均通过。正常短程4001采样（83,333,334ns）、0/2丢帧、AV1849/2000、目标处460800写字与1985280扫描像素零diff、HDMI4000样本零diff/采样误差0ppm、退出照片1次；不是新的3秒验证。坏头回退串口MISE3992/SP01CE/ACC200，pending串口MISE929F/ACC020/LS6/FA，均通过。
+
+原始日志、UART文本、源码哈希与机器可读结果见 [evidence/D4e](evidence/D4e) 和 [verification.json](evidence/D4e/verification.json)。pending_before_fix_expected_failure.log是修改前刻意暴露诊断盲点的失败证据，不计为通过项。真实vendor子测试含既有隐式wire/位宽等编译告警，未修改厂商代码；它只证明idle与mode2选择，不宣称完成真实SPI卡读。下一步由板测读取LS/MISE确认实际首故障；本轮交付不宣称修复板上楔死。

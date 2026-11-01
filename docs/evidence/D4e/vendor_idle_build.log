@@ -1,0 +1,911 @@
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'mosi'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:30:41: ... Location of port declaration
+   30 |     output                              mosi                       ,
+      |                                         ^~~~
+                     ... For warning description see https://verilator.org/warn/PINMISSING?v=5.032
+                     ... Use "/* verilator lint_off PINMISSING */" and lint_on around source to disable this message.
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'sclk'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:31:41: ... Location of port declaration
+   31 |     output                              sclk                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'cs_n'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:32:41: ... Location of port declaration
+   32 |     output reg                          cs_n                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'idle'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:33:41: ... Location of port declaration
+   33 |     output                              idle                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'done'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:34:41: ... Location of port declaration
+   34 |     output reg                          done                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'rd_ram_dout'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:35:41: ... Location of port declaration
+   35 |     output             [   7: 0]        rd_ram_dout                ,
+      |                                         ^~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_spi_clk'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:47:41: ... Location of port declaration
+   47 |     output wire                         dbg_spi_clk                ,
+      |                                         ^~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_spi_div_counter'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:49:44: ... Location of port declaration
+   49 |     output wire        [spi_div_width-1:0] dbg_spi_div_counter      ,
+      |                                            ^~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_spi_start'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:52:41: ... Location of port declaration
+   52 |     output wire                         dbg_spi_start              ,
+      |                                         ^~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_spi_next'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:53:41: ... Location of port declaration
+   53 |     output wire                         dbg_spi_next               ,
+      |                                         ^~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_spi_done'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:54:41: ... Location of port declaration
+   54 |     output wire                         dbg_spi_done               ,
+      |                                         ^~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_init_state'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:55:41: ... Location of port declaration
+   55 |     output wire        [   3: 0]        dbg_init_state             ,
+      |                                         ^~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_init_response'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:56:41: ... Location of port declaration
+   56 |     output wire        [  39: 0]        dbg_init_response          ,
+      |                                         ^~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_spi_driver_state'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:57:41: ... Location of port declaration
+   57 |     output wire                         dbg_spi_driver_state       ,
+      |                                         ^~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_spi_driver_count'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:58:41: ... Location of port declaration
+   58 |     output wire        [   3: 0]        dbg_spi_driver_count       ,
+      |                                         ^~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_read_state'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:59:41: ... Location of port declaration
+   59 |     output wire        [   2: 0]        dbg_read_state             ,
+      |                                         ^~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_read_spi_rec_data'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:60:41: ... Location of port declaration
+   60 |     output wire        [   7: 0]        dbg_read_spi_rec_data      ,
+      |                                         ^~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_read_addr_done'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:61:41: ... Location of port declaration
+   61 |     output wire                         dbg_read_addr_done         ,
+      |                                         ^~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:7:91: Cell has missing pin: 'dbg_read_data_done'
+    7 |     sd_card_control #(.clock_freq(50000000),.spi_lowfreq(400000),.spi_highfreq(12500000)) dut(
+      |                                                                                           ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:62:41: ... Location of port declaration
+   62 |     output wire                         dbg_read_data_done          
+      |                                         ^~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_rec.v:83:11: Cell has missing pin: 'done'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:34:41: ... Location of port declaration
+   34 |     output reg                          done                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_rec.v:83:11: Cell has missing pin: 'empty'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:35:41: ... Location of port declaration
+   35 |     output                              empty                      ,
+      |                                         ^~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_rec.v:83:11: Cell has missing pin: 'var_value'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:37:41: ... Location of port declaration
+   37 |     input              [width-1: 0]     var_value                  ,
+      |                                         ^~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_rec.v:83:11: Cell has missing pin: 'load'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:38:41: ... Location of port declaration
+   38 |     input                               load                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_rec.v:83:11: Cell has missing pin: 'inc'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:40:41: ... Location of port declaration
+   40 |     input                               inc                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_rec.v:83:11: Cell has missing pin: 'dec'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:41:41: ... Location of port declaration
+   41 |     input                               dec                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:81:11: Cell has missing pin: 'done'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:34:41: ... Location of port declaration
+   34 |     output reg                          done                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:81:11: Cell has missing pin: 'empty'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:35:41: ... Location of port declaration
+   35 |     output                              empty                      ,
+      |                                         ^~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:81:11: Cell has missing pin: 'var_value'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:37:41: ... Location of port declaration
+   37 |     input              [width-1: 0]     var_value                  ,
+      |                                         ^~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:81:11: Cell has missing pin: 'load'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:38:41: ... Location of port declaration
+   38 |     input                               load                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:81:11: Cell has missing pin: 'inc'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:40:41: ... Location of port declaration
+   40 |     input                               inc                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:81:11: Cell has missing pin: 'dec'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:41:41: ... Location of port declaration
+   41 |     input                               dec                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:86:11: Cell has missing pin: 'done'
+   86 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:34:41: ... Location of port declaration
+   34 |     output reg                          done                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:86:11: Cell has missing pin: 'empty'
+   86 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:35:41: ... Location of port declaration
+   35 |     output                              empty                      ,
+      |                                         ^~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:86:11: Cell has missing pin: 'var_value'
+   86 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:37:41: ... Location of port declaration
+   37 |     input              [width-1: 0]     var_value                  ,
+      |                                         ^~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:86:11: Cell has missing pin: 'load'
+   86 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:38:41: ... Location of port declaration
+   38 |     input                               load                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:86:11: Cell has missing pin: 'inc'
+   86 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:40:41: ... Location of port declaration
+   40 |     input                               inc                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:86:11: Cell has missing pin: 'dec'
+   86 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:41:41: ... Location of port declaration
+   41 |     input                               dec                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:83:11: Cell has missing pin: 'done'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:34:41: ... Location of port declaration
+   34 |     output reg                          done                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:83:11: Cell has missing pin: 'empty'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:35:41: ... Location of port declaration
+   35 |     output                              empty                      ,
+      |                                         ^~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:83:11: Cell has missing pin: 'var_value'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:37:41: ... Location of port declaration
+   37 |     input              [width-1: 0]     var_value                  ,
+      |                                         ^~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:83:11: Cell has missing pin: 'load'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:38:41: ... Location of port declaration
+   38 |     input                               load                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:83:11: Cell has missing pin: 'inc'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:40:41: ... Location of port declaration
+   40 |     input                               inc                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:83:11: Cell has missing pin: 'dec'
+   83 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:41:41: ... Location of port declaration
+   41 |     input                               dec                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:81:11: Cell has missing pin: 'done'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:34:41: ... Location of port declaration
+   34 |     output reg                          done                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:81:11: Cell has missing pin: 'empty'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:35:41: ... Location of port declaration
+   35 |     output                              empty                      ,
+      |                                         ^~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:81:11: Cell has missing pin: 'var_value'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:37:41: ... Location of port declaration
+   37 |     input              [width-1: 0]     var_value                  ,
+      |                                         ^~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:81:11: Cell has missing pin: 'load'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:38:41: ... Location of port declaration
+   38 |     input                               load                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:81:11: Cell has missing pin: 'inc'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:40:41: ... Location of port declaration
+   40 |     input                               inc                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:81:11: Cell has missing pin: 'dec'
+   81 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:41:41: ... Location of port declaration
+   41 |     input                               dec                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/spi_driver.v:136:11: Cell has missing pin: 'empty'
+  136 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:35:41: ... Location of port declaration
+   35 |     output                              empty                      ,
+      |                                         ^~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/spi_driver.v:136:11: Cell has missing pin: 'full'
+  136 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:36:41: ... Location of port declaration
+   36 |     output reg                          full                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/spi_driver.v:136:11: Cell has missing pin: 'var_value'
+  136 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:37:41: ... Location of port declaration
+   37 |     input              [width-1: 0]     var_value                  ,
+      |                                         ^~~~~~~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/spi_driver.v:136:11: Cell has missing pin: 'load'
+  136 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:38:41: ... Location of port declaration
+   38 |     input                               load                       ,
+      |                                         ^~~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/spi_driver.v:136:11: Cell has missing pin: 'inc'
+  136 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:40:41: ... Location of port declaration
+   40 |     input                               inc                        ,
+      |                                         ^~~
+%Warning-PINMISSING: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/spi_driver.v:136:11: Cell has missing pin: 'dec'
+  136 |         ) CNT0
+      |           ^~~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:41:41: ... Location of port declaration
+   41 |     input                               dec                        ,
+      |                                         ^~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:44:125: Signal definition not found, creating implicitly: 'cnt_full'
+   44 |     assign                              cnt_en                    = state == IDLE && start || state == SEND && (spi_done || cnt_full);
+      |                                                                                                                             ^~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:44:41: Signal definition not found, creating implicitly: 'cnt_en'
+   44 |     assign                              cnt_en                    = state == IDLE && start || state == SEND && (spi_done || cnt_full);
+      |                                         ^~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:43:125: Signal definition not found, creating implicitly: 'cnt_full'
+   43 |     assign                              cnt_en                    = state == IDLE && start || state == SEND && (spi_done || cnt_full);
+      |                                                                                                                             ^~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:43:41: Signal definition not found, creating implicitly: 'cnt_en'
+   43 |     assign                              cnt_en                    = state == IDLE && start || state == SEND && (spi_done || cnt_full);
+      |                                         ^~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:43:98: Signal definition not found, creating implicitly: 'cnt_full'
+   43 |     assign                              cnt_en                    = state == REC && (spi_done || cnt_full);
+      |                                                                                                  ^~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:43:41: Signal definition not found, creating implicitly: 'cnt_en'
+   43 |     assign                              cnt_en                    = state == REC && (spi_done || cnt_full);
+      |                                         ^~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:42:125: Signal definition not found, creating implicitly: 'cnt_full'
+   42 |     assign                              cnt_en                    = state == IDLE && start || state == SEND && (spi_done || cnt_full);
+      |                                                                                                                             ^~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:42:41: Signal definition not found, creating implicitly: 'cnt_en'
+   42 |     assign                              cnt_en                    = state == IDLE && start || state == SEND && (spi_done || cnt_full);
+      |                                         ^~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_rec.v:41:98: Signal definition not found, creating implicitly: 'cnt_full'
+   41 |     assign                              cnt_en                    = state == REC && (spi_done || cnt_full);
+      |                                                                                                  ^~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_rec.v:41:41: Signal definition not found, creating implicitly: 'cnt_en'
+   41 |     assign                              cnt_en                    = state == REC && (spi_done || cnt_full);
+      |                                         ^~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/spi_driver.v:55:41: Signal definition not found, creating implicitly: 'cnt_en'
+   55 |     assign                              cnt_en                    = state == WORK;
+      |                                         ^~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/spi_driver.v:66:40: Signal definition not found, creating implicitly: 'cnt_done'
+                                                                                                : ... Suggested alternative: 'cnt_en'
+   66 |         else if(ce && state == WORK && cnt_done && !next)
+      |                                        ^~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:53:41: Signal definition not found, creating implicitly: 'addr_start'
+   53 |     assign                              addr_start                = state == WR_ADDR;
+      |                                         ^~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:54:41: Signal definition not found, creating implicitly: 'data_start'
+                                                                                                     : ... Suggested alternative: 'addr_start'
+   54 |     assign                              data_start                = state == WR_DATA;
+      |                                         ^~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:66:24: Signal definition not found, creating implicitly: 'wr_addr_done'
+   66 |                     if(wr_addr_done)
+      |                        ^~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:75:24: Signal definition not found, creating implicitly: 'wr_data_done'
+                                                                                                     : ... Suggested alternative: 'wr_addr_done'
+   75 |                     if(wr_data_done)
+      |                        ^~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:104:26: Signal definition not found, creating implicitly: 'addr_spi_start'
+                                                                                                      : ... Suggested alternative: 'addr_start'
+  104 |             spi_start <= addr_spi_start;
+      |                          ^~~~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:108:26: Signal definition not found, creating implicitly: 'data_spi_start'
+                                                                                                      : ... Suggested alternative: 'addr_spi_start'
+  108 |             spi_start <= data_spi_start;
+      |                          ^~~~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:141:42: Signal definition not found, creating implicitly: 'addr_start_pulse'
+                                                                                                      : ... Suggested alternative: 'addr_start'
+  141 |     .start                              (addr_start_pulse          ),
+      |                                          ^~~~~~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:155:42: Signal definition not found, creating implicitly: 'data_start_pulse'
+                                                                                                      : ... Suggested alternative: 'addr_start_pulse'
+  155 |     .start                              (data_start_pulse          ),
+      |                                          ^~~~~~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:83:24: Signal definition not found, creating implicitly: 'send_done'
+                                                                                             : ... Suggested alternative: 'send_din'
+   83 |                     if(send_done)
+      |                        ^~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:86:24: Signal definition not found, creating implicitly: 'rec_done'
+                                                                                             : ... Suggested alternative: 'send_done'
+   86 |                     if(rec_done)
+      |                        ^~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:237:42: Signal definition not found, creating implicitly: 'send_start_pulse'
+                                                                                              : ... Suggested alternative: 'send_start'
+  237 |     .start                              (send_start_pulse          ),
+      |                                          ^~~~~~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:249:42: Signal definition not found, creating implicitly: 'rec_start_pulse'
+                                                                                              : ... Suggested alternative: 'send_start_pulse'
+  249 |     .start                              (rec_start_pulse           ),
+      |                                          ^~~~~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:132:21: Signal definition not found, creating implicitly: 'init_idle'
+  132 |                 if(!init_idle)
+      |                     ^~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:138:21: Signal definition not found, creating implicitly: 'wr_sec_idle'
+  138 |                 if(!wr_sec_idle)
+      |                     ^~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:144:21: Signal definition not found, creating implicitly: 'rd_sec_idle'
+                                                                                                      : ... Suggested alternative: 'wr_sec_idle'
+  144 |                 if(!rd_sec_idle)
+      |                     ^~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:183:30: Signal definition not found, creating implicitly: 'init_spi_start'
+                                                                                                      : ... Suggested alternative: 'dbg_spi_start'
+  183 |                 spi_start <= init_spi_start;
+      |                              ^~~~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:184:29: Signal definition not found, creating implicitly: 'init_spi_next'
+                                                                                                      : ... Suggested alternative: 'dbg_spi_next'
+  184 |                 spi_next <= init_spi_next;
+      |                             ^~~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:185:25: Signal definition not found, creating implicitly: 'init_cs_n'
+  185 |                 cs_n <= init_cs_n;
+      |                         ^~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:193:30: Signal definition not found, creating implicitly: 'wr_spi_start'
+                                                                                                      : ... Suggested alternative: 'dbg_spi_start'
+  193 |                 spi_start <= wr_spi_start;
+      |                              ^~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:194:29: Signal definition not found, creating implicitly: 'wr_spi_next'
+                                                                                                      : ... Suggested alternative: 'dbg_spi_next'
+  194 |                 spi_next <= wr_spi_next;
+      |                             ^~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:195:25: Signal definition not found, creating implicitly: 'wr_cs_n'
+                                                                                                      : ... Suggested alternative: 'cs_n'
+  195 |                 cs_n <= wr_cs_n;
+      |                         ^~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:202:30: Signal definition not found, creating implicitly: 'rd_spi_start'
+                                                                                                      : ... Suggested alternative: 'wr_spi_start'
+  202 |                 spi_start <= rd_spi_start;
+      |                              ^~~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:203:29: Signal definition not found, creating implicitly: 'rd_spi_next'
+                                                                                                      : ... Suggested alternative: 'wr_spi_next'
+  203 |                 spi_next <= rd_spi_next;
+      |                             ^~~~~~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:204:25: Signal definition not found, creating implicitly: 'rd_cs_n'
+                                                                                                      : ... Suggested alternative: 'wr_cs_n'
+  204 |                 cs_n <= rd_cs_n;
+      |                         ^~~~~~~
+%Warning-IMPLICIT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:257:42: Signal definition not found, creating implicitly: 'rd_sec_ram_wea'
+                                                                                                      : ... Suggested alternative: 'rd_sec_ram_addr'
+  257 |     .ram_en                             (rd_sec_ram_wea            ),
+      |                                          ^~~~~~~~~~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:54:31: Operator EQ expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+   54 |             full <= cnt_value == max_value - 1;
+      |                               ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:98:46: Operator GTE expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+   98 |                     2'b10: done <= cnt_value >= max_value - 1;
+      |                                              ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:108:43: Operator GTE expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  108 |                         done <= cnt_value >= max_value - 1;
+      |                                           ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:119:39: Operator GTE expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  119 |                     done <= cnt_value >= max_value - 1;
+      |                                       ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:277:46: Operator EQ expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  277 |                                 if(cnt_value == max_value - 1)
+      |                                              ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:295:47: Operator ASSIGNDLY expects 3 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 4 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  295 |                                     cnt_value <= max_value - 1;
+      |                                               ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:300:46: Operator EQ expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  300 |                                 if(cnt_value == max_value - 1)
+      |                                              ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:313:35: Operator ASSIGNDLY expects 3 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 4 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  313 |                         cnt_value <= max_value - 1;
+      |                                   ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:326:42: Operator EQ expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  326 |                             if(cnt_value == max_value - 1)
+      |                                          ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:335:43: Operator ASSIGNDLY expects 3 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 4 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  335 |                                 cnt_value <= max_value - 1;
+      |                                           ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:340:42: Operator EQ expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  340 |                             if(cnt_value == max_value - 1)
+      |                                          ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:351:35: Operator ASSIGNDLY expects 3 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 4 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  351 |                         cnt_value <= max_value - 1;
+      |                                   ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:364:42: Operator EQ expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  364 |                             if(cnt_value == max_value - 1)
+      |                                          ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:373:43: Operator ASSIGNDLY expects 3 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 4 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  373 |                                 cnt_value <= max_value - 1;
+      |                                           ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:378:42: Operator EQ expects 32 or 4 bits on the LHS, but LHS's VARREF 'cnt_value' generates 3 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SD_INIT.SD_CMD_REC.CNT0'
+  378 |                             if(cnt_value == max_value - 1)
+      |                                          ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:54:31: Operator EQ expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+   54 |             full <= cnt_value == max_value - 1;
+      |                               ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:98:46: Operator GTE expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+   98 |                     2'b10: done <= cnt_value >= max_value - 1;
+      |                                              ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:108:43: Operator GTE expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  108 |                         done <= cnt_value >= max_value - 1;
+      |                                           ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:119:39: Operator GTE expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  119 |                     done <= cnt_value >= max_value - 1;
+      |                                       ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:277:46: Operator EQ expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  277 |                                 if(cnt_value == max_value - 1)
+      |                                              ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:295:47: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  295 |                                     cnt_value <= max_value - 1;
+      |                                               ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:300:46: Operator EQ expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  300 |                                 if(cnt_value == max_value - 1)
+      |                                              ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:313:35: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  313 |                         cnt_value <= max_value - 1;
+      |                                   ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:326:42: Operator EQ expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  326 |                             if(cnt_value == max_value - 1)
+      |                                          ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:335:43: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  335 |                                 cnt_value <= max_value - 1;
+      |                                           ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:340:42: Operator EQ expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  340 |                             if(cnt_value == max_value - 1)
+      |                                          ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:351:35: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  351 |                         cnt_value <= max_value - 1;
+      |                                   ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:364:42: Operator EQ expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  364 |                             if(cnt_value == max_value - 1)
+      |                                          ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:373:43: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                                            : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  373 |                                 cnt_value <= max_value - 1;
+      |                                           ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:378:42: Operator EQ expects 32 or 5 bits on the LHS, but LHS's VARREF 'cnt_value' generates 4 bits.
+                                                                                             : ... note: In instance 'tb_sd_vendor_idle.dut.SPI.CNT0'
+  378 |                             if(cnt_value == max_value - 1)
+      |                                          ^~
+%Warning-WIDTHCONCAT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:45:76: Unsized numbers/parameters not allowed in concatenations.
+                                                                                                      : ... note: In instance 'tb_sd_vendor_idle.dut.SD_RD_SEC.SD_WR_ADDR'
+   45 |     assign                              write_addr                = {8'h58 - mode*7,sd_addr,8'hff};
+      |                                                                            ^
+%Warning-WIDTHCONCAT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:45:84: Unsized numbers/parameters not allowed in concatenations.
+                                                                                                      : ... note: In instance 'tb_sd_vendor_idle.dut.SD_RD_SEC.SD_WR_ADDR'
+   45 |     assign                              write_addr                = {8'h58 - mode*7,sd_addr,8'hff};
+      |                                                                                    ^
+%Warning-WIDTHCONCAT: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:45:92: Unsized numbers/parameters not allowed in replications.
+                                                                                                      : ... note: In instance 'tb_sd_vendor_idle.dut.SD_RD_SEC.SD_WR_ADDR'
+   45 |     assign                              write_addr                = {8'h58 - mode*7,sd_addr,8'hff};
+      |                                                                                            ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:85:6: Output port connection 'cnt_value' expects 3 bits on the pin connection, but pin connection's VARREF 'cnt_value' generates 4 bits.
+                                                                                                    : ... note: In instance 'tb_sd_vendor_idle.dut.SD_RD_SEC.SD_WR_ADDR'
+   85 |     .cnt_value                          (cnt_value                 ),
+      |      ^~~~~~~~~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sequence_comparator.v:36:28: Operator ASSIGNDLY expects 1 bits on the Assign RHS, but Assign RHS's REPLICATE generates 2 bits.
+                                                                                                           : ... note: In instance 'tb_sd_vendor_idle.dut.SD_RD_SEC.SC1'
+   36 |             sequence_shift <= {sequence_shift[width-2:0],sequence_in};
+      |                            ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:46:67: Operator ASSIGNW expects 9 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 10 bits.
+                                                                                                     : ... note: In instance 'tb_sd_vendor_idle.dut.SD_WR_SEC.SD_WR_DATA'
+   46 |     assign                              ram_addr                  = cnt_value - 1;
+      |                                                                   ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_data.v:65:22: Operator ASSIGNDLY expects 9 bits on the Assign RHS, but Assign RHS's VARREF 'cnt_value' generates 10 bits.
+                                                                                                    : ... note: In instance 'tb_sd_vendor_idle.dut.SD_RD_SEC.SD_RD_DATA'
+   65 |             ram_addr <= cnt_value;
+      |                      ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:140:6: Input port connection 'sd_addr' expects 32 bits on the pin connection, but pin connection's VARREF 'sector_addr' generates 28 bits.
+                                                                                                        : ... note: In instance 'tb_sd_vendor_idle.dut.SD_WR_SEC'
+  140 |     .sd_addr                            (sector_addr               ),
+      |      ^~~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_sector.v:139:6: Input port connection 'sd_addr' expects 32 bits on the pin connection, but pin connection's VARREF 'sector_addr' generates 28 bits.
+                                                                                                       : ... note: In instance 'tb_sd_vendor_idle.dut.SD_RD_SEC'
+  139 |     .sd_addr                            (sector_addr               ),
+      |      ^~~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:127:31: Operator ASSIGNDLY expects 3 bits on the Assign RHS, but Assign RHS's VARREF 'mode' generates 2 bits.
+                                                                                                         : ... note: In instance 'tb_sd_vendor_idle.dut'
+  127 |                     nxt_state <= mode;
+      |                               ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:181:31: Operator ASSIGNDLY expects 6 bits on the Assign RHS, but Assign RHS's VARREF 'spi_low_div' generates 32 or 26 bits.
+                                                                                                        : ... note: In instance 'tb_sd_vendor_idle.dut'
+  181 |                 spi_div_value <= spi_low_div;
+      |                               ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:186:31: Operator ASSIGNDLY expects 6 bits on the Assign RHS, but Assign RHS's VARREF 'spi_low_div' generates 32 or 26 bits.
+                                                                                                        : ... note: In instance 'tb_sd_vendor_idle.dut'
+  186 |                 spi_div_value <= spi_low_div;
+      |                               ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:191:31: Operator ASSIGNDLY expects 6 bits on the Assign RHS, but Assign RHS's VARREF 'spi_high_div' generates 32 or 26 bits.
+                                                                                                        : ... note: In instance 'tb_sd_vendor_idle.dut'
+  191 |                 spi_div_value <= spi_high_div;
+      |                               ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:200:31: Operator ASSIGNDLY expects 6 bits on the Assign RHS, but Assign RHS's VARREF 'spi_high_div' generates 32 or 26 bits.
+                                                                                                        : ... note: In instance 'tb_sd_vendor_idle.dut'
+  200 |                 spi_div_value <= spi_high_div;
+      |                               ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:209:31: Operator ASSIGNDLY expects 6 bits on the Assign RHS, but Assign RHS's VARREF 'spi_low_div' generates 32 or 26 bits.
+                                                                                                        : ... note: In instance 'tb_sd_vendor_idle.dut'
+  209 |                 spi_div_value <= spi_low_div;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:123:5: Non-blocking assignment '<=' in combinational logic process
+                                                                                                    : ... This will be executed as a blocking assignment '='!
+  123 |     always@(*) begin
+      |     ^~~~~~
+                  *** See https://verilator.org/warn/COMBDLY before disabling this,
+                  else you may end up with different sim results.
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:180:29: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  180 |                 select_idle <= init_idle;
+      |                             ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:181:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  181 |                 spi_div_value <= spi_low_div;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:182:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  182 |                 spi_send_data <= init_send_data;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:183:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  183 |                 spi_start <= init_spi_start;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:184:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  184 |                 spi_next <= init_spi_next;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:185:22: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  185 |                 cs_n <= init_cs_n;
+      |                      ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:186:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  186 |                 spi_div_value <= spi_low_div;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:190:29: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  190 |                 select_idle <= wr_sec_idle;
+      |                             ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:191:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  191 |                 spi_div_value <= spi_high_div;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:192:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  192 |                 spi_send_data <= wr_send_data;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:193:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  193 |                 spi_start <= wr_spi_start;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:194:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  194 |                 spi_next <= wr_spi_next;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:195:22: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  195 |                 cs_n <= wr_cs_n;
+      |                      ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:199:29: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  199 |                 select_idle <= rd_sec_idle;
+      |                             ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:200:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  200 |                 spi_div_value <= spi_high_div;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:201:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  201 |                 spi_send_data <= rd_send_data;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:202:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  202 |                 spi_start <= rd_spi_start;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:203:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  203 |                 spi_next <= rd_spi_next;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:204:22: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  204 |                 cs_n <= rd_cs_n;
+      |                      ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:208:29: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  208 |                 select_idle <= init_idle;
+      |                             ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:209:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  209 |                 spi_div_value <= spi_low_div;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:210:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  210 |                 spi_send_data <= init_send_data;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:211:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  211 |                 spi_start <= init_spi_start;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:212:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  212 |                 spi_next <= init_spi_next;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_card_control.v:213:22: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  213 |                 cs_n <= init_cs_n;
+      |                      ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:162:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  162 |                 spi_send_data <= 8'hff;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:163:28: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  163 |                 send_start <= 1;
+      |                            ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:164:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  164 |                 send_din <= 48'hffffffffffff;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:167:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  167 |                 spi_send_data <= send_dout;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:168:28: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  168 |                 send_start <= 1;
+      |                            ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:169:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  169 |                 send_din <= CMD0;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:172:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  172 |                 spi_send_data <= send_dout;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:173:28: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  173 |                 send_start <= 1;
+      |                            ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:174:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  174 |                 send_din <= CMD8;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:177:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  177 |                 spi_send_data <= send_dout;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:178:28: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  178 |                 send_start <= 1;
+      |                            ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:179:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  179 |                 send_din <= CMD55;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:182:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  182 |                 spi_send_data <= send_dout;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:183:28: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  183 |                 send_start <= 1;
+      |                            ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:184:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  184 |                 send_din <= ACMD41;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:187:31: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  187 |                 spi_send_data <= 8'hff;
+      |                               ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:188:28: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  188 |                 send_start <= 0;
+      |                            ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:189:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  189 |                 send_din <= 48'hffffffffffff;
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:196:34: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  196 |             REC_FIRST: rec_start <= 1;
+      |                                  ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:205:5: Non-blocking assignment '<=' in combinational logic process
+                                                                                            : ... This will be executed as a blocking assignment '='!
+  205 |     always@(*) begin
+      |     ^~~~~~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_init.v:219:24: Non-blocking assignment '<=' in combinational logic process
+                                                                                             : ... This will be executed as a blocking assignment '='!
+  219 |             IDLE: cs_n <= 1;
+      |                        ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_cmd_send.v:67:26: Non-blocking assignment '<=' in combinational logic process
+                                                                                                : ... This will be executed as a blocking assignment '='!
+   67 |             0: send_dout <= send_din[47:40];
+      |                          ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:54:18: Non-blocking assignment '<=' in combinational logic process
+                                                                                        : ... This will be executed as a blocking assignment '='!
+   54 |             full <= cnt_value == max_value - 1;
+      |                  ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/cnt.v:108:30: Non-blocking assignment '<=' in combinational logic process
+                                                                                         : ... This will be executed as a blocking assignment '='!
+  108 |                         done <= cnt_value >= max_value - 1;
+      |                              ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:103:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  103 |             spi_send_data <= addr_send_dout;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:104:23: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  104 |             spi_start <= addr_spi_start;
+      |                       ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:107:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  107 |             spi_send_data <= data_send_dout;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:108:23: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  108 |             spi_start <= data_spi_start;
+      |                       ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:111:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  111 |             spi_send_data <= 8'hff;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_sector.v:112:23: Non-blocking assignment '<=' in combinational logic process
+                                                                                                     : ... This will be executed as a blocking assignment '='!
+  112 |             spi_start <= 0;
+      |                       ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_addr.v:67:5: Non-blocking assignment '<=' in combinational logic process
+                                                                                                 : ... This will be executed as a blocking assignment '='!
+   67 |     always@(*) begin
+      |     ^~~~~~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_write_data.v:70:23: Non-blocking assignment '<=' in combinational logic process
+                                                                                                  : ... This will be executed as a blocking assignment '='!
+   70 |             send_dout <= 8'hff;
+      |                       ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_sector.v:107:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                    : ... This will be executed as a blocking assignment '='!
+  107 |             spi_send_data <= addr_send_dout;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_sector.v:108:23: Non-blocking assignment '<=' in combinational logic process
+                                                                                                    : ... This will be executed as a blocking assignment '='!
+  108 |             spi_start <= addr_spi_start;
+      |                       ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_sector.v:111:27: Non-blocking assignment '<=' in combinational logic process
+                                                                                                    : ... This will be executed as a blocking assignment '='!
+  111 |             spi_send_data <= 8'hff;
+      |                           ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/sd_read_sector.v:112:23: Non-blocking assignment '<=' in combinational logic process
+                                                                                                    : ... This will be executed as a blocking assignment '='!
+  112 |             spi_start <= 0;
+      |                       ^~
+%Warning-COMBDLY: /workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/clk_div_var.v:48:21: Non-blocking assignment '<=' in combinational logic process
+                                                                                                : ... This will be executed as a blocking assignment '='!
+   48 |             clk_out <= clk_out_var;
+      |                     ^~
+make: Entering directory '/workspace/yingxu-fpga/out/mjpeg_d3/vvendor_idle'
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated_threads.cpp
+python3 /workspace/.yingxu-env/verilator/usr/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include Vtb_sd_vendor_idle.cpp Vtb_sd_vendor_idle___024root__DepSet_hfdc8c88a__0.cpp Vtb_sd_vendor_idle___024root__DepSet_h01f6f89c__0.cpp Vtb_sd_vendor_idle__main.cpp Vtb_sd_vendor_idle__ConstPool_0.cpp Vtb_sd_vendor_idle___024root__Slow.cpp Vtb_sd_vendor_idle___024root__DepSet_hfdc8c88a__0__Slow.cpp Vtb_sd_vendor_idle___024root__DepSet_h01f6f89c__0__Slow.cpp Vtb_sd_vendor_idle__Syms.cpp > Vtb_sd_vendor_idle__ALL.cpp
+echo "" > Vtb_sd_vendor_idle__ALL.verilator_deplist.tmp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o Vtb_sd_vendor_idle__ALL.o Vtb_sd_vendor_idle__ALL.cpp
+g++    verilated.o verilated_timing.o verilated_threads.o Vtb_sd_vendor_idle__ALL.a    -pthread -lpthread -latomic   -o Vtb_sd_vendor_idle
+rm Vtb_sd_vendor_idle__ALL.verilator_deplist.tmp
+make: Leaving directory '/workspace/yingxu-fpga/out/mjpeg_d3/vvendor_idle'
+- V e r i l a t i o n   R e p o r t: Verilator 5.032 2025-01-01 rev (Debian 5.032-1+b2)
+- Verilator: Built from 1.191 MB sources in 20 modules, into 0.152 MB in 9 C++ files needing 0.000 MB
+- Verilator: Walltime 5.920 s (elab=0.014, cvt=0.036, bld=5.844); cpu 0.082 s on 2 threads; alloced 17.250 MB

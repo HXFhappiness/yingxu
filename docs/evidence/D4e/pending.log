@@ -1,0 +1,6 @@
+PENDING_SIGNATURE F=a owned=1 init_done=0 busy=1 reset=1 failed=0 code=9f loader=2/1 diagnosis=929f requests=3
+LIVEFAULTCHK: PASS PCM blocked before command acceptance; F=A reset held, three read requests; diagnosis=929F ACC=020 visible while owned=1 failed=0
+- tb/tb_yxv_fault_pending.v:45: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 96us; walltime 0.010 s; speed 9.631 ms/s
+- Verilator: cpu 0.010 s on 1 threads; alloced 33 MB

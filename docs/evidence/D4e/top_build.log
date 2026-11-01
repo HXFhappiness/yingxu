@@ -1,0 +1,1307 @@
+%Warning-WIDTHTRUNC: hardware_test_P0_UART_V5_CRC32.v:787:37: Value too large for 16 bit number: 65536
+  787 |     localparam [15:0] FLUSH_CLKS  = 16'd65536;    
+      |                                     ^~~~~~~~~
+                     ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=5.032
+                     ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
+%Warning-PINMISSING: src/user_source/hdl_source/design_top_wrapper.v:540:23: Cell has missing pin: 'dbg_bytev'
+  540 |     yingxu_wav_player u_wav (
+      |                       ^~~~~
+                     src/user_source/hdl_source/yingxu_wav_player.v:51:24: ... Location of port declaration
+   51 |     output wire        dbg_bytev,        
+      |                        ^~~~~~~~~
+%Warning-PINMISSING: src/user_source/hdl_source/yingxu_sdram_control_4port.v:310:19: Cell has missing pin: 'INIT_ACK'
+  310 | control_interface control1 (
+      |                   ^~~~~~~~
+                     src/5640/sdram_ctrl_4p/control_interface.v:7:3: ... Location of port declaration
+    7 |   INIT_ACK,
+      |   ^~~~~~~~
+%Warning-PINMISSING: src/user_source/hdl_source/yingxu_sdram_control_4port.v:397:16: Cell has missing pin: 'full_flag'
+  397 | Sdram_RD_FIFO  read_fifo1(
+      |                ^~~~~~~~~~
+                     tb/models/d3_sdram_models.v:7:42: ... Location of port declaration
+    7 |     output [31:0] \do ,output empty_flag,full_flag,afull_flag);
+      |                                          ^~~~~~~~~
+%Warning-PINMISSING: src/user_source/hdl_source/yingxu_sdram_control_4port.v:410:16: Cell has missing pin: 'full_flag'
+  410 | Sdram_RD_FIFO  read_fifo2(
+      |                ^~~~~~~~~~
+                     tb/models/d3_sdram_models.v:7:42: ... Location of port declaration
+    7 |     output [31:0] \do ,output empty_flag,full_flag,afull_flag);
+      |                                          ^~~~~~~~~
+%Warning-PINMISSING: hardware_test_P0_UART_V5_CRC32.v:254:69: Cell has missing pin: 'O_ddc_scl'
+  254 |     design_top_wrapper #(.VIDEO_ACQUIRE_LIMIT(VIDEO_ACQUIRE_LIMIT)) design_top_wrapper (
+      |                                                                     ^~~~~~~~~~~~~~~~~~
+                     src/user_source/hdl_source/design_top_wrapper.v:88:45: ... Location of port declaration
+   88 |     output wire                             O_ddc_scl                               ,
+      |                                             ^~~~~~~~~
+%Warning-PINMISSING: hardware_test_P0_UART_V5_CRC32.v:254:69: Cell has missing pin: 'IO_ddc_sda'
+  254 |     design_top_wrapper #(.VIDEO_ACQUIRE_LIMIT(VIDEO_ACQUIRE_LIMIT)) design_top_wrapper (
+      |                                                                     ^~~~~~~~~~~~~~~~~~
+                     src/user_source/hdl_source/design_top_wrapper.v:89:45: ... Location of port declaration
+   89 |     inout  wire                             IO_ddc_sda                              ,
+      |                                             ^~~~~~~~~~
+%Warning-PINMISSING: hardware_test_P0_UART_V5_CRC32.v:254:69: Cell has missing pin: 'O_hdmi_debug'
+  254 |     design_top_wrapper #(.VIDEO_ACQUIRE_LIMIT(VIDEO_ACQUIRE_LIMIT)) design_top_wrapper (
+      |                                                                     ^~~~~~~~~~~~~~~~~~
+                     src/user_source/hdl_source/design_top_wrapper.v:95:45: ... Location of port declaration
+   95 |     output wire         [   3: 0]           O_hdmi_debug                            
+      |                                             ^~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'sd_mosi'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:34:45: ... Location of port declaration
+   34 |     output wire                             sd_mosi,
+      |                                             ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'sd_sclk'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:35:45: ... Location of port declaration
+   35 |     output wire                             sd_sclk,
+      |                                             ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'sd_cs_n'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:36:45: ... Location of port declaration
+   36 |     output wire                             sd_cs_n,
+      |                                             ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'I2S_DO'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:41:45: ... Location of port declaration
+   41 |     output wire                             I2S_DO,
+      |                                             ^~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'I2S_MCLK'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:42:45: ... Location of port declaration
+   42 |     output wire                             I2S_MCLK,
+      |                                             ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'led'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:49:45: ... Location of port declaration
+   49 |     output wire         [3:0]               led,
+      |                                             ^~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'beep'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:50:45: ... Location of port declaration
+   50 |     output wire                             beep,
+      |                                             ^~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'gpio_40pin'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:54:45: ... Location of port declaration
+   54 |     output wire         [35:0]              gpio_40pin,
+      |                                             ^~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'i2c_sclk'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:56:45: ... Location of port declaration
+   56 |     output wire                             i2c_sclk,
+      |                                             ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'i2c_sdat'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:57:45: ... Location of port declaration
+   57 |     inout  wire                             i2c_sdat,
+      |                                             ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'eth_gtxc'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:62:45: ... Location of port declaration
+   62 |     output wire                             eth_gtxc,
+      |                                             ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'eth_txd'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:63:45: ... Location of port declaration
+   63 |     output wire         [3:0]               eth_txd,
+      |                                             ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'eth_txen'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:64:45: ... Location of port declaration
+   64 |     output wire                             eth_txen,
+      |                                             ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'eth_rst_n'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:65:45: ... Location of port declaration
+   65 |     output wire                             eth_rst_n,
+      |                                             ^~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'eth_mdc'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:66:45: ... Location of port declaration
+   66 |     inout  wire                             eth_mdc,
+      |                                             ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'eth_mdio'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:67:45: ... Location of port declaration
+   67 |     inout  wire                             eth_mdio,
+      |                                             ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'camera_sclk'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:69:45: ... Location of port declaration
+   69 |     output wire                             camera_sclk,
+      |                                             ^~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'camera_sdat'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:70:45: ... Location of port declaration
+   70 |     inout  wire                             camera_sdat,
+      |                                             ^~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'camera_xclk'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:74:45: ... Location of port declaration
+   74 |     output wire                             camera_xclk,
+      |                                             ^~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'tft_rgb'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:77:45: ... Location of port declaration
+   77 |     output wire         [15:0]              tft_rgb,
+      |                                             ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'tft_hs'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:78:45: ... Location of port declaration
+   78 |     output wire                             tft_hs,
+      |                                             ^~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'tft_vs'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:79:45: ... Location of port declaration
+   79 |     output wire                             tft_vs,
+      |                                             ^~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'tft_clk'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:80:45: ... Location of port declaration
+   80 |     output wire                             tft_clk,
+      |                                             ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'tft_de'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:81:45: ... Location of port declaration
+   81 |     output wire                             tft_de,
+      |                                             ^~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'tft_bl'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:82:45: ... Location of port declaration
+   82 |     output wire                             tft_bl,
+      |                                             ^~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'O_tmds_ch0_p'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:84:45: ... Location of port declaration
+   84 |     output wire                             O_tmds_ch0_p,
+      |                                             ^~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'O_tmds_ch1_p'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:85:45: ... Location of port declaration
+   85 |     output wire                             O_tmds_ch1_p,
+      |                                             ^~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'O_tmds_ch2_p'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:86:45: ... Location of port declaration
+   86 |     output wire                             O_tmds_ch2_p,
+      |                                             ^~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'O_tmds_clk_p'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:87:45: ... Location of port declaration
+   87 |     output wire                             O_tmds_clk_p,
+      |                                             ^~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'seg7_sclk'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:89:45: ... Location of port declaration
+   89 |     output wire                             seg7_sclk,
+      |                                             ^~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'seg7_rclk'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:90:45: ... Location of port declaration
+   90 |     output wire                             seg7_rclk,
+      |                                             ^~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_top.v:15:81: Cell has missing pin: 'seg7_dio'
+   15 |     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+      |                                                                                 ^~~
+                     hardware_test_P0_UART_V5_CRC32.v:91:45: ... Location of port declaration
+   91 |     output wire                             seg7_dio
+      |                                             ^~~~~~~~
+%Warning-TIMESCALEMOD: src/5640/sdram_ctrl_4p/command.v:1:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+    1 | module command(
+      |        ^~~~~~~
+                       src/5640/sdram_ctrl_4p/sdram_ip.v:14:8: ... Location of module with timescale
+   14 | module sdram_ip ( clk, ras_n, cas_n, we_n, addr, ba, dq, cs_n, dm0, dm1, dm2, dm3, cke );
+      |        ^~~~~~~~
+%Warning-TIMESCALEMOD: src/5640/sdram_ctrl_4p/control_interface.v:1:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+    1 | module control_interface(
+      |        ^~~~~~~~~~~~~~~~~
+                       src/5640/sdram_ctrl_4p/sdram_ip.v:14:8: ... Location of module with timescale
+   14 | module sdram_ip ( clk, ras_n, cas_n, we_n, addr, ba, dq, cs_n, dm0, dm1, dm2, dm3, cke );
+      |        ^~~~~~~~
+%Warning-TIMESCALEMOD: src/5640/sdram_ctrl_4p/sdr_data_path.v:1:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+    1 | module sdr_data_path(
+      |        ^~~~~~~~~~~~~
+                       src/5640/sdram_ctrl_4p/sdram_ip.v:14:8: ... Location of module with timescale
+   14 | module sdram_ip ( clk, ras_n, cas_n, we_n, addr, ba, dq, cs_n, dm0, dm1, dm2, dm3, cke );
+      |        ^~~~~~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:34:37: Operator ADD expects 33 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core.u_rgb'
+   34 |         begin v=$signed({1'b0,luma})+(($signed(term)+33'sd8192)>>>14);
+      |                                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:54:54: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core.u_rgb'
+   54 |                     pr<=32'sd22970*($signed({1'b0,q})-32'sd128);
+      |                                                      ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:55:55: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core.u_rgb'
+   55 |                     pg<=-32'sd5638*($signed({1'b0,cb})-32'sd128)-32'sd11700*($signed({1'b0,q})-32'sd128);
+      |                                                       ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:55:95: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core.u_rgb'
+   55 |                     pg<=-32'sd5638*($signed({1'b0,cb})-32'sd128)-32'sd11700*($signed({1'b0,q})-32'sd128);
+      |                                                                                               ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:56:55: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core.u_rgb'
+   56 |                     pb<=32'sd29032*($signed({1'b0,cb})-32'sd128);
+      |                                                       ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v:147:71: Operator ADD expects 48 bits on the RHS, but RHS's SIGNED generates 43 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core.u_idct'
+  147 |                         total=(mul_tag[2:0]==0 ? 48'sd0 : accum[lane])+$signed(product[lane]);
+      |                                                                       ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v:149:57: Operator ASSIGNDLY expects 27 bits on the Assign RHS, but Assign RHS's SHIFTRS generates 48 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core.u_idct'
+  149 |                         if(mul_tag[2:0]==7) result[lane]<=(total+48'sd32768)>>>16;
+      |                                                         ^~
+%Warning-WIDTHEXPAND: tb/models/d3_sdram_models.v:25:42: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'addr' generates 21 bits.
+                                                       : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl.model'
+   25 |     assign dq=(read && !oe) ? memory[addr+(out_valid ? ri+1:0)]:32'bz;
+      |                                          ^
+%Warning-WIDTHEXPAND: tb/models/d3_sdram_models.v:29:63: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'addr' generates 21 bits.
+                                                       : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl.model'
+   29 |         else begin for(k=0;k<4;k=k+1) if(!mask[k]) memory[addr+wi][k*8+:8]<=data[k*8+:8];wi<=wi+1;end
+      |                                                               ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:158:45: Operator LT expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  158 |     assign byte_ready=busy && !error && seen<frame_length &&
+      |                                             ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:164:45: Operator GTE expects 6 bits on the RHS, but RHS's VARREF 'amplitude_size' generates 4 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  164 |         (hs==H_RUN && es==E_AMP && bit_count>=amplitude_size) ? amplitude_size:4'd0;
+      |                                             ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:167:45: Operator SUB expects 6 bits on the RHS, but RHS's VARREF 'amplitude_size' generates 4 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  167 |     wire [15:0] amp_bits=(bitbuf>>(bit_count-amplitude_size)) & amp_mask;
+      |                                             ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:167:63: Operator AND expects 32 bits on the RHS, but RHS's VARREF 'amp_mask' generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  167 |     wire [15:0] amp_bits=(bitbuf>>(bit_count-amplitude_size)) & amp_mask;
+      |                                                               ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:167:25: Operator ASSIGNW expects 16 bits on the Assign RHS, but Assign RHS's AND generates 32 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  167 |     wire [15:0] amp_bits=(bitbuf>>(bit_count-amplitude_size)) & amp_mask;
+      |                         ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:192:38: Operator SUB expects 6 bits on the RHS, but RHS's VARREF 'take' generates 4 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  192 |             else bit_count<=bit_count-take+(append ? 6'd8:6'd0);
+      |                                      ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:292:56: Operator ADD expects 18 bits on the RHS, but RHS's VARREF 'byte_data' generates 8 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  292 |                                 build_code<=(build_code+byte_data)<<1;htotal<=counts_total;
+      |                                                        ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:295:67: Operator LTE expects 16 bits on the RHS, but RHS's VARREF 'counts_total' generates 9 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  295 |                                     if(counts_total==0 || seg_left<=counts_total) fail(8'h0D);
+      |                                                                   ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:289:59: Operator ADD expects 18 bits on the RHS, but RHS's VARREF 'byte_data' generates 8 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  289 |                             if((byte_data!=0 && build_code+byte_data >= (18'd1<<(hlength+1'b1))) ||
+      |                                                           ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:367:78: Bit extraction of var[31:0] requires 5 bit index, not 6 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  367 |                     E_HBIT: if(bit_count!=0) begin hcode<={hcode[15:0],bitbuf[bit_count-1'b1]};es<=E_HLO;end
+      |                                                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:368:55: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  368 |                         else if(marker_pending || seen==frame_length) fail(8'h20);
+      |                                                       ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:372:65: Operator ADD expects 17 bits on the LHS, but LHS's FUNCREF 'symbol_base' generates 10 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  372 |                             table_addr<=symbol_base(selected_ht)+{2'd0,desc_q[7:0]}+
+      |                                                                 ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:372:65: Operator ADD expects 17 bits on the RHS, but RHS's REPLICATE generates 10 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  372 |                             table_addr<=symbol_base(selected_ht)+{2'd0,desc_q[7:0]}+
+      |                                                                 ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:372:39: Operator ASSIGNDLY expects 10 bits on the Assign RHS, but Assign RHS's ADD generates 17 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  372 |                             table_addr<=symbol_base(selected_ht)+{2'd0,desc_q[7:0]}+
+      |                                       ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:395:55: Operator COND expects 32 bits on the Conditional False, but Conditional False's SIGNED generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  395 |                         predicted=amplitude+(ac_phase ? 32'sd0 : $signed(predictor[component_id]));
+      |                                                       ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:403:55: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  403 |                     end else if(marker_pending || seen==frame_length) fail(8'h20);
+      |                                                       ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:391:40: Operator GTE expects 6 bits on the RHS, but RHS's VARREF 'amplitude_size' generates 4 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  391 |                     E_AMP: if(bit_count>=amplitude_size) begin
+      |                                        ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:427:37: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  427 |                     end else if(seen==frame_length) fail(8'h20);
+      |                                     ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:429:68: Operator NEQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  429 |                         if(!pad_ok || pending_marker!=8'hD9 || seen!=frame_length) fail(8'h26);
+      |                                                                    ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:431:37: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  431 |                     end else if(seen==frame_length) fail(8'h20);
+      |                                     ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:435:53: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder.u_core'
+  435 |                 if(hs!=H_RUN && hs!=H_FINISH && seen==frame_length) fail(8'h20);
+      |                                                     ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:62:90: Operator COND expects 32 or 4 bits on the Conditional True, but Conditional True's CONST '1'h1' generates 1 bits.
+                                                                                            : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl.mj_port.port_adapter'
+   62 |                         if(bad || position+(((wr && phy_in_req)||(!wr && phy_out_valid)) ? 1'b1:1'b0)!=8) begin
+      |                                                                                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:62:90: Operator COND expects 32 or 4 bits on the Conditional False, but Conditional False's CONST '1'h0' generates 1 bits.
+                                                                                            : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl.mj_port.port_adapter'
+   62 |                         if(bad || position+(((wr && phy_in_req)||(!wr && phy_out_valid)) ? 1'b1:1'b0)!=8) begin
+      |                                                                                          ^
+%Warning-WIDTHTRUNC: src/5640/sdram_ctrl_4p/sdr_data_path.v:86:8: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 6 bits.
+                                                                : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl.data_path1'
+   86 |   DQM  <= 32/8-1'hF;
+      |        ^~
+%Warning-WIDTHEXPAND: src/5640/sdram_ctrl_4p/command.v:439:28: Operator ASSIGNDLY expects 11 bits on the Assign RHS, but Assign RHS's VARREF 'coladdr' generates 8 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl.command1'
+  439 |                         SA <= coladdr;                  
+      |                            ^~
+%Warning-WIDTHEXPAND: src/5640/sdram_ctrl_4p/command.v:457:10: Operator ASSIGNDLY expects 11 bits on the Assign RHS, but Assign RHS's REPLICATE generates 9 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl.command1'
+  457 |     SA   <= {2'b00,SDR_CL,SDR_BT,SDR_BL};
+      |          ^~
+%Warning-WIDTHTRUNC: tb/models/d3_board_models.v:56:37: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'fd' generates 32 bits.
+                                                      : ... note: In instance 'tb_yxv_top.dut.U_SD_INTEGRATION.U_SD_STREAM.U_SD_CTRL'
+   56 |         fd=$fopen(filename,"rb");if(!fd)$fatal(1,"SD model open");
+      |                                     ^
+%Warning-WIDTHTRUNC: tb/models/d3_board_models.v:58:9: Logical operator IF expects 1 bit on the If, but If's VARREF 'bad' generates 32 bits.
+                                                     : ... note: In instance 'tb_yxv_top.dut.U_SD_INTEGRATION.U_SD_STREAM.U_SD_CTRL'
+   58 |         if(bad)file_bytes[0]=0;
+      |         ^~
+%Warning-WIDTHTRUNC: tb/models/d3_board_models.v:86:76: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'noinit' generates 32 bits.
+                                                      : ... note: In instance 'tb_yxv_top.dut.U_SD_INTEGRATION.U_SD_STREAM.U_SD_CTRL'
+   86 |                     delay_count<=(mode==0)?10:2300;state<=(mode==0)?(noinit?4:3):1;end
+      |                                                                            ^
+%Warning-WIDTHTRUNC: tb/models/d3_board_models.v:92:42: Operator ASSIGNDLY expects 9 bits on the Assign RHS, but Assign RHS's VARREF 'byte_index' generates 32 bits.
+                                                      : ... note: In instance 'tb_yxv_top.dut.U_SD_INTEGRATION.U_SD_STREAM.U_SD_CTRL'
+   92 |                         phase<=0;ram_addr<=byte_index;ram_we<=1;
+      |                                          ^~
+%Warning-WIDTHEXPAND: tb/models/d3_board_models.v:94:54: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'lba' generates 28 bits.
+                                                       : ... note: In instance 'tb_yxv_top.dut.U_SD_INTEGRATION.U_SD_STREAM.U_SD_CTRL'
+   94 |                             ram_data<=file_bytes[(lba-3000000)*512+byte_index];
+      |                                                      ^
+%Warning-WIDTHEXPAND: tb/models/d3_board_models.v:93:48: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'lba' generates 28 bits.
+                                                       : ... note: In instance 'tb_yxv_top.dut.U_SD_INTEGRATION.U_SD_STREAM.U_SD_CTRL'
+   93 |                         if(lba>=3000000 && (lba-3000000)*512+byte_index<file_size)
+      |                                                ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:313:18: Input port connection 'CMD' expects 3 bits on the pin connection, but pin connection's VARREF 'CMD' generates 2 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  313 |                 .CMD(CMD),
+      |                  ^~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:359:18: Input port connection 'DM' expects 4 bits on the pin connection, but pin connection's CONST '2'h0' generates 2 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  359 |                 .DM(2'b00),
+      |                  ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:429:13: Operator ASSIGNDLY expects 2 bits on the Assign RHS, but Assign RHS's CONST '1'h1' generates 1 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  429 |     CS_N    <= 1'b1;
+      |             ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:436:126: Operator COND expects 4 bits on the Conditional True, but Conditional True's CONST '2'h3' generates 2 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  436 |  DQM  <= MJPEG_PORT ? (mj_owner && mj_write ? mj_mask:4'b0000) : ( active && (ST>=SC_CL) ) ? ( ((ST==SC_CL+mLENGTH) && Write)? 2'b11 : 2'b00 ) : 2'b11 ;
+      |                                                                                                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:436:126: Operator COND expects 4 bits on the Conditional False, but Conditional False's CONST '2'h0' generates 2 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  436 |  DQM  <= MJPEG_PORT ? (mj_owner && mj_write ? mj_mask:4'b0000) : ( active && (ST>=SC_CL) ) ? ( ((ST==SC_CL+mLENGTH) && Write)? 2'b11 : 2'b00 ) : 2'b11 ;
+      |                                                                                                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:436:92: Operator COND expects 4 bits on the Conditional False, but Conditional False's CONST '2'h3' generates 2 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  436 |  DQM  <= MJPEG_PORT ? (mj_owner && mj_write ? mj_mask:4'b0000) : ( active && (ST>=SC_CL) ) ? ( ((ST==SC_CL+mLENGTH) && Write)? 2'b11 : 2'b00 ) : 2'b11 ;
+      |                                                                                            ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:450:126: Operator COND expects 4 bits on the Conditional True, but Conditional True's CONST '2'h3' generates 2 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  450 |  DQM  <= MJPEG_PORT ? (mj_owner && mj_write ? mj_mask:4'b0000) : ( active && (ST>=SC_CL) ) ? ( ((ST==SC_CL+mLENGTH) && Write)? 2'b11 : 2'b00 ) : 2'b11 ;
+      |                                                                                                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:450:126: Operator COND expects 4 bits on the Conditional False, but Conditional False's CONST '2'h0' generates 2 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  450 |  DQM  <= MJPEG_PORT ? (mj_owner && mj_write ? mj_mask:4'b0000) : ( active && (ST>=SC_CL) ) ? ( ((ST==SC_CL+mLENGTH) && Write)? 2'b11 : 2'b00 ) : 2'b11 ;
+      |                                                                                                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:450:92: Operator COND expects 4 bits on the Conditional False, but Conditional False's CONST '2'h3' generates 2 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  450 |  DQM  <= MJPEG_PORT ? (mj_owner && mj_write ? mj_mask:4'b0000) : ( active && (ST>=SC_CL) ) ? ( ((ST==SC_CL+mLENGTH) && Write)? 2'b11 : 2'b00 ) : 2'b11 ;
+      |                                                                                            ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:572:26: Operator ADD expects 21 bits on the RHS, but RHS's VARREF 'rWR1_LENGTH' generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  572 |    rWR1_ADDR <= rWR1_ADDR+rWR1_LENGTH;
+      |                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:571:30: Operator SUB expects 21 bits on the RHS, but RHS's VARREF 'rWR1_LENGTH' generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  571 |    if(rWR1_ADDR<rWR1_MAX_ADDR-rWR1_LENGTH)
+      |                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:586:26: Operator ADD expects 21 bits on the RHS, but RHS's VARREF 'rWR2_LENGTH' generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  586 |    rWR2_ADDR <= rWR2_ADDR+rWR2_LENGTH;
+      |                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:585:30: Operator SUB expects 21 bits on the RHS, but RHS's VARREF 'rWR2_LENGTH' generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  585 |    if(rWR2_ADDR<rWR2_MAX_ADDR-rWR2_LENGTH)
+      |                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:600:26: Operator ADD expects 21 bits on the RHS, but RHS's VARREF 'rRD1_LENGTH' generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  600 |    rRD1_ADDR <= rRD1_ADDR+rRD1_LENGTH;
+      |                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:599:30: Operator SUB expects 21 bits on the RHS, but RHS's VARREF 'rRD1_LENGTH' generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  599 |    if(rRD1_ADDR<rRD1_MAX_ADDR-rRD1_LENGTH)
+      |                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:614:26: Operator ADD expects 21 bits on the RHS, but RHS's VARREF 'rRD2_LENGTH' generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  614 |    rRD2_ADDR <= rRD2_ADDR+rRD2_LENGTH;
+      |                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_control_4port.v:613:30: Operator SUB expects 21 bits on the RHS, but RHS's VARREF 'rRD2_LENGTH' generates 9 bits.
+                                                                                    : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl'
+  613 |    if(rRD2_ADDR<rRD2_MAX_ADDR-rRD2_LENGTH)
+      |                              ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v:34:26: Operator ASSIGNW expects 8 bits on the Assign RHS, but Assign RHS's SHIFTR generates 32 bits.
+                                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder'
+   34 |     wire [7:0] byte_value=input_word>>(8*byte_pos);
+      |                          ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v:72:32: Operator ASSIGNDLY expects 15 bits on the Assign RHS, but Assign RHS's SHIFTR generates 17 bits.
+                                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder'
+   72 |                 words_remaining<=({1'b0,jpeg_bytes}+17'd3)>>2;
+      |                                ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v:111:75: Operator COND expects 4 bits on the Conditional True, but Conditional True's CONST '1'h1' generates 1 bits.
+                                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder'
+  111 |                             if(mem_error || transferred+((rbeat || wbeat) ? 1'b1:1'b0)!=transaction_words) begin
+      |                                                                           ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v:111:75: Operator COND expects 4 bits on the Conditional False, but Conditional False's CONST '1'h0' generates 1 bits.
+                                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.decoder'
+  111 |                             if(mem_error || transferred+((rbeat || wbeat) ? 1'b1:1'b0)!=transaction_words) begin
+      |                                                                           ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yx8_cpu.v:106:20: Operator ASSIGN expects 9 bits on the Assign RHS, but Assign RHS's REPLICATE generates 10 bits.
+                                                                : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart.u_cpu'
+  106 |         3'd0: shr9 = {1'b0, 1'b0, v1};
+      |                    ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yx8_cpu.v:140:85: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'sh' generates 3 bits.
+                                                                : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart.u_cpu'
+  140 |         8'h18: begin alu_r = sh_l;      fz = (alu_r==8'h00); fn = alu_r[7]; fc = sh ? shl9[8] : flag_c; we_reg=1; end
+      |                                                                                     ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yx8_cpu.v:141:85: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'sh' generates 3 bits.
+                                                                : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart.u_cpu'
+  141 |         8'h19: begin alu_r = sh_r;      fz = (alu_r==8'h00); fn = alu_r[7]; fc = sh ? shr_c : flag_c;   we_reg=1; end
+      |                                                                                     ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yx8_cpu.v:157:85: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'sh' generates 3 bits.
+                                                                : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart.u_cpu'
+  157 |         8'h28: begin alu_r = sh_l;      fz = (alu_r==8'h00); fn = alu_r[7]; fc = sh ? shl9[8] : flag_c; we_reg=1; end
+      |                                                                                     ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yx8_cpu.v:158:85: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'sh' generates 3 bits.
+                                                                : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart.u_cpu'
+  158 |         8'h29: begin alu_r = sh_r;      fz = (alu_r==8'h00); fn = alu_r[7]; fc = sh ? shr_c : flag_c; we_reg=1; end
+      |                                                                                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cpu.v:180:24: Operator ASSIGNW expects 16 bits on the Assign RHS, but Assign RHS's REPLICATE generates 15 bits.
+                                                                 : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart.u_cpu'
+  180 |     wire [15:0] sext_b = {{7{B[7]}}, B};
+      |                        ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:31:64: Operator COND expects 32 or 4 bits on the Conditional True, but Conditional True's CONST '1'h1' generates 1 bits.
+                                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.pcm'
+   31 |                     if(mem_error || received+((rvalid&&rready) ? 1'b1:1'b0)!=8) failed<=1;
+      |                                                                ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:31:64: Operator COND expects 32 or 4 bits on the Conditional False, but Conditional False's CONST '1'h0' generates 1 bits.
+                                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.pcm'
+   31 |                     if(mem_error || received+((rvalid&&rready) ? 1'b1:1'b0)!=8) failed<=1;
+      |                                                                ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:54:33: Operator COND expects 32 bits on the Conditional True, but Conditional True's FUNCREF 'header_byte' generates 8 bits.
+                                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.pcm'
+   54 |     assign wav_data=header_mode ? header_byte(hi):(fifo_data>>(bi*8));
+      |                                 ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:54:20: Operator ASSIGNW expects 8 bits on the Assign RHS, but Assign RHS's COND generates 32 bits.
+                                                                                       : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.pcm'
+   54 |     assign wav_data=header_mode ? header_byte(hi):(fifo_data>>(bi*8));
+      |                    ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:35:27: Operator ASSIGNW expects 10 bits on the Assign RHS, but Assign RHS's SHIFTR generates 13 bits.
+                                                                                     : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.loader'
+   35 |     wire [9:0] entry_index=(absolute-13'd32)>>3;
+      |                           ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:148:25: Operator TASKREF 'request_sd' expects 16 bits on the Function Argument, but Function Argument's SUB generates 32 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.loader'
+  148 |                         request_sd(VIDEO_LBA+1,((32+{19'd0,frames,3'd0}+511)>>9)-1,1,0,512);
+      |                         ^~~~~~~~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:153:47: Operator ASSIGNDLY expects 32 bits on the Assign RHS, but Assign RHS's VARREF 'next_tag' generates 16 bits.
+                                                                                       : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.loader'
+  153 |                         if(selected) slot_tag1<=next_tag;else slot_tag0<=next_tag;
+      |                                               ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:153:72: Operator ASSIGNDLY expects 32 bits on the Assign RHS, but Assign RHS's VARREF 'next_tag' generates 16 bits.
+                                                                                       : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.loader'
+  153 |                         if(selected) slot_tag1<=next_tag;else slot_tag0<=next_tag;
+      |                                                                        ^~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:162:21: Operator TASKREF 'request_sd' expects 16 bits on the Function Argument, but Function Argument's SHIFTR generates 17 bits.
+                                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO.loader'
+  162 |                     request_sd(VIDEO_LBA+{9'd0,table_q[18:0]},({1'b0,table_q[34:19]}+17'd511)>>9,3,selected ? 21'h084000:21'h080000,{4'd0,table_q[18:0],9'd0});
+      |                     ^~~~~~~~~~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sdram_framebuffer.v:146:68: Logical operator LOGAND expects 1 bit on the LHS, but LHS's VARREF 'ENABLE_MJPEG' generates 32 bits.
+                                                                                 : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer'
+  146 |     wire ctrl_reset_n = (por_cnt == 20'd999_999) && !(ENABLE_MJPEG && rst);    
+      |                                                                    ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_framebuffer.v:204:10: Output port connection 'CS_N' expects 2 bits on the pin connection, but pin connection's VARREF 'sdram_cs_n' generates 1 bits.
+                                                                                  : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer'
+  204 |         .CS_N         (sdram_cs_n),
+      |          ^~~~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sdram_framebuffer.v:224:30: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'ENABLE_MJPEG' generates 32 bits.
+                                                                                 : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer'
+  224 |         .dm0   (ENABLE_MJPEG ? sdram_dqm[0]:1'b0),
+      |                              ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sdram_framebuffer.v:225:30: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'ENABLE_MJPEG' generates 32 bits.
+                                                                                 : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer'
+  225 |         .dm1   (ENABLE_MJPEG ? sdram_dqm[1]:1'b0),
+      |                              ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sdram_framebuffer.v:226:30: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'ENABLE_MJPEG' generates 32 bits.
+                                                                                 : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer'
+  226 |         .dm2   (ENABLE_MJPEG ? sdram_dqm[2]:1'b0),
+      |                              ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sdram_framebuffer.v:227:30: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'ENABLE_MJPEG' generates 32 bits.
+                                                                                 : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_framebuffer'
+  227 |         .dm3   (ENABLE_MJPEG ? sdram_dqm[3]:1'b0),
+      |                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_video_player.v:56:34: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'i_base' generates 21 bits.
+                                                                                  : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_video_player'
+   56 |     assign rd2_max_addr = i_base + FRAME_WORDS;
+      |                                  ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sdram_video_player.v:56:25: Operator ASSIGNW expects 21 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                                 : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_video_player'
+   56 |     assign rd2_max_addr = i_base + FRAME_WORDS;
+      |                         ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_video_player.v:97:56: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'pixel_y' generates 10 bits.
+                                                                                  : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_video_player'
+   97 |     wire vb_start     = (pixel_x == 11'd0) && (pixel_y == V_ACTIVE);
+      |                                                        ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_video_player.v:112:89: Operator ADD expects 10 bits on the RHS, but RHS's VARREF 'off8' generates 7 bits.
+                                                                                   : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_video_player'
+  112 |     wire signed [9:0] r5f_s = $signed({5'd0, pix[15:11]}) - $signed({5'd0, dark5[4:0]}) + off8;
+      |                                                                                         ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_video_player.v:113:89: Operator ADD expects 11 bits on the RHS, but RHS's VARREF 'off8' generates 7 bits.
+                                                                                   : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_video_player'
+  113 |     wire signed [10:0] g6f_s = $signed({5'd0, pix[10:5]}) - $signed({5'd0, dark6[5:0]}) + off8;
+      |                                                                                         ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sdram_video_player.v:114:87: Operator ADD expects 10 bits on the RHS, but RHS's VARREF 'off8' generates 7 bits.
+                                                                                   : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_video_player'
+  114 |     wire signed [9:0] b5f_s = $signed({5'd0, pix[4:0]}) - $signed({5'd0, dark5[4:0]}) + off8;
+      |                                                                                       ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sdram_video_player.v:204:35: Logical operator LOGAND expects 1 bit on the LHS, but LHS's VARREF 'VIDEO_MUX' generates 32 bits.
+                                                                                  : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_sdram_video_player'
+  204 |             rgb_out <= (VIDEO_MUX && i_video_en) ? i_video_rgb : (pixel_active && primed) ?
+      |                                   ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:66:33: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'acquire_wait' generates 28 bits.
+                                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO'
+   66 |             else if(acquire_wait==ACQUIRE_LIMIT-1)begin failed<=1;error_code<=8'h9F;diagnosis<=16'h069F;detail<=0;fail_count<=0;fail_index<=0;fail_word<=0;end
+      |                                 ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:117:57: Output port connection 'slot_tag0' expects 32 bits on the pin connection, but pin connection's VARREF 'slot_tag0' generates 16 bits.
+                                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO'
+  117 |         .slot_valid(slots),.slot_release(slot_release),.slot_tag0(slot_tag0),.slot_tag1(slot_tag1),.slot_len0(slot_len0),.slot_len1(slot_len1),
+      |                                                         ^~~~~~~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:117:79: Output port connection 'slot_tag1' expects 32 bits on the pin connection, but pin connection's VARREF 'slot_tag1' generates 16 bits.
+                                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO'
+  117 |         .slot_valid(slots),.slot_release(slot_release),.slot_tag0(slot_tag0),.slot_tag1(slot_tag1),.slot_len0(slot_len0),.slot_len1(slot_len1),
+      |                                                                               ^~~~~~~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:182:26: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'stall' generates 29 bits.
+                                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO'
+  182 |             else if(stall<STALL_LIMIT) stall<=stall+1'b1;
+      |                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:183:31: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'stall' generates 29 bits.
+                                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO'
+  183 |             if(!fault && stall==STALL_LIMIT-1) begin fault<=1;fault_code<=8'h9F;end
+      |                               ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:240:27: Operator FUNCREF 'fromgray' expects 32 bits on the Function Argument, but Function Argument's VARREF 'cs' generates 16 bits.
+                                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO'
+  240 |     assign decoded_frames=fromgray(cs);assign dropped_frames=fromgray(ds);assign displayed_frames=fromgray(ps);assign played_samples=fromgray(audio_sample_sync);
+      |                           ^~~~~~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:240:62: Operator FUNCREF 'fromgray' expects 32 bits on the Function Argument, but Function Argument's VARREF 'ds' generates 16 bits.
+                                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO'
+  240 |     assign decoded_frames=fromgray(cs);assign dropped_frames=fromgray(ds);assign displayed_frames=fromgray(ps);assign played_samples=fromgray(audio_sample_sync);
+      |                                                              ^~~~~~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:240:99: Operator FUNCREF 'fromgray' expects 32 bits on the Function Argument, but Function Argument's VARREF 'ps' generates 16 bits.
+                                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_VIDEO'
+  240 |     assign decoded_frames=fromgray(cs);assign dropped_frames=fromgray(ds);assign displayed_frames=fromgray(ps);assign played_samples=fromgray(audio_sample_sync);
+      |                                                                                                   ^~~~~~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_wav_player.v:390:48: Operator ADD expects 32 bits on the RHS, but RHS's VARREF 'rate_pix' generates 16 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_wav'
+  390 |                     consume_acc <= consume_acc + rate_pix - OUT_HZ;
+      |                                                ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_wav_player.v:390:59: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'OUT_HZ' generates 16 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_wav'
+  390 |                     consume_acc <= consume_acc + rate_pix - OUT_HZ;
+      |                                                           ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_wav_player.v:393:49: Operator ADD expects 32 bits on the RHS, but RHS's VARREF 'rate_pix' generates 16 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_wav'
+  393 |                 else consume_acc <= consume_acc + rate_pix;
+      |                                                 ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_wav_player.v:389:33: Operator ADD expects 32 bits on the RHS, but RHS's VARREF 'rate_pix' generates 16 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_wav'
+  389 |                 if (consume_acc + rate_pix >= OUT_HZ) begin
+      |                                 ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h0' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h1' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h2' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h3' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h4' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h5' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h6' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h7' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h8' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h9' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'ha' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'hb' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'hc' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'hd' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'he' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'hf' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h10' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h11' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h12' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h13' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h14' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h15' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h16' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h17' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h18' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h19' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:183:13: Operator CASE expects 6 bits on the Case Item, but Case Item's CONST '5'h1a' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  183 |             case (i)
+      |             ^~~~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:256:39: Operator ASSIGNDLY expects 28 bits on the Assign RHS, but Assign RHS's CONST '16'h0' generates 16 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  256 |             hdr_idx <= 5'd0; hdr_idle <= 16'd0; magic_r <= 32'd0; bph <= 2'd0;
+      |                                       ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:277:29: Operator LT expects 6 bits on the RHS, but RHS's CONST '5'h1b' generates 5 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  277 |                 if (tst_idx < 5'd27) begin
+      |                             ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_cart_soc.v:668:22: Operator ASSIGN expects 8 bits on the Assign RHS, but Assign RHS's VARREF 's_w' generates 7 bits.
+                                                                      : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_cart'
+  668 |         8'hED: io_rd = s_w;         8'hEE: io_rd = {2'b0, s_h};
+      |                      ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:113:42: Operator SUB expects 8 bits on the LHS, but LHS's VARREF 'w' generates 4 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  113 |             if (w > 4'd1) v = base - ((w - 4'd1) << 3);
+      |                                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:113:42: Operator SUB expects 8 bits on the RHS, but RHS's CONST '4'h1' generates 4 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  113 |             if (w > 4'd1) v = base - ((w - 4'd1) << 3);
+      |                                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:149:36: Operator LTS expects 32 bits on the LHS, but LHS's VARREF 'd' generates 14 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  149 |     wire in_range = (d >= 0) && (d < 2*SPACE_X) && (d[6:0] < ENEMY_W[6:0]);    
+      |                                    ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:152:77: Bit extraction of var[11:0] requires 4 bit index, not 3 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  152 |     wire       b_hit_now = b_active && in_band && sq_on && in_range && emask[hit_idx];
+      |                                                                             ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:158:46: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'e1x' generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  158 |                   (e1x + 11'd4 > px) && (e1x < px + PLAYER_W) &&
+      |                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:158:51: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'px' generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  158 |                   (e1x + 11'd4 > px) && (e1x < px + PLAYER_W) &&
+      |                                                   ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:159:24: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'e1y' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  159 |                   (e1y + 10'd12 > PLAYER_Y) && (e1y < PLAYER_Y + PLAYER_H);
+      |                        ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:159:24: Operator ADD expects 32 bits on the RHS, but RHS's CONST '10'hc' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  159 |                   (e1y + 10'd12 > PLAYER_Y) && (e1y < PLAYER_Y + PLAYER_H);
+      |                        ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:159:53: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'e1y' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  159 |                   (e1y + 10'd12 > PLAYER_Y) && (e1y < PLAYER_Y + PLAYER_H);
+      |                                                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:161:46: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'e2x' generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  161 |                   (e2x + 11'd4 > px) && (e2x < px + PLAYER_W) &&
+      |                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:161:51: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'px' generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  161 |                   (e2x + 11'd4 > px) && (e2x < px + PLAYER_W) &&
+      |                                                   ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:162:24: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'e2y' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  162 |                   (e2y + 10'd12 > PLAYER_Y) && (e2y < PLAYER_Y + PLAYER_H);
+      |                        ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:162:24: Operator ADD expects 32 bits on the RHS, but RHS's CONST '10'hc' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  162 |                   (e2y + 10'd12 > PLAYER_Y) && (e2y < PLAYER_Y + PLAYER_H);
+      |                        ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:162:53: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'e2y' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  162 |                   (e2y + 10'd12 > PLAYER_Y) && (e2y < PLAYER_Y + PLAYER_H);
+      |                                                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:166:33: Operator ADD expects 32 bits on the LHS, but LHS's SEL generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  166 |     wire [10:0] sx0 = ex0[10:0] + (fc0[0] << 7) + (ENEMY_W / 2);
+      |                                 ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:166:43: Operator SHIFTL expects 32 bits on the LHS, but LHS's SEL generates 1 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  166 |     wire [10:0] sx0 = ex0[10:0] + (fc0[0] << 7) + (ENEMY_W / 2);
+      |                                           ^~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_invaders.v:166:21: Operator ASSIGNW expects 11 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  166 |     wire [10:0] sx0 = ex0[10:0] + (fc0[0] << 7) + (ENEMY_W / 2);
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:167:33: Operator ADD expects 32 bits on the LHS, but LHS's SEL generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  167 |     wire [10:0] sx1 = ex1[10:0] + (fc1[0] << 7) + (ENEMY_W / 2);
+      |                                 ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:167:43: Operator SHIFTL expects 32 bits on the LHS, but LHS's SEL generates 1 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  167 |     wire [10:0] sx1 = ex1[10:0] + (fc1[0] << 7) + (ENEMY_W / 2);
+      |                                           ^~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_invaders.v:167:21: Operator ASSIGNW expects 11 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  167 |     wire [10:0] sx1 = ex1[10:0] + (fc1[0] << 7) + (ENEMY_W / 2);
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:168:33: Operator ADD expects 32 bits on the LHS, but LHS's SEL generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  168 |     wire [10:0] sx2 = ex2[10:0] + (fc2[0] << 7) + (ENEMY_W / 2);
+      |                                 ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:168:43: Operator SHIFTL expects 32 bits on the LHS, but LHS's SEL generates 1 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  168 |     wire [10:0] sx2 = ex2[10:0] + (fc2[0] << 7) + (ENEMY_W / 2);
+      |                                           ^~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_invaders.v:168:21: Operator ASSIGNW expects 11 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  168 |     wire [10:0] sx2 = ex2[10:0] + (fc2[0] << 7) + (ENEMY_W / 2);
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:169:27: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'RY0' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  169 |     wire [ 9:0] sy0 = RY0 + (ENEMY_H / 2);
+      |                           ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_invaders.v:169:21: Operator ASSIGNW expects 10 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  169 |     wire [ 9:0] sy0 = RY0 + (ENEMY_H / 2);
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:170:27: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'RY1' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  170 |     wire [ 9:0] sy1 = RY1 + (ENEMY_H / 2);
+      |                           ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_invaders.v:170:21: Operator ASSIGNW expects 10 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  170 |     wire [ 9:0] sy1 = RY1 + (ENEMY_H / 2);
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:171:27: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'RY2' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  171 |     wire [ 9:0] sy2 = RY2 + (ENEMY_H / 2);
+      |                           ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_invaders.v:171:21: Operator ASSIGNW expects 10 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  171 |     wire [ 9:0] sy2 = RY2 + (ENEMY_H / 2);
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:259:42: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'px' generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  259 |                 else if (key_right && px < H_ACTIVE - PLAYER_W)
+      |                                          ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:274:30: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'px' generates 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  274 |                     bx <= px + (PLAYER_W / 2);
+      |                              ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_invaders.v:274:24: Operator ASSIGNDLY expects 11 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  274 |                     bx <= px + (PLAYER_W / 2);
+      |                        ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:275:36: Operator SUB expects 32 bits on the RHS, but RHS's CONST '10'h18' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  275 |                     by <= PLAYER_Y - 10'd24;
+      |                                    ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_invaders.v:275:24: Operator ASSIGNDLY expects 10 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  275 |                     by <= PLAYER_Y - 10'd24;
+      |                        ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:289:35: Operator ASSIGNDLY expects 12 bits on the Assign RHS, but Assign RHS's CONST '10'h0' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  289 |                         entry_cnt <= 10'd0;
+      |                                   ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:314:35: Operator ASSIGNDLY expects 12 bits on the Assign RHS, but Assign RHS's CONST '10'h0' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  314 |                         entry_cnt <= 10'd0;
+      |                                   ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:323:44: Operator ADD expects 12 bits on the RHS, but RHS's CONST '10'h1' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  323 |                     entry_cnt <= entry_cnt + 10'd1;
+      |                                            ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:324:35: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'entry_cnt' generates 12 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  324 |                     if (entry_cnt == ENTRY_FRAMES - 1) begin
+      |                                   ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:329:35: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'entry_cnt' generates 12 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  329 |                     if (entry_cnt == 2*ENTRY_FRAMES - 1) begin
+      |                                   ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:322:31: Operator LT expects 12 bits on the RHS, but RHS's CONST '10'h191' generates 10 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  322 |                 if (entry_cnt < 10'd401) begin
+      |                               ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:339:62: Operator ADD expects 13 bits on the RHS, but RHS's SIGNED generates 5 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  339 |                     else                          ex0 <= ex0 + $signed({1'b0, sp0});
+      |                                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:343:62: Operator ADD expects 13 bits on the RHS, but RHS's SIGNED generates 5 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  343 |                     else                          ex1 <= ex1 + $signed({1'b0, sp1});
+      |                                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:347:62: Operator ADD expects 13 bits on the RHS, but RHS's SIGNED generates 5 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  347 |                     else                          ex2 <= ex2 + $signed({1'b0, sp2});
+      |                                                              ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:358:39: Bit extraction of var[11:0] requires 4 bit index, not 3 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  358 |                         else if (emask[{2'b00, fc0[0]}] && spawn0_ok && !e2a) begin
+      |                                       ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:355:34: Bit extraction of var[11:0] requires 4 bit index, not 3 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  355 |                         if (emask[{2'b00, fc0[0]}] && spawn0_ok && !e1a) begin
+      |                                  ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:371:39: Bit extraction of var[11:0] requires 4 bit index, not 3 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  371 |                         else if (emask[{2'b01, fc1[0]}] && spawn1_ok && !e2a) begin
+      |                                       ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:368:34: Bit extraction of var[11:0] requires 4 bit index, not 3 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  368 |                         if (emask[{2'b01, fc1[0]}] && spawn1_ok && !e1a) begin
+      |                                  ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:384:39: Bit extraction of var[11:0] requires 4 bit index, not 3 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  384 |                         else if (emask[{2'b10, fc2[0]}] && spawn2_ok && !e2a) begin
+      |                                       ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_invaders.v:381:34: Bit extraction of var[11:0] requires 4 bit index, not 3 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_hw_inv'
+  381 |                         if (emask[{2'b10, fc2[0]}] && spawn2_ok && !e1a) begin
+      |                                  ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_tile_layer.v:53:17: Bit extraction of array[959:0] requires 10 bit index, not 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   53 |             tmap[init_cnt] <= (init_cnt[3:0] == 4'd3) ? 8'd2 :
+      |                 ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_tile_layer.v:55:26: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'init_cnt' generates 11 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   55 |             if (init_cnt == COLS*ROWS-1)
+      |                          ^~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_tile_layer.v:65:20: Operator ASSIGNW expects 6 bits on the Assign RHS, but Assign RHS's SEL generates 7 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   65 |     wire [5:0]  tx = wx[11:5];
+      |                    ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_tile_layer.v:66:20: Operator ASSIGNW expects 6 bits on the Assign RHS, but Assign RHS's SEL generates 7 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   66 |     wire [5:0]  ty = wy[11:5];
+      |                    ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_tile_layer.v:76:22: Operator GTE expects 32 bits on the LHS, but LHS's VARREF 'tx' generates 6 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   76 |         txw_r <= (tx >= COLS) ? (tx - COLS) : tx;
+      |                      ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_tile_layer.v:76:37: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'tx' generates 6 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   76 |         txw_r <= (tx >= COLS) ? (tx - COLS) : tx;
+      |                                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_tile_layer.v:76:31: Operator COND expects 32 bits on the Conditional False, but Conditional False's VARREF 'tx' generates 6 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   76 |         txw_r <= (tx >= COLS) ? (tx - COLS) : tx;
+      |                               ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_tile_layer.v:76:15: Operator ASSIGNDLY expects 6 bits on the Assign RHS, but Assign RHS's COND generates 32 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   76 |         txw_r <= (tx >= COLS) ? (tx - COLS) : tx;
+      |               ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_tile_layer.v:77:22: Operator GTE expects 32 bits on the LHS, but LHS's VARREF 'ty' generates 6 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   77 |         tyw_r <= (ty >= ROWS) ? (ty - ROWS) : ty;
+      |                      ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_tile_layer.v:77:37: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'ty' generates 6 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   77 |         tyw_r <= (ty >= ROWS) ? (ty - ROWS) : ty;
+      |                                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_tile_layer.v:77:31: Operator COND expects 32 bits on the Conditional False, but Conditional False's VARREF 'ty' generates 6 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   77 |         tyw_r <= (ty >= ROWS) ? (ty - ROWS) : ty;
+      |                               ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_tile_layer.v:77:15: Operator ASSIGNDLY expects 6 bits on the Assign RHS, but Assign RHS's COND generates 32 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   77 |         tyw_r <= (ty >= ROWS) ? (ty - ROWS) : ty;
+      |               ^~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_tile_layer.v:87:21: Bit extraction of array[959:0] requires 10 bit index, not 11 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_tile'
+   87 |         tile <= tmap[map_addr];
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:97:34: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'pixel_y' generates 10 bits.
+                                                                             : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+   97 |     wire [9:0] next_y = (pixel_y == V_TOTAL - 1) ? 10'd0 : (pixel_y + 10'd1);
+      |                                  ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:108:18: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'pixel_x' generates 11 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  108 |         (pixel_x == H_TOTAL - 1) ?
+      |                  ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:109:24: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'next_y_r' generates 10 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  109 |             ((next_y_r == V_TOTAL - 1) ? 10'd0 : next_y_r + 10'd1) :
+      |                        ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:245:31: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'pixel_x' generates 11 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  245 |     wire [10:0] bdx = pixel_x - BRICK_X0;
+      |                               ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sprite_engine.v:245:21: Operator ASSIGNW expects 11 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                                             : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  245 |     wire [10:0] bdx = pixel_x - BRICK_X0;
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:246:31: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'next_y' generates 10 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  246 |     wire [ 9:0] bdy = next_y  - BRICK_Y0;
+      |                               ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sprite_engine.v:246:21: Operator ASSIGNW expects 10 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                                             : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  246 |     wire [ 9:0] bdy = next_y  - BRICK_Y0;
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:247:38: Operator GTE expects 32 bits on the LHS, but LHS's VARREF 'pixel_x' generates 11 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  247 |     wire        b_in_grid = (pixel_x >= BRICK_X0) &&
+      |                                      ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:248:34: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'bdx' generates 11 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  248 |                             (bdx < BRICK_COLS * BRICK_W) &&
+      |                                  ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:249:38: Operator GTE expects 32 bits on the LHS, but LHS's VARREF 'next_y' generates 10 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  249 |                             (next_y  >= BRICK_Y0) &&
+      |                                      ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:250:34: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'bdy' generates 10 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  250 |                             (bdy < BRICK_ROWS * BRICK_H);
+      |                                  ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sprite_engine.v:252:23: Operator ASSIGNW expects 4 bits on the Assign RHS, but Assign RHS's SEL generates 5 bits.
+                                                                             : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  252 |     wire [3:0]  b_row = bdy[9:5];        
+      |                       ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:253:41: Operator ADD expects 7 bits on the RHS, but RHS's REPLICATE generates 5 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  253 |     wire [5:0]  b_idx = {b_row, 3'b000} + {b_row, 1'b0} + b_col;    
+      |                                         ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:253:57: Operator ADD expects 7 bits on the RHS, but RHS's VARREF 'b_col' generates 4 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  253 |     wire [5:0]  b_idx = {b_row, 3'b000} + {b_row, 1'b0} + b_col;    
+      |                                                         ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_sprite_engine.v:253:23: Operator ASSIGNW expects 6 bits on the Assign RHS, but Assign RHS's ADD generates 7 bits.
+                                                                             : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  253 |     wire [5:0]  b_idx = {b_row, 3'b000} + {b_row, 1'b0} + b_col;    
+      |                       ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:269:27: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'pixel_x' generates 11 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  269 |     wire wr_en = (pixel_x < H_ACTIVE);
+      |                           ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_sprite_engine.v:290:21: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'pixel_x' generates 11 bits.
+                                                                              : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  290 |         if (pixel_x < H_ACTIVE - 1)
+      |                     ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_bmp_loader.v:41:34: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'i_base' generates 21 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_bmp_loader'
+   41 |     assign wr2_max_addr = i_base + FRAME_WORDS;
+      |                                  ^
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_bmp_loader.v:41:25: Operator ASSIGNW expects 21 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                         : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_bmp_loader'
+   41 |     assign wr2_max_addr = i_base + FRAME_WORDS;
+      |                         ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_bmp_loader.v:43:42: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'words_written' generates 20 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_bmp_loader'
+   43 |     assign loaded       = (words_written == FRAME_WORDS);
+      |                                          ^~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/yingxu_bmp_loader.v:126:63: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'TEST_PATTERN' generates 32 bits.
+                                                                          : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_bmp_loader'
+  126 |                                 wr2_data      <= TEST_PATTERN ? 
+      |                                                               ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_bmp_loader.v:126:63: Operator COND expects 32 bits on the Conditional True, but Conditional True's REPLICATE generates 30 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_bmp_loader'
+  126 |                                 wr2_data      <= TEST_PATTERN ? 
+      |                                                               ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_bmp_loader.v:134:51: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'words_written' generates 20 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_bmp_loader'
+  134 |                                 if (words_written == FRAME_WORDS - 1)
+      |                                                   ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_bmp_loader.v:111:40: Operator GTE expects 32 bits on the LHS, but LHS's VARREF 'words_written' generates 20 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_bmp_loader'
+  111 |                 else if (words_written >= FRAME_WORDS) begin
+      |                                        ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yingxu_bmp_loader.v:108:29: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'hdr_cnt' generates 7 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_yingxu_bmp_loader'
+  108 |                 if (hdr_cnt < HEADER_BYTES) begin
+      |                             ^
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/audio_arc_calculate.v:31:40: Operator GTE expects 32 or 13 bits on the LHS, but LHS's VARREF 'S_audio_div_cnt' generates 8 bits.
+                                                                            : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_audio_arc_calculate'
+   31 |                     if(S_audio_div_cnt >= AUDIO_DIV-1)
+      |                                        ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/audio_arc_calculate.v:41:66: Operator EQ expects 32 or 13 bits on the LHS, but LHS's VARREF 'S_audio_div_cnt' generates 8 bits.
+                                                                            : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.u_audio_arc_calculate'
+   41 |     assign S_audio_valid_div = I_audio_valid && (S_audio_div_cnt == AUDIO_DIV-1) ? 1'b1 : 1'b0;
+      |                                                                  ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/media/sd/yingxu_sd_integration_probe.v:291:39: Operator NEQ expects 43 bits on the LHS, but LHS's VARREF 'dbg_stream_offset' generates 32 bits.
+                                                                                              : ... note: In instance 'tb_yxv_top.dut.U_SD_INTEGRATION'
+  291 |                 if (dbg_stream_offset != {21'd0, dbg_accept_count})
+      |                                       ^~
+%Warning-WIDTHEXPAND: src/user_source/hdl_source/yx8_uart_telem.v:396:31: Operator FUNCREF 'hx' expects 4 bits on the Function Argument, but Function Argument's SEL generates 2 bits.
+                                                                        : ... note: In instance 'tb_yxv_top.dut.U_TELEM'
+  396 |             9'd283: char_at = hx(pad_wc[9:8]);
+      |                               ^~
+%Warning-WIDTHTRUNC: src/user_source/hdl_source/design_top_wrapper.v:699:10: Input port connection 'rst' expects 1 bits on the pin connection, but pin connection's VARREF 'S_rst_t' generates 2 bits.
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper'
+  699 |         .rst      (S_rst_t   ),
+      |          ^~~
+%Warning-WIDTHEXPAND: hardware_test_P0_UART_V5_CRC32.v:485:41: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'img_idx' generates 4 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut'
+  485 |                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
+      |                                         ^~
+%Warning-WIDTHEXPAND: hardware_test_P0_UART_V5_CRC32.v:490:79: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'img_idx' generates 4 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut'
+  490 |                 img_idx     <= (img_idx == 4'd0) ? (IMG_COUNT - 1) : (img_idx - 4'd1);
+      |                                                                               ^
+%Warning-WIDTHEXPAND: hardware_test_P0_UART_V5_CRC32.v:490:79: Operator SUB expects 32 bits on the RHS, but RHS's CONST '4'h1' generates 4 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut'
+  490 |                 img_idx     <= (img_idx == 4'd0) ? (IMG_COUNT - 1) : (img_idx - 4'd1);
+      |                                                                               ^
+%Warning-WIDTHTRUNC: hardware_test_P0_UART_V5_CRC32.v:490:29: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's COND generates 32 bits.
+                                                            : ... note: In instance 'tb_yxv_top.dut'
+  490 |                 img_idx     <= (img_idx == 4'd0) ? (IMG_COUNT - 1) : (img_idx - 4'd1);
+      |                             ^~
+%Warning-WIDTHEXPAND: hardware_test_P0_UART_V5_CRC32.v:498:41: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'img_idx' generates 4 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut'
+  498 |                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
+      |                                         ^~
+%Warning-WIDTHTRUNC: hardware_test_P0_UART_V5_CRC32.v:511:28: Bit extraction of array[7:0] requires 3 bit index, not 4 bits.
+                                                            : ... note: In instance 'tb_yxv_top.dut'
+  511 |         img_lba   = lba_rom[load_idx];
+      |                            ^
+%Warning-WIDTHEXPAND: hardware_test_P0_UART_V5_CRC32.v:651:35: Operator GTE expects 32 bits on the LHS, but LHS's VARREF 'chase_pos' generates 4 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut'
+  651 |                     if (chase_pos >= IMG_COUNT - 1) begin chase_dir <= 1'b0; chase_pos <= chase_pos - 4'd1; end
+      |                                   ^~
+%Warning-WIDTHEXPAND: hardware_test_P0_UART_V5_CRC32.v:687:38: Operator NOT expects 5 bits on the LHS, but LHS's SEL generates 2 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut'
+  687 |     wire       sw_changed = (sw_d != ~sw[1:0]);
+      |                                      ^
+%Warning-WIDTHEXPAND: hardware_test_P0_UART_V5_CRC32.v:695:21: Operator NOT expects 5 bits on the LHS, but LHS's SEL generates 2 bits.
+                                                             : ... note: In instance 'tb_yxv_top.dut'
+  695 |             sw_d <= ~sw[1:0];
+      |                     ^
+%Warning-WIDTHTRUNC: hardware_test_P0_UART_V5_CRC32.v:771:47: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'SIM_FAST_BOOT' generates 32 bits.
+                                                            : ... note: In instance 'tb_yxv_top.dut'
+  771 |         else if (sd_por_cnt != (SIM_FAST_BOOT ? 27'd1000:27'd100_000_000)) sd_por_cnt <= sd_por_cnt + 27'd1;
+      |                                               ^
+%Warning-WIDTHTRUNC: hardware_test_P0_UART_V5_CRC32.v:784:51: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'SIM_FAST_BOOT' generates 32 bits.
+                                                            : ... note: In instance 'tb_yxv_top.dut'
+  784 |     wire por_done = (sd_por_cnt == (SIM_FAST_BOOT ? 27'd1000:27'd100_000_000));
+      |                                                   ^
+%Warning-WIDTHTRUNC: hardware_test_P0_UART_V5_CRC32.v:821:54: Logical operator COND expects 1 bit on the Conditional Test, but Conditional Test's VARREF 'SIM_FAST_BOOT' generates 32 bits.
+                                                            : ... note: In instance 'tb_yxv_top.dut'
+  821 |                     if (flush_clks == (SIM_FAST_BOOT ? 16'd63:FLUSH_CLKS - 16'd1))
+      |                                                      ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:13:30: Operator ASSIGN expects 8 bits on the Assign RHS, but Assign RHS's VARREF 'SWITCH_TEST' generates 32 bits.
+                                          : ... note: In instance 'tb_yxv_top'
+   13 |     reg rst_n=0;reg [7:0] sw=SWITCH_TEST;  
+      |                              ^~~~~~~~~~~
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:32:40: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'uartfd' generates 32 bits.
+                                          : ... note: In instance 'tb_yxv_top'
+   32 |         uartfd=$fopen(uartname,"w");if(!uartfd)$fatal(1,"UART capture open");
+      |                                        ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:48:40: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'negative' generates 32 bits.
+                                          : ... note: In instance 'tb_yxv_top'
+   48 |         if(dut.video_first_count==4 && !negative && dut.video_first_bytes!=32'h59585631)$fatal(1,"first YXV magic corrupted");
+      |                                        ^
+%Warning-WIDTHEXPAND: tb/tb_yxv_top.v:50:68: Operator MODDIV expects 32 bits on the LHS, but LHS's VARXREF 'decode_tag' generates 16 bits.
+                                           : ... note: In instance 'tb_yxv_top'
+   50 |             n=$fseek(gfd,(dut.design_top_wrapper.U_VIDEO.decode_tag%nframes)*614400,0);
+      |                                                                    ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:64:52: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'negative' generates 32 bits.
+                                          : ... note: In instance 'tb_yxv_top'
+   64 |         if(dut.design_top_wrapper.U_VIDEO.fault && !negative && !noinit && !pending)$fatal(1,"video fault=%h samples=%0d decoded=%0d display=%0d SDslots=%b",dut.design_top_wrapper.U_VIDEO.fault_code,dut.design_top_wrapper.U_VIDEO.sample_count,dut.design_top_wrapper.U_VIDEO.completed,dut.design_top_wrapper.U_VIDEO.present_number,dut.design_top_wrapper.U_VIDEO.slots);
+      |                                                    ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:64:65: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'noinit' generates 32 bits.
+                                          : ... note: In instance 'tb_yxv_top'
+   64 |         if(dut.design_top_wrapper.U_VIDEO.fault && !negative && !noinit && !pending)$fatal(1,"video fault=%h samples=%0d decoded=%0d display=%0d SDslots=%b",dut.design_top_wrapper.U_VIDEO.fault_code,dut.design_top_wrapper.U_VIDEO.sample_count,dut.design_top_wrapper.U_VIDEO.completed,dut.design_top_wrapper.U_VIDEO.present_number,dut.design_top_wrapper.U_VIDEO.slots);
+      |                                                                 ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:64:76: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'pending' generates 32 bits.
+                                          : ... note: In instance 'tb_yxv_top'
+   64 |         if(dut.design_top_wrapper.U_VIDEO.fault && !negative && !noinit && !pending)$fatal(1,"video fault=%h samples=%0d decoded=%0d display=%0d SDslots=%b",dut.design_top_wrapper.U_VIDEO.fault_code,dut.design_top_wrapper.U_VIDEO.sample_count,dut.design_top_wrapper.U_VIDEO.completed,dut.design_top_wrapper.U_VIDEO.present_number,dut.design_top_wrapper.U_VIDEO.slots);
+      |                                                                            ^
+%Warning-WIDTHEXPAND: tb/tb_yxv_top.v:102:86: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'old_y' generates 10 bits.
+                                            : ... note: In instance 'tb_yxv_top'
+  102 |             pixel_addr=(dut.design_top_wrapper.U_VIDEO.scanout.bank?'h40000:0)+(old_y-120)*320+(old_x-320)/2;
+      |                                                                                      ^
+%Warning-WIDTHEXPAND: tb/tb_yxv_top.v:102:102: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'old_x' generates 11 bits.
+                                             : ... note: In instance 'tb_yxv_top'
+  102 |             pixel_addr=(dut.design_top_wrapper.U_VIDEO.scanout.bank?'h40000:0)+(old_y-120)*320+(old_x-320)/2;
+      |                                                                                                      ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:119:38: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'gfd' generates 32 bits.
+                                           : ... note: In instance 'tb_yxv_top'
+  119 |         gfd=$fopen(goldname,"rb");if(!gfd)$fatal(1,"top gold open");
+      |                                      ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:121:9: Logical operator IF expects 1 bit on the If, but If's VARREF 'pending' generates 32 bits.
+                                          : ... note: In instance 'tb_yxv_top'
+  121 |         if(pending)begin
+      |         ^~
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:138:23: Logical operator LOGAND expects 1 bit on the LHS, but LHS's VARREF 'noinit' generates 32 bits.
+                                           : ... note: In instance 'tb_yxv_top'
+  138 |             if(noinit && dut.design_top_wrapper.U_VIDEO.error_code!=8'h9F)$fatal(1,"no-init acquisition watchdog wrong error");
+      |                       ^~
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:139:13: Logical operator IF expects 1 bit on the If, but If's VARREF 'noinit' generates 32 bits.
+                                           : ... note: In instance 'tb_yxv_top'
+  139 |             if(noinit)begin
+      |             ^~
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:135:21: Logical operator LOGOR expects 1 bit on the LHS, but LHS's VARREF 'negative' generates 32 bits.
+                                           : ... note: In instance 'tb_yxv_top'
+  135 |         if(negative || noinit)begin
+      |                     ^~
+%Warning-WIDTHTRUNC: tb/tb_yxv_top.v:135:21: Logical operator LOGOR expects 1 bit on the RHS, but RHS's VARREF 'noinit' generates 32 bits.
+                                           : ... note: In instance 'tb_yxv_top'
+  135 |         if(negative || noinit)begin
+      |                     ^~
+%Warning-WIDTHEXPAND: tb/tb_yxv_top.v:154:28: Operator SUB expects 64 bits on the LHS, but LHS's VARREF 'pops' generates 32 bits.
+                                            : ... note: In instance 'tb_yxv_top'
+  154 |         rate_expected=(pops-1)*64'd1000000000;rate_actual=(last_audio-first_audio)*64'd48000;
+      |                            ^
+%Warning-UNSIGNED: src/user_source/hdl_source/yingxu_sprite_engine.v:247:38: Comparison is constant due to unsigned arithmetic
+                                                                           : ... note: In instance 'tb_yxv_top.dut.design_top_wrapper.U_sprite'
+  247 |     wire        b_in_grid = (pixel_x >= BRICK_X0) &&
+      |                                      ^~
+%Warning-UNOPTFLAT: src/user_source/hdl_source/yingxu_wav_player.v:131:17: Signal unoptimizable: Circular combinational logic: 'tb_yxv_top.dut.design_top_wrapper.u_wav.rdec'
+  131 |     wire [10:0] rdec;
+      |                 ^~~~
+                    src/user_source/hdl_source/yingxu_wav_player.v:131:17:      Example path: tb_yxv_top.dut.design_top_wrapper.u_wav.rdec
+                    src/user_source/hdl_source/yingxu_wav_player.v:142:32:      Example path: ASSIGNW
+                    src/user_source/hdl_source/yingxu_wav_player.v:131:17:      Example path: tb_yxv_top.dut.design_top_wrapper.u_wav.rdec
+%Warning-UNOPTFLAT: src/user_source/hdl_source/yingxu_wav_player.v:108:17: Signal unoptimizable: Circular combinational logic: 'tb_yxv_top.dut.design_top_wrapper.u_wav.wdec'
+  108 |     wire [10:0] wdec;
+      |                 ^~~~
+                    src/user_source/hdl_source/yingxu_wav_player.v:108:17:      Example path: tb_yxv_top.dut.design_top_wrapper.u_wav.wdec
+                    src/user_source/hdl_source/yingxu_wav_player.v:119:32:      Example path: ASSIGNW
+                    src/user_source/hdl_source/yingxu_wav_player.v:108:17:      Example path: tb_yxv_top.dut.design_top_wrapper.u_wav.wdec
+make: Entering directory '/workspace/yingxu-fpga/out/mjpeg_d3/vtop'
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated_threads.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -x c++-header Vtb_yxv_top__pch.h -o Vtb_yxv_top__pch.h.fast.gch
+g++   -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -x c++-header Vtb_yxv_top__pch.h -o Vtb_yxv_top__pch.h.slow.gch
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.fast -c -o Vtb_yxv_top.o Vtb_yxv_top.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.fast -c -o Vtb_yxv_top___024root__DepSet_hfe9840bf__0.o Vtb_yxv_top___024root__DepSet_hfe9840bf__0.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.fast -c -o Vtb_yxv_top___024root__DepSet_hb7f0c6c8__0.o Vtb_yxv_top___024root__DepSet_hb7f0c6c8__0.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.fast -c -o Vtb_yxv_top___024root__DepSet_hb7f0c6c8__1.o Vtb_yxv_top___024root__DepSet_hb7f0c6c8__1.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.fast -c -o Vtb_yxv_top___024root__DepSet_hb7f0c6c8__2.o Vtb_yxv_top___024root__DepSet_hb7f0c6c8__2.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.fast -c -o Vtb_yxv_top__main.o Vtb_yxv_top__main.cpp
+g++   -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.slow -c -o Vtb_yxv_top__ConstPool_0.o Vtb_yxv_top__ConstPool_0.cpp
+g++   -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.slow -c -o Vtb_yxv_top___024root__Slow.o Vtb_yxv_top___024root__Slow.cpp
+g++   -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.slow -c -o Vtb_yxv_top___024root__DepSet_hfe9840bf__0__Slow.o Vtb_yxv_top___024root__DepSet_hfe9840bf__0__Slow.cpp
+g++   -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.slow -c -o Vtb_yxv_top___024root__DepSet_hb7f0c6c8__0__Slow.o Vtb_yxv_top___024root__DepSet_hb7f0c6c8__0__Slow.cpp
+g++   -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.slow -c -o Vtb_yxv_top___024unit__Slow.o Vtb_yxv_top___024unit__Slow.cpp
+g++   -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.slow -c -o Vtb_yxv_top___024unit__DepSet_hd2121229__0__Slow.o Vtb_yxv_top___024unit__DepSet_hd2121229__0__Slow.cpp
+g++   -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vtb_yxv_top__pch.h.slow -c -o Vtb_yxv_top__Syms.o Vtb_yxv_top__Syms.cpp
+echo "" > Vtb_yxv_top__ALL.verilator_deplist.tmp
+g++    verilated.o verilated_timing.o verilated_threads.o Vtb_yxv_top__ALL.a    -pthread -lpthread -latomic   -o Vtb_yxv_top
+rm Vtb_yxv_top__ALL.verilator_deplist.tmp
+make: Leaving directory '/workspace/yingxu-fpga/out/mjpeg_d3/vtop'
+- V e r i l a t i o n   R e p o r t: Verilator 5.032 2025-01-01 rev (Debian 5.032-1+b2)
+- Verilator: Built from 9.838 MB sources in 53 modules, into 2.859 MB in 13 C++ files needing 0.003 MB
+- Verilator: Walltime 14.020 s (elab=0.078, cvt=0.475, bld=13.303); cpu 0.776 s on 4 threads; alloced 52.473 MB

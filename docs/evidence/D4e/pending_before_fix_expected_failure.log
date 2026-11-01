@@ -1,0 +1,4 @@
+PENDING_SIGNATURE F=a owned=1 init_done=0 busy=1 reset=1 failed=0 code=9f loader=2/1 diagnosis=0000 requests=3
+[94280000] %Fatal: tb_yxv_fault_pending.v:41: Assertion failed in tb_yxv_fault_pending: pending fault hidden until ownership release
+%Error: tb/tb_yxv_fault_pending.v:41: Verilog $stop
+Aborting...

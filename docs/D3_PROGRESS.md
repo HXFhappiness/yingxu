@@ -66,3 +66,8 @@ scanout在第一帧发布/预充之前禁止RD2弹出，避免启动空FIFO被�
 ## D4d诊断交付
 
 用户板测已确认D4c首读及回退，失败收窄到首扇区后。318ceb7只加MEM/SYS故障冻结和早期UART字段：MISE低8错误/高8阶段、SP原因/握手标志、ACC接收计数、WC帧数或坏表项、RSPD5坏字段。17例注入、36/512表/PCM与真实UART留存验证通过，正常短程图像/HDMI音频通过。具体486帧首扇区后的7扇区表→PCM→JPEG顺序和判读见 [D4D_DIAGNOSTICS.md](D4D_DIAGNOSTICS.md)。
+
+
+## D4e：连续读与首fault可见性（2026-11-01）
+
+源码44ad637。确认reader正常restart已是init-once，DNE是每笔读完成锁存、DIV3E也可能是idle，F=A才表明真正init_done为0。复现PCM命令未接受→9F→持续SD reset、owned无法退出、D4d诊断仍0000的盲点；仅提前公开既有快照，视频LS={sd_rst,video_sd_reset,init_done}。38笔普通与1/7/7594动态count、18项诊断、pending实际UART、正常短程和坏头回退通过，原始证据见 [D4E_SD_REQUEST_REVIEW.md](D4E_SD_REQUEST_REVIEW.md) / [evidence/D4e](evidence/D4e)。未更改厂商层/读调度/退场，不宣称板上根因已确定或楔死已修复。

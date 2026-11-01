@@ -1,0 +1,6 @@
+VENDOR_IDLECHK: PASS actual controller CTRL=4 SEL=0 DIV=3E init_start=0; low divider is not initialization evidence
+VENDOR_SELECTCHK: PASS mode=2 stays read CTRL=3 SEL=2 DIV=02 with absent card response, init_start=0
+- /workspace/yingxu-fpga/tb/tb_sd_vendor_idle.sv:19: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 82us; walltime 0.004 s; speed 20.694 ms/s
+- Verilator: cpu 0.004 s on 1 threads; alloced 32 MB

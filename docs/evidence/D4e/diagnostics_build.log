@@ -1,0 +1,373 @@
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'audio_enable'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:15:17: ... Location of port declaration
+   15 |     output wire audio_enable,output wire [7:0] audio_data,output wire audio_valid,input wire audio_ready,
+      |                 ^~~~~~~~~~~~
+                     ... For warning description see https://verilator.org/warn/PINMISSING?v=5.032
+                     ... Use "/* verilator lint_off PINMISSING */" and lint_on around source to disable this message.
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'audio_data'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:15:48: ... Location of port declaration
+   15 |     output wire audio_enable,output wire [7:0] audio_data,output wire audio_valid,input wire audio_ready,
+      |                                                ^~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'audio_valid'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:15:71: ... Location of port declaration
+   15 |     output wire audio_enable,output wire [7:0] audio_data,output wire audio_valid,input wire audio_ready,
+      |                                                                       ^~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'rd2_en'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:18:17: ... Location of port declaration
+   18 |     output wire rd2_en,rd2_load,output wire [20:0] rd2_addr,rd2_max,output wire [8:0] rd2_len,output wire [23:0] rgb,
+      |                 ^~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'rd2_load'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:18:24: ... Location of port declaration
+   18 |     output wire rd2_en,rd2_load,output wire [20:0] rd2_addr,rd2_max,output wire [8:0] rd2_len,output wire [23:0] rgb,
+      |                        ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'rd2_addr'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:18:52: ... Location of port declaration
+   18 |     output wire rd2_en,rd2_load,output wire [20:0] rd2_addr,rd2_max,output wire [8:0] rd2_len,output wire [23:0] rgb,
+      |                                                    ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'rd2_max'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:18:61: ... Location of port declaration
+   18 |     output wire rd2_en,rd2_load,output wire [20:0] rd2_addr,rd2_max,output wire [8:0] rd2_len,output wire [23:0] rgb,
+      |                                                             ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'rd2_len'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:18:87: ... Location of port declaration
+   18 |     output wire rd2_en,rd2_load,output wire [20:0] rd2_addr,rd2_max,output wire [8:0] rd2_len,output wire [23:0] rgb,
+      |                                                                                       ^~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'rgb'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:18:114: ... Location of port declaration
+   18 |     output wire rd2_en,rd2_load,output wire [20:0] rd2_addr,rd2_max,output wire [8:0] rd2_len,output wire [23:0] rgb,
+      |                                                                                                                  ^~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'cmd_valid'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:19:17: ... Location of port declaration
+   19 |     output wire cmd_valid,input wire cmd_ready,output wire cmd_write,output wire [20:0] cmd_addr,output wire [3:0] cmd_words,
+      |                 ^~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'cmd_write'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:19:60: ... Location of port declaration
+   19 |     output wire cmd_valid,input wire cmd_ready,output wire cmd_write,output wire [20:0] cmd_addr,output wire [3:0] cmd_words,
+      |                                                            ^~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'cmd_addr'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:19:89: ... Location of port declaration
+   19 |     output wire cmd_valid,input wire cmd_ready,output wire cmd_write,output wire [20:0] cmd_addr,output wire [3:0] cmd_words,
+      |                                                                                         ^~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'cmd_words'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:19:116: ... Location of port declaration
+   19 |     output wire cmd_valid,input wire cmd_ready,output wire cmd_write,output wire [20:0] cmd_addr,output wire [3:0] cmd_words,
+      |                                                                                                                    ^~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'wvalid'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:20:17: ... Location of port declaration
+   20 |     output wire wvalid,input wire wready,output wire [31:0] wdata,output wire wlast,
+      |                 ^~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'wdata'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:20:61: ... Location of port declaration
+   20 |     output wire wvalid,input wire wready,output wire [31:0] wdata,output wire wlast,
+      |                                                             ^~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'wlast'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:20:79: ... Location of port declaration
+   20 |     output wire wvalid,input wire wready,output wire [31:0] wdata,output wire wlast,
+      |                                                                               ^~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'rready'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:21:35: ... Location of port declaration
+   21 |     input wire rvalid,output wire rready,input wire [31:0] rdata,input wire rlast,input wire mem_done,mem_error,
+      |                                   ^~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'decoded_frames'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:23:24: ... Location of port declaration
+   23 |     output wire [31:0] decoded_frames,displayed_frames,dropped_frames,played_samples,
+      |                        ^~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'displayed_frames'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:23:39: ... Location of port declaration
+   23 |     output wire [31:0] decoded_frames,displayed_frames,dropped_frames,played_samples,
+      |                                       ^~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'dropped_frames'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:23:56: ... Location of port declaration
+   23 |     output wire [31:0] decoded_frames,displayed_frames,dropped_frames,played_samples,
+      |                                                        ^~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'played_samples'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:23:71: ... Location of port declaration
+   23 |     output wire [31:0] decoded_frames,displayed_frames,dropped_frames,played_samples,
+      |                                                                       ^~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'sd_occupancy'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:24:24: ... Location of port declaration
+   24 |     output wire [15:0] sd_occupancy,output wire [23:0] status
+      |                        ^~~~~~~~~~~~
+%Warning-PINMISSING: tb/tb_yxv_diagnostics.v:10:47: Cell has missing pin: 'status'
+   10 |     yingxu_yxv_pipeline #(.STALL_LIMIT(1000)) dut(.sys_clk(sys),.clk(clk),.pix_clk(pix),.rst(rst),.enable(1'b1),.mem_ready(1'b1),
+      |                                               ^~~
+                     /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:24:56: ... Location of port declaration
+   24 |     output wire [15:0] sd_occupancy,output wire [23:0] status
+      |                                                        ^~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:34:37: Operator ADD expects 33 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                                           : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core.u_rgb'
+   34 |         begin v=$signed({1'b0,luma})+(($signed(term)+33'sd8192)>>>14);
+      |                                     ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:54:54: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                                           : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core.u_rgb'
+   54 |                     pr<=32'sd22970*($signed({1'b0,q})-32'sd128);
+      |                                                      ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:55:55: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                                           : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core.u_rgb'
+   55 |                     pg<=-32'sd5638*($signed({1'b0,cb})-32'sd128)-32'sd11700*($signed({1'b0,q})-32'sd128);
+      |                                                       ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:55:95: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                                           : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core.u_rgb'
+   55 |                     pg<=-32'sd5638*($signed({1'b0,cb})-32'sd128)-32'sd11700*($signed({1'b0,q})-32'sd128);
+      |                                                                                               ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_rgb.v:56:55: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 9 bits.
+                                                                                                           : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core.u_rgb'
+   56 |                     pb<=32'sd29032*($signed({1'b0,cb})-32'sd128);
+      |                                                       ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v:147:71: Operator ADD expects 48 bits on the RHS, but RHS's SIGNED generates 43 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core.u_idct'
+  147 |                         total=(mul_tag[2:0]==0 ? 48'sd0 : accum[lane])+$signed(product[lane]);
+      |                                                                       ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_idct.v:149:57: Operator ASSIGNDLY expects 27 bits on the Assign RHS, but Assign RHS's SHIFTRS generates 48 bits.
+                                                                                                            : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core.u_idct'
+  149 |                         if(mul_tag[2:0]==7) result[lane]<=(total+48'sd32768)>>>16;
+      |                                                         ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:158:45: Operator LT expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  158 |     assign byte_ready=busy && !error && seen<frame_length &&
+      |                                             ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:164:45: Operator GTE expects 6 bits on the RHS, but RHS's VARREF 'amplitude_size' generates 4 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  164 |         (hs==H_RUN && es==E_AMP && bit_count>=amplitude_size) ? amplitude_size:4'd0;
+      |                                             ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:167:45: Operator SUB expects 6 bits on the RHS, but RHS's VARREF 'amplitude_size' generates 4 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  167 |     wire [15:0] amp_bits=(bitbuf>>(bit_count-amplitude_size)) & amp_mask;
+      |                                             ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:167:63: Operator AND expects 32 bits on the RHS, but RHS's VARREF 'amp_mask' generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  167 |     wire [15:0] amp_bits=(bitbuf>>(bit_count-amplitude_size)) & amp_mask;
+      |                                                               ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:167:25: Operator ASSIGNW expects 16 bits on the Assign RHS, but Assign RHS's AND generates 32 bits.
+                                                                                                            : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  167 |     wire [15:0] amp_bits=(bitbuf>>(bit_count-amplitude_size)) & amp_mask;
+      |                         ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:192:38: Operator SUB expects 6 bits on the RHS, but RHS's VARREF 'take' generates 4 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  192 |             else bit_count<=bit_count-take+(append ? 6'd8:6'd0);
+      |                                      ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:292:56: Operator ADD expects 18 bits on the RHS, but RHS's VARREF 'byte_data' generates 8 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  292 |                                 build_code<=(build_code+byte_data)<<1;htotal<=counts_total;
+      |                                                        ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:295:67: Operator LTE expects 16 bits on the RHS, but RHS's VARREF 'counts_total' generates 9 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  295 |                                     if(counts_total==0 || seg_left<=counts_total) fail(8'h0D);
+      |                                                                   ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:289:59: Operator ADD expects 18 bits on the RHS, but RHS's VARREF 'byte_data' generates 8 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  289 |                             if((byte_data!=0 && build_code+byte_data >= (18'd1<<(hlength+1'b1))) ||
+      |                                                           ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:367:78: Bit extraction of var[31:0] requires 5 bit index, not 6 bits.
+                                                                                                            : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  367 |                     E_HBIT: if(bit_count!=0) begin hcode<={hcode[15:0],bitbuf[bit_count-1'b1]};es<=E_HLO;end
+      |                                                                              ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:368:55: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  368 |                         else if(marker_pending || seen==frame_length) fail(8'h20);
+      |                                                       ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:372:65: Operator ADD expects 17 bits on the LHS, but LHS's FUNCREF 'symbol_base' generates 10 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  372 |                             table_addr<=symbol_base(selected_ht)+{2'd0,desc_q[7:0]}+
+      |                                                                 ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:372:65: Operator ADD expects 17 bits on the RHS, but RHS's REPLICATE generates 10 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  372 |                             table_addr<=symbol_base(selected_ht)+{2'd0,desc_q[7:0]}+
+      |                                                                 ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:372:39: Operator ASSIGNDLY expects 10 bits on the Assign RHS, but Assign RHS's ADD generates 17 bits.
+                                                                                                            : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  372 |                             table_addr<=symbol_base(selected_ht)+{2'd0,desc_q[7:0]}+
+      |                                       ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:395:55: Operator COND expects 32 bits on the Conditional False, but Conditional False's SIGNED generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  395 |                         predicted=amplitude+(ac_phase ? 32'sd0 : $signed(predictor[component_id]));
+      |                                                       ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:403:55: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  403 |                     end else if(marker_pending || seen==frame_length) fail(8'h20);
+      |                                                       ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:391:40: Operator GTE expects 6 bits on the RHS, but RHS's VARREF 'amplitude_size' generates 4 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  391 |                     E_AMP: if(bit_count>=amplitude_size) begin
+      |                                        ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:427:37: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  427 |                     end else if(seen==frame_length) fail(8'h20);
+      |                                     ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:429:68: Operator NEQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  429 |                         if(!pad_ok || pending_marker!=8'hD9 || seen!=frame_length) fail(8'h26);
+      |                                                                    ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:431:37: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  431 |                     end else if(seen==frame_length) fail(8'h20);
+      |                                     ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_jpeg_core.v:435:53: Operator EQ expects 17 bits on the RHS, but RHS's VARREF 'frame_length' generates 16 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.decoder.u_core'
+  435 |                 if(hs!=H_RUN && hs!=H_FINISH && seen==frame_length) fail(8'h20);
+      |                                                     ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:31:64: Operator COND expects 32 or 4 bits on the Conditional True, but Conditional True's CONST '1'h1' generates 1 bits.
+                                                                                                               : ... note: In instance 'tb_yxv_diagnostics.dut.pcm'
+   31 |                     if(mem_error || received+((rvalid&&rready) ? 1'b1:1'b0)!=8) failed<=1;
+      |                                                                ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:31:64: Operator COND expects 32 or 4 bits on the Conditional False, but Conditional False's CONST '1'h0' generates 1 bits.
+                                                                                                               : ... note: In instance 'tb_yxv_diagnostics.dut.pcm'
+   31 |                     if(mem_error || received+((rvalid&&rready) ? 1'b1:1'b0)!=8) failed<=1;
+      |                                                                ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:54:33: Operator COND expects 32 bits on the Conditional True, but Conditional True's FUNCREF 'header_byte' generates 8 bits.
+                                                                                                               : ... note: In instance 'tb_yxv_diagnostics.dut.pcm'
+   54 |     assign wav_data=header_mode ? header_byte(hi):(fifo_data>>(bi*8));
+      |                                 ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:54:20: Operator ASSIGNW expects 8 bits on the Assign RHS, but Assign RHS's COND generates 32 bits.
+                                                                                                              : ... note: In instance 'tb_yxv_diagnostics.dut.pcm'
+   54 |     assign wav_data=header_mode ? header_byte(hi):(fifo_data>>(bi*8));
+      |                    ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:35:27: Operator ASSIGNW expects 10 bits on the Assign RHS, but Assign RHS's SHIFTR generates 13 bits.
+                                                                                                            : ... note: In instance 'tb_yxv_diagnostics.dut.loader'
+   35 |     wire [9:0] entry_index=(absolute-13'd32)>>3;
+      |                           ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:148:25: Operator TASKREF 'request_sd' expects 16 bits on the Function Argument, but Function Argument's SUB generates 32 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.loader'
+  148 |                         request_sd(VIDEO_LBA+1,((32+{19'd0,frames,3'd0}+511)>>9)-1,1,0,512);
+      |                         ^~~~~~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:153:47: Operator ASSIGNDLY expects 32 bits on the Assign RHS, but Assign RHS's VARREF 'next_tag' generates 16 bits.
+                                                                                                              : ... note: In instance 'tb_yxv_diagnostics.dut.loader'
+  153 |                         if(selected) slot_tag1<=next_tag;else slot_tag0<=next_tag;
+      |                                               ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:153:72: Operator ASSIGNDLY expects 32 bits on the Assign RHS, but Assign RHS's VARREF 'next_tag' generates 16 bits.
+                                                                                                              : ... note: In instance 'tb_yxv_diagnostics.dut.loader'
+  153 |                         if(selected) slot_tag1<=next_tag;else slot_tag0<=next_tag;
+      |                                                                        ^~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v:162:21: Operator TASKREF 'request_sd' expects 16 bits on the Function Argument, but Function Argument's SHIFTR generates 17 bits.
+                                                                                                             : ... note: In instance 'tb_yxv_diagnostics.dut.loader'
+  162 |                     request_sd(VIDEO_LBA+{9'd0,table_q[18:0]},({1'b0,table_q[34:19]}+17'd511)>>9,3,selected ? 21'h084000:21'h080000,{4'd0,table_q[18:0],9'd0});
+      |                     ^~~~~~~~~~
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v:34:26: Operator ASSIGNW expects 8 bits on the Assign RHS, but Assign RHS's SHIFTR generates 32 bits.
+                                                                                                               : ... note: In instance 'tb_yxv_diagnostics.dut.decoder'
+   34 |     wire [7:0] byte_value=input_word>>(8*byte_pos);
+      |                          ^
+%Warning-WIDTHTRUNC: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v:72:32: Operator ASSIGNDLY expects 15 bits on the Assign RHS, but Assign RHS's SHIFTR generates 17 bits.
+                                                                                                               : ... note: In instance 'tb_yxv_diagnostics.dut.decoder'
+   72 |                 words_remaining<=({1'b0,jpeg_bytes}+17'd3)>>2;
+      |                                ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v:111:75: Operator COND expects 4 bits on the Conditional True, but Conditional True's CONST '1'h1' generates 1 bits.
+                                                                                                                 : ... note: In instance 'tb_yxv_diagnostics.dut.decoder'
+  111 |                             if(mem_error || transferred+((rbeat || wbeat) ? 1'b1:1'b0)!=transaction_words) begin
+      |                                                                           ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_decoder.v:111:75: Operator COND expects 4 bits on the Conditional False, but Conditional False's CONST '1'h0' generates 1 bits.
+                                                                                                                 : ... note: In instance 'tb_yxv_diagnostics.dut.decoder'
+  111 |                             if(mem_error || transferred+((rbeat || wbeat) ? 1'b1:1'b0)!=transaction_words) begin
+      |                                                                           ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:66:33: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'acquire_wait' generates 28 bits.
+                                                                                                               : ... note: In instance 'tb_yxv_diagnostics.dut'
+   66 |             else if(acquire_wait==ACQUIRE_LIMIT-1)begin failed<=1;error_code<=8'h9F;diagnosis<=16'h069F;detail<=0;fail_count<=0;fail_index<=0;fail_word<=0;end
+      |                                 ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:117:57: Output port connection 'slot_tag0' expects 32 bits on the pin connection, but pin connection's VARREF 'slot_tag0' generates 16 bits.
+                                                                                                                : ... note: In instance 'tb_yxv_diagnostics.dut'
+  117 |         .slot_valid(slots),.slot_release(slot_release),.slot_tag0(slot_tag0),.slot_tag1(slot_tag1),.slot_len0(slot_len0),.slot_len1(slot_len1),
+      |                                                         ^~~~~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:117:79: Output port connection 'slot_tag1' expects 32 bits on the pin connection, but pin connection's VARREF 'slot_tag1' generates 16 bits.
+                                                                                                                : ... note: In instance 'tb_yxv_diagnostics.dut'
+  117 |         .slot_valid(slots),.slot_release(slot_release),.slot_tag0(slot_tag0),.slot_tag1(slot_tag1),.slot_len0(slot_len0),.slot_len1(slot_len1),
+      |                                                                               ^~~~~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:182:26: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'stall' generates 29 bits.
+                                                                                                                : ... note: In instance 'tb_yxv_diagnostics.dut'
+  182 |             else if(stall<STALL_LIMIT) stall<=stall+1'b1;
+      |                          ^
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:183:31: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'stall' generates 29 bits.
+                                                                                                                : ... note: In instance 'tb_yxv_diagnostics.dut'
+  183 |             if(!fault && stall==STALL_LIMIT-1) begin fault<=1;fault_code<=8'h9F;end
+      |                               ^~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:240:27: Operator FUNCREF 'fromgray' expects 32 bits on the Function Argument, but Function Argument's VARREF 'cs' generates 16 bits.
+                                                                                                                : ... note: In instance 'tb_yxv_diagnostics.dut'
+  240 |     assign decoded_frames=fromgray(cs);assign dropped_frames=fromgray(ds);assign displayed_frames=fromgray(ps);assign played_samples=fromgray(audio_sample_sync);
+      |                           ^~~~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:240:62: Operator FUNCREF 'fromgray' expects 32 bits on the Function Argument, but Function Argument's VARREF 'ds' generates 16 bits.
+                                                                                                                : ... note: In instance 'tb_yxv_diagnostics.dut'
+  240 |     assign decoded_frames=fromgray(cs);assign dropped_frames=fromgray(ds);assign displayed_frames=fromgray(ps);assign played_samples=fromgray(audio_sample_sync);
+      |                                                              ^~~~~~~~
+%Warning-WIDTHEXPAND: /workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:240:99: Operator FUNCREF 'fromgray' expects 32 bits on the Function Argument, but Function Argument's VARREF 'ps' generates 16 bits.
+                                                                                                                : ... note: In instance 'tb_yxv_diagnostics.dut'
+  240 |     assign decoded_frames=fromgray(cs);assign dropped_frames=fromgray(ds);assign displayed_frames=fromgray(ps);assign played_samples=fromgray(audio_sample_sync);
+      |                                                                                                   ^~~~~~~~
+%Warning-WIDTHTRUNC: tb/tb_yxv_diagnostics.v:29:20: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'dropped_done' generates 32 bits.
+                                                  : ... note: In instance 'tb_yxv_diagnostics'
+   29 |                 if(!dropped_done && phase<0 && pos==limit-1+phase)done<=1;
+      |                    ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_diagnostics.v:32:24: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'dropped_done' generates 32 bits.
+                                                  : ... note: In instance 'tb_yxv_diagnostics'
+   32 |                     if(!dropped_done)begin
+      |                        ^
+%Warning-WIDTHEXPAND: tb/tb_yxv_diagnostics.v:51:67: Operator NEQCASE expects 32 bits on the LHS, but LHS's VARREF 'count' generates 11 bits.
+                                                   : ... note: In instance 'tb_yxv_diagnostics'
+   51 |             if(diagnosis!==expected || detail[15:8]!==why || count!==cnt || badindex!==idx || badword!==value || code!==expected[7:0])
+      |                                                                   ^~~
+%Warning-WIDTHEXPAND: tb/tb_yxv_diagnostics.v:51:85: Operator NEQCASE expects 32 bits on the LHS, but LHS's VARREF 'badindex' generates 10 bits.
+                                                   : ... note: In instance 'tb_yxv_diagnostics'
+   51 |             if(diagnosis!==expected || detail[15:8]!==why || count!==cnt || badindex!==idx || badword!==value || code!==expected[7:0])
+      |                                                                                     ^~~
+%Warning-WIDTHTRUNC: tb/tb_yxv_diagnostics.v:61:55: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'fd' generates 32 bits.
+                                                  : ... note: In instance 'tb_yxv_diagnostics'
+   61 |         fd=$fopen("out/mjpeg_d3/diag486.yxv","rb");if(!fd)$fatal(1,"diag486 required");
+      |                                                       ^
+%Warning-WIDTHTRUNC: tb/tb_yxv_diagnostics.v:75:13: Operator TASKREF 'failure' expects 8 bits on the Function Argument, but Function Argument's ADD generates 32 bits.
+                                                  : ... note: In instance 'tb_yxv_diagnostics'
+   75 |             failure(16'h3992,j+1,512,(j<4 ? 0:486),expected_word,2'b11);
+      |             ^~~~~~~
+make: Entering directory '/workspace/yingxu-fpga/out/mjpeg_d3/vdiagnostics'
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o /workspace/.yingxu-env/verilator/usr/share/verilator/include/verilated_threads.cpp
+python3 /workspace/.yingxu-env/verilator/usr/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include Vtb_yxv_diagnostics.cpp Vtb_yxv_diagnostics___024root__DepSet_h6fcf170f__0.cpp Vtb_yxv_diagnostics___024root__DepSet_ha2aa17cd__0.cpp Vtb_yxv_diagnostics__main.cpp Vtb_yxv_diagnostics__ConstPool_0.cpp Vtb_yxv_diagnostics___024root__Slow.cpp Vtb_yxv_diagnostics___024root__DepSet_h6fcf170f__0__Slow.cpp Vtb_yxv_diagnostics___024root__DepSet_ha2aa17cd__0__Slow.cpp Vtb_yxv_diagnostics__Syms.cpp > Vtb_yxv_diagnostics__ALL.cpp
+g++ -Os  -I.  -MMD -I/workspace/.yingxu-env/verilator/usr/share/verilator/include -I/workspace/.yingxu-env/verilator/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o Vtb_yxv_diagnostics__ALL.o Vtb_yxv_diagnostics__ALL.cpp
+echo "" > Vtb_yxv_diagnostics__ALL.verilator_deplist.tmp
+g++    verilated.o verilated_timing.o verilated_threads.o Vtb_yxv_diagnostics__ALL.a    -pthread -lpthread -latomic   -o Vtb_yxv_diagnostics
+rm Vtb_yxv_diagnostics__ALL.verilator_deplist.tmp
+make: Leaving directory '/workspace/yingxu-fpga/out/mjpeg_d3/vdiagnostics'
+- V e r i l a t i o n   R e p o r t: Verilator 5.032 2025-01-01 rev (Debian 5.032-1+b2)
+- Verilator: Built from 0.792 MB sources in 14 modules, into 1.103 MB in 9 C++ files needing 0.001 MB
+- Verilator: Walltime 8.762 s (elab=0.016, cvt=0.132, bld=8.576); cpu 0.208 s on 4 threads; alloced 30.609 MB

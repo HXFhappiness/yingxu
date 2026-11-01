@@ -1,0 +1,2 @@
+/workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/yingxu_sd_integration_probe.v:163: warning: Port 9 (sector_count) of sd_stream_reader expects 16 bits, got 32.
+/workspace/yingxu-fpga/src/user_source/hdl_source/media/sd/yingxu_sd_integration_probe.v:163:        : Pruning 16 high bits of the expression.

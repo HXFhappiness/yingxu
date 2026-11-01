@@ -1,0 +1,3 @@
+CART_RESTARTCHK: PASS 38 separate reads init_commands=1 init_done remains 1; DNE clears for each new transaction, final DNE=1 bytes=19456/19456
+VIDEO_RESTARTCHK: PASS counts=1/7/7594; total reads=7640 bytes=3911680/3911680 zero-diff stalls; init_commands=1 init_done_drops=0 DNE_clears=40/40
+/workspace/yingxu-fpga/tb/tb_sd_restart_semantics.v:46: $finish called at 167364380000 (1ps)

@@ -1,0 +1,52 @@
+{
+  "rtl_commit": "44ad637",
+  "base": "0f41ef1",
+  "branch": "feat/mjpeg",
+  "scope": "diagnostic visibility before ownership release; no SD, restart, vendor, SPI, SDRAM, decoder or teardown control change",
+  "restart_semantics": {
+    "transactions": 41,
+    "sectors": 7640,
+    "bytes_exact": 3911680,
+    "init_commands": 1,
+    "init_done_falls_after_success": 0,
+    "DNE_clears_between_transactions": "40/40",
+    "model": "transaction service, actual probe/reader/core; not pin-level card model"
+  },
+  "actual_vendor_controller": {
+    "idle": "CTRL=4 SEL=0 DIV=3E init_start=0",
+    "mode2_absent_response": "CTRL=3 SEL=2 DIV=02 init_start=0",
+    "read_success_claimed": false
+  },
+  "pending_fault": {
+    "pre_fix": "expected assertion failure, F=A reset=1 owned=1 failed=0 fault_code=9F diagnosis=0000",
+    "post_fix": "PASS F=A reset=1 owned=1 failed=0 diagnosis=929F ACC=020",
+    "fixture_frames": 486,
+    "blocked": "PCM first command waiting cmd_ready",
+    "board_root_cause_proven": false
+  },
+  "physical_UART_pending": {
+    "MISE": "929F",
+    "ACC": "020",
+    "LS": "6",
+    "F": "A",
+    "ERR": 0,
+    "model": "actual board RTL/UART, memory-block and fault test-only injection; abstract SD service"
+  },
+  "diagnostic_cases": 18,
+  "PCM_tail_regression_bytes": 3996,
+  "normal_short_play": {
+    "samples": 4001,
+    "playback_duration_ns": 83333334,
+    "drops": "0/2",
+    "max_abs_AV_samples": "1849/2000",
+    "decoded_words_exact_at_target": 460800,
+    "scanout_pixels_exact": 1985280,
+    "HDMI_samples_exact": 4000,
+    "sample_rate_error_ppm": 0,
+    "exit_photo_reload": 1,
+    "three_second_rerun": false
+  },
+  "bad_header_UART": "PASS MISE=3992 SP=01CE ACC=200 RSP=D531565800 after fallback",
+  "TD_performed": false,
+  "board_performed": false
+}
