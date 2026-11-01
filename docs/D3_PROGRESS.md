@@ -61,3 +61,8 @@ scanout在第一帧发布/预充之前禁止RD2弹出，避免启动空FIFO被�
 ## D4c交付
 
 设计1596178、实现162e91f；77/E7完整3秒均通过，0/72丢帧、AV1849/2000，四种错误回退和SD排队交接通过。板测首OFF/WC/RSP字段与完整证据见 [D4C_REPORT.md](D4C_REPORT.md)。TD及真实SPI待用户本地验收，不再将旧F/响应快照误当唯一初始化结论。
+
+
+## D4d诊断交付
+
+用户板测已确认D4c首读及回退，失败收窄到首扇区后。318ceb7只加MEM/SYS故障冻结和早期UART字段：MISE低8错误/高8阶段、SP原因/握手标志、ACC接收计数、WC帧数或坏表项、RSPD5坏字段。17例注入、36/512表/PCM与真实UART留存验证通过，正常短程图像/HDMI音频通过。具体486帧首扇区后的7扇区表→PCM→JPEG顺序和判读见 [D4D_DIAGNOSTICS.md](D4D_DIAGNOSTICS.md)。

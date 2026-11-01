@@ -1,0 +1,3 @@
+top_noinit_build.log: exit=0 seconds=13.83
+top_sw77_72_bad0_noinit.log: exit=0 seconds=106.98
+DIAG_UARTCHK: PASS retained phase/error/reason/count/index/bad-word on real UART pad

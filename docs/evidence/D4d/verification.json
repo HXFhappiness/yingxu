@@ -1,0 +1,34 @@
+{
+  "RTL_commit": "318ceb718c17c2b74e2519c2a7e862fa7a8d2434",
+  "TD_measured": false,
+  "board_tested": false,
+  "diagnostic_cases": 17,
+  "cases": "six done phases; eight header words; table alignment; lost completion; lost final byte",
+  "retained_after_MEM_reset": true,
+  "real_UART_bad_header": {
+    "MISE": "3992",
+    "SP": "01CE",
+    "ACC": "200",
+    "WC": "000",
+    "RSP": "D531565800"
+  },
+  "real_UART_noinit": {
+    "MISE": "069F",
+    "SP": "0000",
+    "ACC": "000",
+    "WC": "000"
+  },
+  "normal_short_play": {
+    "target_frames": 2,
+    "samples": 4001,
+    "drop": 0,
+    "max_AV_samples": 1849,
+    "pixel_words_exact": 460800,
+    "HDMI_samples_exact": 4000
+  },
+  "loader_positive": [
+    36,
+    512
+  ],
+  "scope": "D4d diagnostics only; D4c full 3s results historical, not rerun or relabeled as D4d"
+}

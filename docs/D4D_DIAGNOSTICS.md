@@ -85,3 +85,8 @@ SP低byte各位：7 rx_complete、6 ack、5当前sd_done脉冲、4 sd_valid、3 
 `python tools/yxv_d3_units.py`：重跑36/512帧完整表、PCM预载、回绕、物理burst、scanout及PCM单元。顶层故障用 `python tools/yxv_d3_verify.py --bad 1` / `--noinit`，保持至真实115200 UART发出报告并核验MISE/SP/ACC/WC/完整坏字段。正常路径使用 `--no-build --frames 2` 核对实际图像、HDMI音频与退出行为。D4c既有两组完整3秒结果保留历史；本轮不把短程结果冒充重跑3秒。
 
 本轮只增加mem/sys标量诊断寄存器及UART选择，无新像素域路径、RAM数组或乘法；TD面积/时序仍由用户本地构建确认。首读/回退沿用D4c已板测通过的逻辑。软件原始结果在最终证据目录记录；真实故障码仍以本次板测读数为准。
+
+
+## 最终软件结果
+
+源码318ceb7。17种相位/错误注入全部通过，36/512帧loader与PCM预载/回绕逐字节一致；物理burst、scanout、PCM单元通过。实际top正常短程4001采样、0/2丢帧、AV1849/2000、460800写字与HDMI4000样本零diff、退出照片通过。坏头实际UART读到MISE3992/SP01CE/ACC200/WC000/RSPD531565800；noinit实际UART为MISE069F/SP0000/ACC000。最终top编译通过。原始输出、源码哈希和 [verification.json](evidence/D4d/verification.json) 见 [evidence/D4d](evidence/D4d)。这些是故障注入/软件证据，不是当前板上根因的断言；未执行TD或烧录。
