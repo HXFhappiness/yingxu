@@ -205,9 +205,9 @@ module yingxu_yxv_pipeline #(
             if(!request_sync[1] || fault) audio_run<=0;
         end
     end
+    wire source_ready_mem=sdr;
     assign quiet=loader_idle && !decode_busy && pcm_idle && !exchange_pending && source_ready_mem &&
         !cmd_valid && port_idle && !lv && !pv && !dv;
-    wire source_ready_mem=sdr;
     // Others: audio reads > SD staging writes > compressed reads. Physical RD2
     // display is higher priority inside the four-port controller.
     wire [2:0] ir,iwready,irvalid,idone,ierror;
