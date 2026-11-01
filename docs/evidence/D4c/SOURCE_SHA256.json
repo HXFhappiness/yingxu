@@ -19,5 +19,8 @@
   "tb/tb_sd_video_handoff.v": "f54cde8354da0f9283b70da4f716055e05ceccdab324cab015e9411172d4ac21",
   "tb/models/d3_board_models.v": "4acc71a85ef323ba2d6f42cd2199bfc1bf925dc35b0dd599eee9b3fdd8b61acc",
   "tb/models/d3_sdram_models.v": "208d9e115bd1959e30cbfbb987679fbff463de6f2ee4b9f4f8ab98b21f839934",
-  "tb/testvectors/testvec_budget.yxv": "2e2bedf42b9ea3a16365be0e16ad94a3a5e5b0e49edf4822a29515510eb7ca4d"
+  "tb/testvectors/testvec_budget.yxv": "2e2bedf42b9ea3a16365be0e16ad94a3a5e5b0e49edf4822a29515510eb7ca4d",
+  "AC201_AL_board_test.al": "3508decff5112ac46c4f58111c67abc6ec4f1cdf8bb61d0fa2aa9ffa90cb19cf",
+  "timing.sdc": "245c990b7d152d96a16fdc5678c1226c09a7a3bbd8ffd41ae47e8c8ab75d5a79",
+  "IO.adc": "032ead843c5dcf23148d2894d02d59d70f84a4fcdb547461d706175041296927"
 }

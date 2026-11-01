@@ -23,3 +23,8 @@ handoff取消未接受请求，不取消已接受事务；物理内存/SD完成�
 已实现quiesce清排队/在途排空、77/E7同路请求、有效游戏模式/照片回退、owned期间BMP/FIFO失效。HANDOFFCHK、77/E7坏头回退、77 noinit及三路原回归已过；完整3秒仍运行，不提前标通过。退出后照片保持，改变SW7/4/5/6基础模式返回原选择。
 
 板上取证字段：视频首请求后OFF=Dxxxxxxx（低28位为首LBA，预期D02DC6C0）；WC为首count低10位（预期001）；实际收到头4字节后RSP=D4xxxxxxxx（预期D459585631），此前保留原SPI RSP。F改为{owned,init_done,busy,handoff}；旧F是cart_flags，不能作为旧版claim证明。失败时首请求/头保留，I0错误码保持；不再用DNE推断init。
+
+
+## 最终软件门禁
+
+源码162e91f的77、E7完整3秒均已通过：各0/72丢帧、AV1849/2000采样、144001 PCM采样；图像/实际compositor/HDMI PCM/真实UART首请求字段均通过，见D4C_REPORT。无TD/新板测结论。

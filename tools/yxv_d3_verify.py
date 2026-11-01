@@ -48,5 +48,11 @@ def main():
             assert len(owned)>=12 and all(d['DW']==0 and d['SP']==48000 and d['SW']==a.sw for d in owned),owned
             assert max(d['RC']for d in owned)>=60 and max(d['MISE']for d in owned)>=60,owned
             print(f'TELEMCHK: PASS wire UART D-lines={len(owned)} decoded/display/drop/SD fields visible',flush=True)
+            bmagic=[int(x,16)for x in re.findall(r'^B .*?RSP=([0-9A-F]+)',uart.read_text(),re.M)]
+            first_lba=[int(x,16)for x in re.findall(r'^C .*?OFF=([0-9A-F]+)',uart.read_text(),re.M)]
+            assert bmagic and all(x==0xD459585631 for x in bmagic),bmagic
+            assert first_lba and all(x==0xD02DC6C0 for x in first_lba),first_lba
+            assert all(d['WC']==1 and d['F']&12==12 for d in owned),owned
+            print('FIRSTREAD_UARTCHK: PASS first LBA=3000000 count=1 magic=59585631 on real UART pad',flush=True)
 
 if __name__=='__main__':main()

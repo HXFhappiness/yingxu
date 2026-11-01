@@ -1,0 +1,53 @@
+{
+  "RTL_commit": "162e91fcaf8ecf4b2feccc5e9ee7e34f2e38d630",
+  "TD_measured": false,
+  "board_tested": false,
+  "positive": {
+    "77": {
+      "simulation_exit": 0,
+      "expected_frames": 72,
+      "decoded_at_play_end": 73,
+      "samples": 144001,
+      "duration_ns": 3000000066,
+      "drop": 0,
+      "max_AV_samples": 1849,
+      "frame_samples": 2000,
+      "HDMI_samples": 144000,
+      "UART_D_lines": 14,
+      "first_LBA": 3000000,
+      "first_sectors": 1,
+      "first_magic": "59585631",
+      "first_request_UART_check": true
+    },
+    "e7": {
+      "simulation_exit": 0,
+      "expected_frames": 72,
+      "decoded_at_play_end": 73,
+      "samples": 144001,
+      "duration_ns": 3000000066,
+      "drop": 0,
+      "max_AV_samples": 1849,
+      "frame_samples": 2000,
+      "HDMI_samples": 144000,
+      "UART_D_lines": 14,
+      "first_LBA": 3000000,
+      "first_sectors": 1,
+      "first_magic": "59585631",
+      "first_request_UART_check": true
+    }
+  },
+  "handoff": "auto-init; queued legacy cancellation; in-flight read drained; first-new header exact",
+  "negative": [
+    "77 bad-header",
+    "E7 bad-header",
+    "77 noinit",
+    "E7 noinit"
+  ],
+  "legacy": [
+    "BMP exact921600 pixels",
+    "WAV48k RATECHK/CHUNKCHK",
+    "WAV44.1k RATECHK/CHUNKCHK",
+    "cart BADC0UNT=0 of604 WC=25C"
+  ],
+  "scope": "real board top with modeled SD controller service and SDRAM/PLL/FIFO/HDMI primitives; SPI electrical initialization not modeled"
+}
