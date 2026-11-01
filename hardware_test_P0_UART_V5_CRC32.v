@@ -93,14 +93,20 @@ module hardware_test #(
 
     // One bit per image: which indicator segments are valid.
     localparam [7:0] SEG_MASK = (8'hFF >> (8 - IMG_COUNT));
+    reg menu_override;reg [7:0] menu_pattern;reg [2:0] menu_sel;reg [7:0] sw_real_q;
+    wire [7:0] sw_eff = menu_override ? menu_pattern : sw;
+    localparam [7:0] MENU_PAT_PHOTO = 8'hFF;
+    localparam [7:0] MENU_PAT_GAME  = 8'h3F;
+    localparam [7:0] MENU_PAT_VIDEO = 8'h77;
+    localparam [7:0] MENU_PAT_MUSIC = 8'h7F;
 
     // SW7 selects the mode. The DIP switch reads inverted on this board, so
     // switch OFF (pin high) selects the game and ON selects the photo browser.
-    wire switch_game_mode = ~sw[7];
+    wire switch_game_mode = ~sw_eff[7];
     reg video_photo_mode;
     wire game_mode = switch_game_mode && !video_requested && !video_owned && !video_photo_mode;
     reg [1:0] video_sw3;
-    always @(posedge clk or negedge rst_n)begin if(!rst_n)video_sw3<=2'b11;else video_sw3<={video_sw3[0],sw[3]};end
+    always @(posedge clk or negedge rst_n)begin if(!rst_n)video_sw3<=2'b11;else video_sw3<={video_sw3[0],sw_eff[3]};end
     // 77 is the demo entry; E7 remains a diagnostic compatibility entry.
     wire video_requested=!video_sw3[1] && sw5_s[1] && sw6_sync[1] &&
         ((switch_game_mode && !music_sw4) || (!switch_game_mode && music_sw4));
@@ -111,8 +117,8 @@ module hardware_test #(
         if(!rst_n)begin video_quiesced<=0;video_photo_mode<=0;video_base_q<=0;end
         else begin
             video_quiesced<=video_handoff ? {video_quiesced[0],1'b1}:2'b00;
-            video_base_q<={sw[7],sw4_s[1],sw5_s[1],sw6_sync[1]};
-            if(video_requested || video_base_q!={sw[7],sw4_s[1],sw5_s[1],sw6_sync[1]})video_photo_mode<=0;
+            video_base_q<={sw_eff[7],sw4_s[1],sw5_s[1],sw6_sync[1]};
+            if(video_requested || video_base_q!={sw_eff[7],sw4_s[1],sw5_s[1],sw6_sync[1]})video_photo_mode<=0;
             if((video_owned && !video_requested)||(!video_failed_q && video_failed))video_photo_mode<=1;
         end
     end
@@ -152,12 +158,12 @@ module hardware_test #(
     reg  [1:0] sw5_s;
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) sw5_s <= 2'b00;
-        else        sw5_s <= {sw5_s[0], sw[5]};
+        else        sw5_s <= {sw5_s[0], sw_eff[5]};
     end
     reg  [1:0] sw4_s;
 always @(posedge clk) begin
     if (!rst_n) sw4_s <= 2'b00;
-    else        sw4_s <= {sw4_s[0], sw[4]};
+    else        sw4_s <= {sw4_s[0], sw_eff[4]};
 end
 wire music_sw4 = ~sw4_s[1];                      // SW4 ON = 音乐
 reg  [1:0] sw6_sync;   // G6: moved up (game_sel2/music_on_w both use it)
@@ -468,7 +474,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         else begin
             key0_p      <= key_0;
             key1_p      <= key_1;
-            sw6_sync    <= {sw6_sync[0], sw[6]};
+            sw6_sync    <= {sw6_sync[0], sw_eff[6]};
             sw6_p       <= sw6_sync[1];
             img_restart <= 1'b0;
 
