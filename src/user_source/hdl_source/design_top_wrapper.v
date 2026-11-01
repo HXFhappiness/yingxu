@@ -651,9 +651,10 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
     // D5 bisect v3: menu bar FSM + wires present, mux untouched.
     reg menu_ctx_q, menu_ctx_qq;reg [2:0] menu_sel_q, menu_sel_qq;
     reg bar_we_q;reg [9:0] bar_y_q;reg [22:0] bar_refresh;
+    wire bar_idle = &bar_refresh;
     wire bar_fire = (menu_ctx_q && !menu_ctx_qq) ||
                     (menu_ctx_q && (menu_sel_q != menu_sel_qq)) ||
-                    (menu_ctx_q && (&bar_refresh));
+                    (menu_ctx_q && bar_idle);
     always @(posedge S_pixel_clk or posedge S_rst_pix) begin
         if (S_rst_pix) begin menu_ctx_q<=0;menu_ctx_qq<=0;menu_sel_q<=0;menu_sel_qq<=0;
             bar_we_q<=0;bar_y_q<=0;bar_refresh<=0;end
