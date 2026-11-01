@@ -1,0 +1,6 @@
+PHYBOUNDCHK: PASS last 8MB word read; unaligned/zero/9-word rejected without transaction
+PHYPORTCHK: PASS transactions=16 1..8word write/read zero-diff stalls owner real-controller done; display_words=128
+- tb/tb_mjpeg_physical.v:70: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 248us; walltime 0.045 s; speed 10.302 ms/s
+- Verilator: cpu 0.024 s on 1 threads; alloced 41 MB

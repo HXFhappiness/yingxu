@@ -1,0 +1,1874 @@
+
+-- Executing script file `/workspace/yingxu-fpga/out/mjpeg_d4h/area_before.ys' --
+
+1. Executing Verilog-2005 frontend: /workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/cells_sim.v
+Parsing Verilog input from `/workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\AL_MAP_SEQ'.
+Generating RTLIL representation for module `\AL_MAP_LUT1'.
+Generating RTLIL representation for module `\AL_MAP_LUT2'.
+Generating RTLIL representation for module `\AL_MAP_LUT3'.
+Generating RTLIL representation for module `\AL_MAP_LUT4'.
+Generating RTLIL representation for module `\AL_MAP_LUT5'.
+Generating RTLIL representation for module `\AL_MAP_LUT6'.
+Generating RTLIL representation for module `\AL_MAP_ALU2B'.
+Generating RTLIL representation for module `\AL_MAP_ADDER'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: /workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/eagle_bb.v
+Parsing Verilog input from `/workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/eagle_bb.v' to AST representation.
+Generating RTLIL representation for module `\EG_LOGIC_BUF'.
+Generating RTLIL representation for module `\EG_LOGIC_BUFG'.
+Generating RTLIL representation for module `\EG_LOGIC_BUFIO'.
+Generating RTLIL representation for module `\EG_LOGIC_BUFGMUX'.
+Generating RTLIL representation for module `\EG_LOGIC_MBOOT'.
+Generating RTLIL representation for module `\EG_LOGIC_DNA'.
+Generating RTLIL representation for module `\EG_LOGIC_GCTRL'.
+Generating RTLIL representation for module `\EG_LOGIC_GSRN'.
+Generating RTLIL representation for module `\EG_LOGIC_CCLK'.
+Generating RTLIL representation for module `\EG_LOGIC_IDELAY'.
+Generating RTLIL representation for module `\EG_LOGIC_IDDR'.
+Generating RTLIL representation for module `\EG_LOGIC_ODDR'.
+Generating RTLIL representation for module `\EG_LOGIC_IDDRx2'.
+Generating RTLIL representation for module `\EG_LOGIC_ODELAY'.
+Generating RTLIL representation for module `\EG_LOGIC_ODDRx2'.
+Generating RTLIL representation for module `\EG_LOGIC_ODDRx2l'.
+Generating RTLIL representation for module `\EG_LOGIC_FIFO'.
+Generating RTLIL representation for module `\EG_LOGIC_DRAM'.
+Generating RTLIL representation for module `\EG_LOGIC_DRAM16X4'.
+Generating RTLIL representation for module `\EG_LOGIC_MULT'.
+Generating RTLIL representation for module `\EG_LOGIC_SEQ_DIV'.
+Generating RTLIL representation for module `\EG_PHY_BRAM'.
+Generating RTLIL representation for module `\EG_PHY_BRAM32K'.
+Generating RTLIL representation for module `\EG_PHY_FIFO'.
+Generating RTLIL representation for module `\EG_PHY_MULT18'.
+Generating RTLIL representation for module `\EG_PHY_GCLK'.
+Generating RTLIL representation for module `\EG_PHY_IOCLK'.
+Generating RTLIL representation for module `\EG_PHY_CLKDIV'.
+Generating RTLIL representation for module `\EG_PHY_CONFIG'.
+Generating RTLIL representation for module `\EG_PHY_OSC'.
+Generating RTLIL representation for module `\EG_PHY_PWRMNT'.
+Generating RTLIL representation for module `\EG_PHY_DDR_8M_16'.
+Generating RTLIL representation for module `\EG_PHY_SDRAM_2M_32'.
+Generating RTLIL representation for module `\EG_PHY_PAD'.
+Generating RTLIL representation for module `\EG_PHY_MSLICE'.
+Generating RTLIL representation for module `\EG_PHY_LSLICE'.
+Generating RTLIL representation for module `\EG_PHY_PLL'.
+Generating RTLIL representation for module `\EG_LOGIC_BRAM'.
+Generating RTLIL representation for module `\EG_PHY_ADC'.
+Successfully finished Verilog frontend.
+
+3. Executing Verilog-2005 frontend: /workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v
+Parsing SystemVerilog input from `/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v' to AST representation.
+Generating RTLIL representation for module `\yingxu_yxv_loader'.
+Successfully finished Verilog frontend.
+
+4. Executing HIERARCHY pass (managing design hierarchy).
+
+4.1. Analyzing design hierarchy..
+Top module:  \yingxu_yxv_loader
+
+4.2. Analyzing design hierarchy..
+Top module:  \yingxu_yxv_loader
+Removed 0 unused modules.
+
+5. Executing PROC pass (convert processes to netlists).
+
+5.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+5.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 20 switch rules as full_case in process $proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49 in module yingxu_yxv_loader.
+Removed a total of 0 dead cases.
+
+5.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 0 redundant assignments.
+Promoted 18 assignments to connections.
+
+5.4. Executing PROC_INIT pass (extract init attributes).
+
+5.5. Executing PROC_ARST pass (detect async resets in processes).
+
+5.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~43 debug messages>
+
+5.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+     1/113: $8$lookahead\slot_valid$48[1:0]$250
+     2/113: $7$lookahead\slot_valid$48[1:0]$228
+     3/113: $7$bitselwrite$pos$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:158$4[0:0]$227
+     4/113: $6\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.file_offset[31:0]$222
+     5/113: $6\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.sectors[15:0]$221
+     6/113: $6\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.lba[27:0]$220
+     7/113: $6$lookahead\slot_valid$48[1:0]$224
+     8/113: $6$bitselwrite$pos$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:158$4[0:0]$223
+     9/113: $5\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$2.sectors[15:0]$209
+    10/113: $5$lookahead\slot_valid$48[1:0]$214
+    11/113: $5$bitselwrite$pos$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:158$4[0:0]$213
+    12/113: $5\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.file_offset[31:0]$212
+    13/113: $5\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.sectors[15:0]$211
+    14/113: $5\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.lba[27:0]$210
+    15/113: $4$lookahead\slot_valid$48[1:0]$204
+    16/113: $4$bitselwrite$pos$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:158$4[0:0]$203
+    17/113: $4\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.file_offset[31:0]$202
+    18/113: $4\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.sectors[15:0]$201
+    19/113: $4\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.lba[27:0]$200
+    20/113: $4\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$2.sectors[15:0]$199
+    21/113: $3$lookahead\slot_valid$48[1:0]$198
+    22/113: $3$bitselwrite$pos$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:158$4[0:0]$197
+    23/113: $3\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.file_offset[31:0]$196
+    24/113: $3\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.sectors[15:0]$195
+    25/113: $3\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.lba[27:0]$194
+    26/113: $3\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$2.sectors[15:0]$193
+    27/113: $2$lookahead\slot_valid$48[1:0]$187
+    28/113: $2\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.file_offset[31:0]$186
+    29/113: $2\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.target[20:0]$185
+    30/113: $2\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.sectors[15:0]$184
+    31/113: $2\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.lba[27:0]$183
+    32/113: $2$bitselwrite$pos$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:158$4[0:0]$182
+    33/113: $2\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.file_offset[31:0]$181
+    34/113: $2\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.sectors[15:0]$180
+    35/113: $2\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.lba[27:0]$179
+    36/113: $2\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$2.sectors[15:0]$178
+    37/113: $5$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$174
+    38/113: $5$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_DATA[31:0]$173
+    39/113: $5$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_ADDR[2:0]$172
+    40/113: $4$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$170
+    41/113: $4$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_DATA[31:0]$169
+    42/113: $4$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_ADDR[2:0]$168
+    43/113: $6$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$164
+    44/113: $6$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_DATA[34:0]$163
+    45/113: $6$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_ADDR[8:0]$162
+    46/113: $5$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$141
+    47/113: $5$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_DATA[34:0]$140
+    48/113: $5$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_ADDR[8:0]$139
+    49/113: $4$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$137
+    50/113: $4$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_DATA[34:0]$136
+    51/113: $4$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_ADDR[8:0]$135
+    52/113: $3$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$109
+    53/113: $3$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_DATA[34:0]$108
+    54/113: $3$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_ADDR[8:0]$107
+    55/113: $3$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$112
+    56/113: $3$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_DATA[31:0]$111
+    57/113: $3$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_ADDR[2:0]$110
+    58/113: $2$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$104
+    59/113: $2$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_DATA[31:0]$103
+    60/113: $2$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_ADDR[2:0]$102
+    61/113: $2$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$101
+    62/113: $2$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_DATA[34:0]$100
+    63/113: $2$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_ADDR[8:0]$99
+    64/113: $1$lookahead\slot_valid$48[1:0]$81
+    65/113: $1$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$80
+    66/113: $1$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_DATA[31:0]$79
+    67/113: $1$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_ADDR[2:0]$78
+    68/113: $1$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$77
+    69/113: $1$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_DATA[34:0]$76
+    70/113: $1$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_ADDR[8:0]$75
+    71/113: $1\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.file_offset[31:0]$74
+    72/113: $1\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.target[20:0]$73
+    73/113: $1\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.sectors[15:0]$72
+    74/113: $1\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.lba[27:0]$71
+    75/113: $1$bitselwrite$pos$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:158$4[0:0]$70
+    76/113: $1\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.file_offset[31:0]$69
+    77/113: $1\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.sectors[15:0]$68
+    78/113: $1\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.lba[27:0]$67
+    79/113: $1\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$2.sectors[15:0]$66
+    80/113: $0\cursor[20:0]
+    81/113: $0\sent[3:0]
+    82/113: $0\mstate[1:0]
+    83/113: $0\filled[3:0]
+    84/113: $0\word[23:0]
+    85/113: $0\invalid[0:0]
+    86/113: $0\rx_complete[0:0]
+    87/113: $0\ack[0:0]
+    88/113: $0\absolute_base[12:0]
+    89/113: $0\expected[21:0]
+    90/113: $0\count[21:0]
+    91/113: $0\audio_off[18:0]
+    92/113: $0\previous_end[18:0]
+    93/113: $0\frame_start[18:0]
+    94/113: $0\selected[0:0]
+    95/113: $0\next_tag[15:0]
+    96/113: $0\next_local[8:0]
+    97/113: $0\assembly[55:0]
+    98/113: $0\purpose[1:0]
+    99/113: $0\state[2:0]
+   100/113: $0\sd_ticks[31:0]
+   101/113: $0\sd_accepted[31:0]
+   102/113: $0\slot_len1[15:0]
+   103/113: $0\slot_len0[15:0]
+   104/113: $0\slot_tag1[31:0]
+   105/113: $0\slot_tag0[31:0]
+   106/113: $0\pcm_bytes[31:0]
+   107/113: $0\frames[9:0]
+   108/113: $0\error_code[7:0]
+   109/113: $0\failed[0:0]
+   110/113: $0\ready[0:0]
+   111/113: $0\debug_reason[7:0]
+   112/113: $0\sd_sectors[15:0]
+   113/113: $0\sd_lba[27:0]
+Creating decoders for process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:57$46'.
+
+5.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+5.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\yingxu_yxv_loader.\sd_lba' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1847' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\sd_sectors' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1848' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\debug_reason' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1849' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\ready' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1850' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\failed' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1851' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\error_code' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1852' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\frames' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1853' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\pcm_bytes' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1854' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\slot_valid' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1855' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\slot_tag0' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1856' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\slot_tag1' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1857' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\slot_len0' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1858' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\slot_len1' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1859' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\sd_accepted' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1860' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\sd_ticks' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1861' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\state' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1862' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\purpose' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1863' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\assembly' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1864' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\next_local' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1865' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\next_tag' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1866' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\selected' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1867' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\frame_start' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1868' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\previous_end' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1869' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\audio_off' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1870' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\count' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1871' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\expected' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1872' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\absolute_base' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1873' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\ack' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1874' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\rx_complete' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1875' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\invalid' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1876' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\word' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1877' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\filled' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1878' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\mstate' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1879' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\sent' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1880' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\cursor' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1881' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$2.sectors' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1882' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.lba' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1883' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.sectors' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1884' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$3.file_offset' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1885' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.$bitselwrite$pos$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:158$4' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1886' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.lba' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1887' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.sectors' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1888' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.target' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1889' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\request_sd$func$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$5.file_offset' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1890' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_ADDR' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1891' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_DATA' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1892' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1893' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_ADDR' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1894' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_DATA' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1895' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1896' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.$lookahead\slot_valid$48' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+  created $dff cell `$procdff$1897' with positive edge clock.
+Creating register for signal `\yingxu_yxv_loader.\table_q' using process `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:57$46'.
+  created $dff cell `$procdff$1898' with positive edge clock.
+
+5.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+5.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 43 empty switches in `\yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+Removing empty process `yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:62$49'.
+Removing empty process `yingxu_yxv_loader.$proc$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:57$46'.
+Cleaned up 43 empty switches.
+
+5.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+<suppressed ~44 debug messages>
+
+6. Executing OPT pass (performing simple optimizations).
+
+6.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+6.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+<suppressed ~354 debug messages>
+Removed a total of 118 cells.
+
+6.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 1/2 on $mux $procmux$1110.
+    dead port 2/2 on $mux $procmux$1110.
+    dead port 1/2 on $mux $procmux$1107.
+    dead port 2/2 on $mux $procmux$1107.
+    dead port 1/2 on $mux $procmux$1104.
+    dead port 2/2 on $mux $procmux$1104.
+    dead port 1/2 on $mux $procmux$1101.
+    dead port 2/2 on $mux $procmux$1101.
+    dead port 1/2 on $mux $procmux$1098.
+    dead port 2/2 on $mux $procmux$1098.
+    dead port 1/2 on $mux $procmux$1095.
+    dead port 2/2 on $mux $procmux$1095.
+    dead port 1/2 on $mux $procmux$1092.
+    dead port 2/2 on $mux $procmux$1092.
+    dead port 1/2 on $mux $procmux$1089.
+    dead port 2/2 on $mux $procmux$1089.
+    dead port 1/2 on $mux $procmux$1086.
+    dead port 2/2 on $mux $procmux$1086.
+    dead port 1/2 on $mux $procmux$1062.
+    dead port 1/2 on $mux $procmux$1056.
+    dead port 1/2 on $mux $procmux$1050.
+    dead port 1/2 on $mux $procmux$1044.
+    dead port 1/2 on $mux $procmux$1038.
+    dead port 1/2 on $mux $procmux$1032.
+    dead port 1/2 on $mux $procmux$1026.
+    dead port 2/2 on $mux $procmux$1023.
+    dead port 1/2 on $mux $procmux$1017.
+    dead port 2/2 on $mux $procmux$1014.
+    dead port 1/2 on $mux $procmux$1008.
+    dead port 2/2 on $mux $procmux$1005.
+    dead port 1/2 on $mux $procmux$999.
+    dead port 2/2 on $mux $procmux$996.
+    dead port 1/2 on $mux $procmux$990.
+    dead port 2/2 on $mux $procmux$987.
+    dead port 1/2 on $mux $procmux$981.
+    dead port 2/2 on $mux $procmux$978.
+    dead port 1/2 on $mux $procmux$972.
+    dead port 2/2 on $mux $procmux$969.
+    dead port 2/2 on $mux $procmux$967.
+    dead port 1/2 on $mux $procmux$960.
+    dead port 2/2 on $mux $procmux$957.
+    dead port 2/2 on $mux $procmux$955.
+    dead port 1/2 on $mux $procmux$948.
+    dead port 2/2 on $mux $procmux$945.
+    dead port 2/2 on $mux $procmux$943.
+    dead port 1/2 on $mux $procmux$936.
+    dead port 2/2 on $mux $procmux$933.
+    dead port 2/2 on $mux $procmux$931.
+    dead port 2/2 on $mux $procmux$929.
+    dead port 1/2 on $mux $procmux$921.
+    dead port 2/2 on $mux $procmux$918.
+    dead port 2/2 on $mux $procmux$916.
+    dead port 2/2 on $mux $procmux$914.
+    dead port 1/2 on $mux $procmux$906.
+    dead port 2/2 on $mux $procmux$903.
+    dead port 2/2 on $mux $procmux$901.
+    dead port 2/2 on $mux $procmux$899.
+    dead port 1/2 on $mux $procmux$891.
+    dead port 2/2 on $mux $procmux$888.
+    dead port 2/2 on $mux $procmux$886.
+    dead port 2/2 on $mux $procmux$884.
+    dead port 2/2 on $mux $procmux$882.
+    dead port 1/2 on $mux $procmux$873.
+    dead port 2/2 on $mux $procmux$870.
+    dead port 2/2 on $mux $procmux$868.
+    dead port 2/2 on $mux $procmux$866.
+    dead port 2/2 on $mux $procmux$864.
+    dead port 1/2 on $mux $procmux$855.
+    dead port 2/2 on $mux $procmux$852.
+    dead port 2/2 on $mux $procmux$850.
+    dead port 2/2 on $mux $procmux$848.
+    dead port 2/2 on $mux $procmux$846.
+    dead port 1/2 on $mux $procmux$837.
+    dead port 2/2 on $mux $procmux$834.
+    dead port 1/2 on $mux $procmux$832.
+    dead port 1/2 on $mux $procmux$825.
+    dead port 2/2 on $mux $procmux$822.
+    dead port 1/2 on $mux $procmux$820.
+    dead port 1/2 on $mux $procmux$813.
+    dead port 2/2 on $mux $procmux$810.
+    dead port 1/2 on $mux $procmux$808.
+    dead port 1/2 on $mux $procmux$801.
+    dead port 2/2 on $mux $procmux$798.
+    dead port 1/2 on $mux $procmux$796.
+    dead port 1/2 on $mux $procmux$793.
+    dead port 1/2 on $mux $procmux$786.
+    dead port 2/2 on $mux $procmux$783.
+    dead port 1/2 on $mux $procmux$781.
+    dead port 1/2 on $mux $procmux$778.
+    dead port 1/2 on $mux $procmux$771.
+    dead port 2/2 on $mux $procmux$768.
+    dead port 1/2 on $mux $procmux$766.
+    dead port 1/2 on $mux $procmux$763.
+    dead port 1/2 on $mux $procmux$756.
+    dead port 2/2 on $mux $procmux$756.
+    dead port 1/2 on $mux $procmux$753.
+    dead port 2/2 on $mux $procmux$753.
+    dead port 1/2 on $mux $procmux$747.
+    dead port 2/2 on $mux $procmux$747.
+    dead port 1/2 on $mux $procmux$744.
+    dead port 2/2 on $mux $procmux$744.
+    dead port 1/2 on $mux $procmux$738.
+    dead port 2/2 on $mux $procmux$738.
+    dead port 1/2 on $mux $procmux$735.
+    dead port 2/2 on $mux $procmux$735.
+    dead port 1/2 on $mux $procmux$729.
+    dead port 2/2 on $mux $procmux$729.
+    dead port 1/2 on $mux $procmux$726.
+    dead port 2/2 on $mux $procmux$726.
+    dead port 1/2 on $mux $procmux$720.
+    dead port 2/2 on $mux $procmux$720.
+    dead port 1/2 on $mux $procmux$717.
+    dead port 2/2 on $mux $procmux$717.
+    dead port 1/2 on $mux $procmux$711.
+    dead port 2/2 on $mux $procmux$711.
+    dead port 1/2 on $mux $procmux$708.
+    dead port 2/2 on $mux $procmux$708.
+    dead port 1/2 on $mux $procmux$705.
+    dead port 2/2 on $mux $procmux$705.
+    dead port 1/2 on $mux $procmux$702.
+    dead port 2/2 on $mux $procmux$702.
+    dead port 1/2 on $mux $procmux$699.
+    dead port 2/2 on $mux $procmux$699.
+    dead port 1/2 on $mux $procmux$696.
+    dead port 2/2 on $mux $procmux$696.
+    dead port 1/2 on $mux $procmux$693.
+    dead port 2/2 on $mux $procmux$693.
+    dead port 1/2 on $mux $procmux$690.
+    dead port 2/2 on $mux $procmux$690.
+    dead port 1/2 on $mux $procmux$687.
+    dead port 1/2 on $mux $procmux$678.
+    dead port 2/2 on $mux $procmux$678.
+    dead port 1/2 on $mux $procmux$675.
+    dead port 2/2 on $mux $procmux$675.
+    dead port 1/2 on $mux $procmux$673.
+    dead port 2/2 on $mux $procmux$673.
+    dead port 1/2 on $mux $procmux$666.
+    dead port 2/2 on $mux $procmux$666.
+    dead port 1/2 on $mux $procmux$663.
+    dead port 2/2 on $mux $procmux$663.
+    dead port 1/2 on $mux $procmux$661.
+    dead port 2/2 on $mux $procmux$661.
+    dead port 1/2 on $mux $procmux$654.
+    dead port 2/2 on $mux $procmux$654.
+    dead port 1/2 on $mux $procmux$651.
+    dead port 2/2 on $mux $procmux$651.
+    dead port 1/2 on $mux $procmux$649.
+    dead port 2/2 on $mux $procmux$649.
+    dead port 1/2 on $mux $procmux$642.
+    dead port 2/2 on $mux $procmux$642.
+    dead port 1/2 on $mux $procmux$639.
+    dead port 2/2 on $mux $procmux$639.
+    dead port 1/2 on $mux $procmux$637.
+    dead port 2/2 on $mux $procmux$637.
+    dead port 1/2 on $mux $procmux$630.
+    dead port 2/2 on $mux $procmux$630.
+    dead port 1/2 on $mux $procmux$627.
+    dead port 2/2 on $mux $procmux$627.
+    dead port 1/2 on $mux $procmux$625.
+    dead port 2/2 on $mux $procmux$625.
+    dead port 1/2 on $mux $procmux$618.
+    dead port 2/2 on $mux $procmux$615.
+    dead port 1/2 on $mux $procmux$606.
+    dead port 2/2 on $mux $procmux$606.
+    dead port 1/2 on $mux $procmux$603.
+    dead port 2/2 on $mux $procmux$603.
+    dead port 1/2 on $mux $procmux$601.
+    dead port 2/2 on $mux $procmux$601.
+    dead port 1/2 on $mux $procmux$599.
+    dead port 2/2 on $mux $procmux$599.
+    dead port 1/2 on $mux $procmux$591.
+    dead port 2/2 on $mux $procmux$591.
+    dead port 1/2 on $mux $procmux$588.
+    dead port 2/2 on $mux $procmux$588.
+    dead port 1/2 on $mux $procmux$586.
+    dead port 2/2 on $mux $procmux$586.
+    dead port 1/2 on $mux $procmux$584.
+    dead port 2/2 on $mux $procmux$584.
+    dead port 1/2 on $mux $procmux$576.
+    dead port 2/2 on $mux $procmux$576.
+    dead port 1/2 on $mux $procmux$573.
+    dead port 2/2 on $mux $procmux$573.
+    dead port 1/2 on $mux $procmux$571.
+    dead port 2/2 on $mux $procmux$571.
+    dead port 1/2 on $mux $procmux$569.
+    dead port 2/2 on $mux $procmux$569.
+    dead port 1/2 on $mux $procmux$561.
+    dead port 2/2 on $mux $procmux$561.
+    dead port 1/2 on $mux $procmux$558.
+    dead port 2/2 on $mux $procmux$558.
+    dead port 1/2 on $mux $procmux$556.
+    dead port 2/2 on $mux $procmux$556.
+    dead port 1/2 on $mux $procmux$554.
+    dead port 2/2 on $mux $procmux$554.
+    dead port 1/2 on $mux $procmux$546.
+    dead port 2/2 on $mux $procmux$546.
+    dead port 1/2 on $mux $procmux$543.
+    dead port 2/2 on $mux $procmux$543.
+    dead port 1/2 on $mux $procmux$541.
+    dead port 2/2 on $mux $procmux$541.
+    dead port 1/2 on $mux $procmux$539.
+    dead port 2/2 on $mux $procmux$539.
+    dead port 1/2 on $mux $procmux$531.
+    dead port 2/2 on $mux $procmux$528.
+    dead port 2/2 on $mux $procmux$526.
+    dead port 1/2 on $mux $procmux$516.
+    dead port 2/2 on $mux $procmux$516.
+    dead port 1/2 on $mux $procmux$513.
+    dead port 2/2 on $mux $procmux$513.
+    dead port 1/2 on $mux $procmux$511.
+    dead port 2/2 on $mux $procmux$511.
+    dead port 1/2 on $mux $procmux$509.
+    dead port 2/2 on $mux $procmux$509.
+    dead port 1/2 on $mux $procmux$506.
+    dead port 2/2 on $mux $procmux$506.
+    dead port 1/2 on $mux $procmux$498.
+    dead port 2/2 on $mux $procmux$498.
+    dead port 1/2 on $mux $procmux$495.
+    dead port 2/2 on $mux $procmux$495.
+    dead port 1/2 on $mux $procmux$493.
+    dead port 2/2 on $mux $procmux$493.
+    dead port 1/2 on $mux $procmux$491.
+    dead port 2/2 on $mux $procmux$491.
+    dead port 1/2 on $mux $procmux$488.
+    dead port 2/2 on $mux $procmux$488.
+    dead port 1/2 on $mux $procmux$480.
+    dead port 2/2 on $mux $procmux$480.
+    dead port 1/2 on $mux $procmux$477.
+    dead port 2/2 on $mux $procmux$477.
+    dead port 1/2 on $mux $procmux$475.
+    dead port 2/2 on $mux $procmux$475.
+    dead port 1/2 on $mux $procmux$473.
+    dead port 2/2 on $mux $procmux$473.
+    dead port 1/2 on $mux $procmux$470.
+    dead port 2/2 on $mux $procmux$470.
+    dead port 1/2 on $mux $procmux$462.
+    dead port 2/2 on $mux $procmux$462.
+    dead port 1/2 on $mux $procmux$459.
+    dead port 2/2 on $mux $procmux$459.
+    dead port 1/2 on $mux $procmux$457.
+    dead port 2/2 on $mux $procmux$457.
+    dead port 1/2 on $mux $procmux$455.
+    dead port 2/2 on $mux $procmux$455.
+    dead port 1/2 on $mux $procmux$452.
+    dead port 2/2 on $mux $procmux$452.
+    dead port 1/2 on $mux $procmux$444.
+    dead port 2/2 on $mux $procmux$441.
+    dead port 2/2 on $mux $procmux$439.
+    dead port 1/2 on $mux $procmux$437.
+    dead port 1/2 on $mux $procmux$426.
+    dead port 2/2 on $mux $procmux$426.
+    dead port 1/2 on $mux $procmux$423.
+    dead port 2/2 on $mux $procmux$423.
+    dead port 1/2 on $mux $procmux$421.
+    dead port 2/2 on $mux $procmux$421.
+    dead port 1/2 on $mux $procmux$419.
+    dead port 2/2 on $mux $procmux$419.
+    dead port 1/2 on $mux $procmux$416.
+    dead port 2/2 on $mux $procmux$416.
+    dead port 1/2 on $mux $procmux$408.
+    dead port 2/2 on $mux $procmux$408.
+    dead port 1/2 on $mux $procmux$405.
+    dead port 2/2 on $mux $procmux$405.
+    dead port 1/2 on $mux $procmux$403.
+    dead port 2/2 on $mux $procmux$403.
+    dead port 1/2 on $mux $procmux$401.
+    dead port 2/2 on $mux $procmux$401.
+    dead port 1/2 on $mux $procmux$398.
+    dead port 2/2 on $mux $procmux$398.
+    dead port 1/2 on $mux $procmux$395.
+    dead port 2/2 on $mux $procmux$395.
+    dead port 1/2 on $mux $procmux$387.
+    dead port 2/2 on $mux $procmux$384.
+    dead port 2/2 on $mux $procmux$382.
+    dead port 1/2 on $mux $procmux$380.
+    dead port 1/2 on $mux $procmux$377.
+    dead port 1/2 on $mux $procmux$366.
+    dead port 2/2 on $mux $procmux$366.
+    dead port 1/2 on $mux $procmux$363.
+    dead port 2/2 on $mux $procmux$363.
+    dead port 1/2 on $mux $procmux$361.
+    dead port 2/2 on $mux $procmux$361.
+    dead port 1/2 on $mux $procmux$359.
+    dead port 2/2 on $mux $procmux$359.
+    dead port 1/2 on $mux $procmux$356.
+    dead port 2/2 on $mux $procmux$356.
+    dead port 1/2 on $mux $procmux$353.
+    dead port 2/2 on $mux $procmux$353.
+    dead port 1/2 on $mux $procmux$345.
+    dead port 2/2 on $mux $procmux$345.
+    dead port 1/2 on $mux $procmux$342.
+    dead port 2/2 on $mux $procmux$342.
+    dead port 1/2 on $mux $procmux$340.
+    dead port 2/2 on $mux $procmux$340.
+    dead port 1/2 on $mux $procmux$338.
+    dead port 2/2 on $mux $procmux$338.
+    dead port 1/2 on $mux $procmux$335.
+    dead port 2/2 on $mux $procmux$335.
+    dead port 1/2 on $mux $procmux$332.
+    dead port 2/2 on $mux $procmux$332.
+    dead port 1/2 on $mux $procmux$324.
+    dead port 2/2 on $mux $procmux$324.
+    dead port 1/2 on $mux $procmux$321.
+    dead port 2/2 on $mux $procmux$321.
+    dead port 1/2 on $mux $procmux$319.
+    dead port 2/2 on $mux $procmux$319.
+    dead port 1/2 on $mux $procmux$317.
+    dead port 2/2 on $mux $procmux$317.
+    dead port 1/2 on $mux $procmux$314.
+    dead port 2/2 on $mux $procmux$314.
+    dead port 1/2 on $mux $procmux$311.
+    dead port 2/2 on $mux $procmux$311.
+    dead port 1/2 on $mux $procmux$303.
+    dead port 2/2 on $mux $procmux$303.
+    dead port 1/2 on $mux $procmux$300.
+    dead port 2/2 on $mux $procmux$300.
+    dead port 1/2 on $mux $procmux$298.
+    dead port 2/2 on $mux $procmux$298.
+    dead port 1/2 on $mux $procmux$296.
+    dead port 2/2 on $mux $procmux$296.
+    dead port 1/2 on $mux $procmux$293.
+    dead port 2/2 on $mux $procmux$293.
+    dead port 1/2 on $mux $procmux$290.
+    dead port 2/2 on $mux $procmux$290.
+    dead port 1/2 on $mux $procmux$287.
+    dead port 2/2 on $mux $procmux$287.
+    dead port 1/2 on $mux $procmux$279.
+    dead port 2/2 on $mux $procmux$276.
+    dead port 2/2 on $mux $procmux$274.
+    dead port 1/2 on $mux $procmux$272.
+    dead port 1/2 on $mux $procmux$269.
+    dead port 1/2 on $mux $procmux$266.
+    dead port 1/2 on $mux $procmux$255.
+Removed 333 multiplexer ports.
+<suppressed ~54 debug messages>
+
+6.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$844:
+      Old ports: A=35'11111111111111111111111111111111111, B=35'00000000000000000000000000000000000, Y=$procmux$844_Y
+      New ports: A=1'1, B=1'0, Y=$procmux$844_Y [0]
+      New connections: $procmux$844_Y [34:1] = { $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] $procmux$844_Y [0] }
+    Consolidated identical input bits for $mux cell $procmux$761:
+      Old ports: A=0, B=32'11111111111111111111111111111111, Y=$procmux$761_Y
+      New ports: A=1'0, B=1'1, Y=$procmux$761_Y [0]
+      New connections: $procmux$761_Y [31:1] = { $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] $procmux$761_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$897:
+      Old ports: A=35'00000000000000000000000000000000000, B=$6$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$164, Y=$procmux$897_Y
+      New ports: A=1'0, B=$procmux$844_Y [0], Y=$procmux$897_Y [0]
+      New connections: $procmux$897_Y [34:1] = { $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] $procmux$897_Y [0] }
+    Consolidated identical input bits for $mux cell $procmux$805:
+      Old ports: A=$5$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$174, B=0, Y=$procmux$805_Y
+      New ports: A=$procmux$761_Y [0], B=1'0, Y=$procmux$805_Y [0]
+      New connections: $procmux$805_Y [31:1] = { $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] $procmux$805_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1003:
+      Old ports: A=$4$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$170, B=0, Y=$procmux$1003_Y
+      New ports: A=$procmux$805_Y [0], B=1'0, Y=$procmux$1003_Y [0]
+      New connections: $procmux$1003_Y [31:1] = { $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] $procmux$1003_Y [0] }
+    Consolidated identical input bits for $mux cell $procmux$941:
+      Old ports: A=35'00000000000000000000000000000000000, B=$5$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$141, Y=$procmux$941_Y
+      New ports: A=1'0, B=$procmux$897_Y [0], Y=$procmux$941_Y [0]
+      New connections: $procmux$941_Y [34:1] = { $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] $procmux$941_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1029:
+      Old ports: A=0, B=$3$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$112, Y=$procmux$1029_Y
+      New ports: A=1'0, B=$procmux$1003_Y [0], Y=$procmux$1029_Y [0]
+      New connections: $procmux$1029_Y [31:1] = { $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] $procmux$1029_Y [0] }
+    Consolidated identical input bits for $mux cell $procmux$976:
+      Old ports: A=35'00000000000000000000000000000000000, B=$4$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$137, Y=$procmux$976_Y
+      New ports: A=1'0, B=$procmux$941_Y [0], Y=$procmux$976_Y [0]
+      New connections: $procmux$976_Y [34:1] = { $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] $procmux$976_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1068:
+      Old ports: A=$2$memwr$\write_buffer$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:144$7_EN[31:0]$104, B=0, Y=$procmux$1068_Y
+      New ports: A=$procmux$1029_Y [0], B=1'0, Y=$procmux$1068_Y [0]
+      New connections: $procmux$1068_Y [31:1] = { $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] $procmux$1068_Y [0] }
+    Consolidated identical input bits for $mux cell $procmux$1047:
+      Old ports: A=35'00000000000000000000000000000000000, B=$3$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$109, Y=$procmux$1047_Y
+      New ports: A=1'0, B=$procmux$976_Y [0], Y=$procmux$1047_Y [0]
+      New connections: $procmux$1047_Y [34:1] = { $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] $procmux$1047_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1077:
+      Old ports: A=$2$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$101, B=35'00000000000000000000000000000000000, Y=$procmux$1077_Y
+      New ports: A=$procmux$1047_Y [0], B=1'0, Y=$procmux$1077_Y [0]
+      New connections: $procmux$1077_Y [34:1] = { $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] $procmux$1077_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 11 changes.
+
+6.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+6.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $procdff$1847 ($dff) from module yingxu_yxv_loader (D = $procmux$1826_Y, Q = \sd_lba, rval = 28'0000001011011100011011000000).
+Adding EN signal on $auto$ff.cc:266:slice$1901 ($sdff) from module yingxu_yxv_loader (D = $procmux$1826_Y, Q = \sd_lba).
+Adding SRST signal on $procdff$1848 ($dff) from module yingxu_yxv_loader (D = $procmux$1804_Y, Q = \sd_sectors, rval = 16'0000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$1915 ($sdff) from module yingxu_yxv_loader (D = $procmux$1804_Y, Q = \sd_sectors).
+Adding SRST signal on $procdff$1849 ($dff) from module yingxu_yxv_loader (D = $procmux$1798_Y, Q = \debug_reason, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:266:slice$1929 ($sdff) from module yingxu_yxv_loader (D = $procmux$1794_Y, Q = \debug_reason).
+Adding SRST signal on $procdff$1850 ($dff) from module yingxu_yxv_loader (D = $procmux$1788_Y, Q = \ready, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$1931 ($sdff) from module yingxu_yxv_loader (D = 1'1, Q = \ready).
+Adding SRST signal on $procdff$1851 ($dff) from module yingxu_yxv_loader (D = $procmux$1764_Y, Q = \failed, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$1941 ($sdff) from module yingxu_yxv_loader (D = $procmux$1764_Y, Q = \failed).
+Adding SRST signal on $procdff$1852 ($dff) from module yingxu_yxv_loader (D = $procmux$1746_Y, Q = \error_code, rval = 8'00000000).
+Adding SRST signal on $procdff$1853 ($dff) from module yingxu_yxv_loader (D = $procmux$1692_Y, Q = \frames, rval = 10'0000000000).
+Adding EN signal on $auto$ff.cc:266:slice$1952 ($sdff) from module yingxu_yxv_loader (D = \word [9:0], Q = \frames).
+Adding SRST signal on $procdff$1854 ($dff) from module yingxu_yxv_loader (D = $procmux$1673_Y, Q = \pcm_bytes, rval = 0).
+Adding EN signal on $auto$ff.cc:266:slice$1956 ($sdff) from module yingxu_yxv_loader (D = { 10'0000000000 \word [21:0] }, Q = \pcm_bytes).
+Adding SRST signal on $procdff$1855 ($dff) from module yingxu_yxv_loader (D = $8$lookahead\slot_valid$48[1:0]$250, Q = \slot_valid, rval = 2'00).
+Adding SRST signal on $procdff$1856 ($dff) from module yingxu_yxv_loader (D = $procmux$1656_Y, Q = \slot_tag0, rval = 0).
+Adding EN signal on $auto$ff.cc:266:slice$1961 ($sdff) from module yingxu_yxv_loader (D = { 16'0000000000000000 \next_tag }, Q = \slot_tag0).
+Adding SRST signal on $procdff$1857 ($dff) from module yingxu_yxv_loader (D = $procmux$1629_Y, Q = \slot_tag1, rval = 0).
+Adding EN signal on $auto$ff.cc:266:slice$1975 ($sdff) from module yingxu_yxv_loader (D = { 16'0000000000000000 \next_tag }, Q = \slot_tag1).
+Adding SRST signal on $procdff$1858 ($dff) from module yingxu_yxv_loader (D = $procmux$1602_Y, Q = \slot_len0, rval = 16'0000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$1987 ($sdff) from module yingxu_yxv_loader (D = \table_q [34:19], Q = \slot_len0).
+Adding SRST signal on $procdff$1859 ($dff) from module yingxu_yxv_loader (D = $procmux$1593_Y, Q = \slot_len1, rval = 16'0000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$1993 ($sdff) from module yingxu_yxv_loader (D = \table_q [34:19], Q = \slot_len1).
+Adding SRST signal on $procdff$1860 ($dff) from module yingxu_yxv_loader (D = $procmux$1584_Y, Q = \sd_accepted, rval = 0).
+Adding EN signal on $auto$ff.cc:266:slice$1997 ($sdff) from module yingxu_yxv_loader (D = $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:100$105_Y, Q = \sd_accepted).
+Adding SRST signal on $procdff$1861 ($dff) from module yingxu_yxv_loader (D = $procmux$1578_Y, Q = \sd_ticks, rval = 0).
+Adding EN signal on $auto$ff.cc:266:slice$1999 ($sdff) from module yingxu_yxv_loader (D = $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:85$91_Y, Q = \sd_ticks).
+Adding SRST signal on $procdff$1862 ($dff) from module yingxu_yxv_loader (D = $procmux$1573_Y, Q = \state, rval = 3'000).
+Adding SRST signal on $procdff$1863 ($dff) from module yingxu_yxv_loader (D = $procmux$1518_Y, Q = \purpose, rval = 2'00).
+Adding EN signal on $auto$ff.cc:266:slice$2002 ($sdff) from module yingxu_yxv_loader (D = $procmux$1518_Y, Q = \purpose).
+Adding SRST signal on $procdff$1864 ($dff) from module yingxu_yxv_loader (D = $procmux$1512_Y, Q = \assembly, rval = 56'00000000000000000000000000000000000000000000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2016 ($sdff) from module yingxu_yxv_loader (D = { \sd_byte \assembly [55:8] }, Q = \assembly).
+Adding SRST signal on $procdff$1865 ($dff) from module yingxu_yxv_loader (D = $procmux$1500_Y, Q = \next_local, rval = 9'000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2020 ($sdff) from module yingxu_yxv_loader (D = $ternary$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$240_Y [8:0], Q = \next_local).
+Adding SRST signal on $procdff$1866 ($dff) from module yingxu_yxv_loader (D = $procmux$1476_Y, Q = \next_tag, rval = 16'0000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2032 ($sdff) from module yingxu_yxv_loader (D = $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$236_Y, Q = \next_tag).
+Adding SRST signal on $procdff$1867 ($dff) from module yingxu_yxv_loader (D = $procmux$1452_Y, Q = \selected, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$2044 ($sdff) from module yingxu_yxv_loader (D = $ternary$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:164$243_Y, Q = \selected).
+Adding SRST signal on $procdff$1868 ($dff) from module yingxu_yxv_loader (D = $procmux$1442_Y, Q = \frame_start, rval = 19'0000000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2048 ($sdff) from module yingxu_yxv_loader (D = { \sd_byte [3:0] \word [23:9] }, Q = \frame_start).
+Adding SRST signal on $procdff$1869 ($dff) from module yingxu_yxv_loader (D = $procmux$1427_Y, Q = \previous_end, rval = 19'0000000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2052 ($sdff) from module yingxu_yxv_loader (D = $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:39$15_Y [18:0], Q = \previous_end).
+Adding SRST signal on $procdff$1870 ($dff) from module yingxu_yxv_loader (D = $procmux$1409_Y, Q = \audio_off, rval = 19'0000000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2058 ($sdff) from module yingxu_yxv_loader (D = $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:39$15_Y [18:0], Q = \audio_off).
+Adding SRST signal on $procdff$1871 ($dff) from module yingxu_yxv_loader (D = $procmux$1373_Y, Q = \count, rval = 22'0000000000000000000000).
+Adding SRST signal on $procdff$1872 ($dff) from module yingxu_yxv_loader (D = $procmux$1348_Y, Q = \expected, rval = 22'0000000000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2065 ($sdff) from module yingxu_yxv_loader (D = $procmux$1348_Y, Q = \expected).
+Adding SRST signal on $procdff$1873 ($dff) from module yingxu_yxv_loader (D = $procmux$1326_Y, Q = \absolute_base, rval = 13'0000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2079 ($sdff) from module yingxu_yxv_loader (D = $procmux$1326_Y, Q = \absolute_base).
+Adding SRST signal on $procdff$1874 ($dff) from module yingxu_yxv_loader (D = $procmux$1304_Y, Q = \ack, rval = 1'0).
+Adding SRST signal on $procdff$1875 ($dff) from module yingxu_yxv_loader (D = $procmux$1280_Y, Q = \rx_complete, rval = 1'0).
+Adding SRST signal on $procdff$1876 ($dff) from module yingxu_yxv_loader (D = $procmux$1269_Y, Q = \invalid, rval = 1'0).
+Adding SRST signal on $procdff$1877 ($dff) from module yingxu_yxv_loader (D = $procmux$1215_Y, Q = \word, rval = 24'000000000000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$2096 ($sdff) from module yingxu_yxv_loader (D = $procmux$1213_Y, Q = \word).
+Adding SRST signal on $procdff$1878 ($dff) from module yingxu_yxv_loader (D = $procmux$1182_Y, Q = \filled, rval = 4'0000).
+Adding SRST signal on $procdff$1879 ($dff) from module yingxu_yxv_loader (D = $procmux$1153_Y, Q = \mstate, rval = 2'00).
+Adding EN signal on $auto$ff.cc:266:slice$2107 ($sdff) from module yingxu_yxv_loader (D = $procmux$1153_Y, Q = \mstate).
+Adding SRST signal on $procdff$1880 ($dff) from module yingxu_yxv_loader (D = $procmux$1142_Y, Q = \sent, rval = 4'0000).
+Adding EN signal on $auto$ff.cc:266:slice$2117 ($sdff) from module yingxu_yxv_loader (D = $procmux$1142_Y, Q = \sent).
+Adding SRST signal on $procdff$1881 ($dff) from module yingxu_yxv_loader (D = $procmux$1118_Y, Q = \cursor, rval = 21'000000000000000000000).
+Setting constant 1-bit at position 0 on $procdff$1886 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 0 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 1 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 2 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 3 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 4 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 5 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 6 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 7 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 8 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 9 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 10 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 11 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 12 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 13 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 14 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 15 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 16 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 17 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 18 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 19 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 20 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 21 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 22 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 23 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 24 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 25 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 26 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 27 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 28 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 29 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 30 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 31 on $procdff$1890 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 0 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 1 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 2 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 3 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 4 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 5 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 6 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 7 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 8 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 9 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 10 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 11 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 12 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 13 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 14 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 15 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 16 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 17 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 18 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 19 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 20 on $procdff$1889 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 0 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 1 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 2 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 3 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 4 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 5 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 6 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 7 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 8 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 9 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 10 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 11 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 12 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 13 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 14 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 15 on $procdff$1888 ($dff) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 16 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 17 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 18 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 19 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 20 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 21 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 22 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 23 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 24 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 25 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 26 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 27 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 28 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 29 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 30 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 31 on $auto$ff.cc:266:slice$1976 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 0 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 1 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 2 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 3 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 4 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 5 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 6 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 7 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 8 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 9 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 10 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 11 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 12 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 13 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 14 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 15 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 16 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 17 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 18 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 19 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 20 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 21 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 22 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 23 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 24 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 25 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 26 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 27 on $procdff$1887 ($dff) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 16 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 17 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 18 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 19 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 20 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 21 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 22 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 23 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 24 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 25 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 26 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 27 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 28 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 29 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 30 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 31 on $auto$ff.cc:266:slice$1962 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 22 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 23 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 24 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 25 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 26 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 27 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 28 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 29 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 30 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 31 on $auto$ff.cc:266:slice$1957 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 0 on $procdff$1897 ($dff) from module yingxu_yxv_loader.
+Setting constant 1-bit at position 1 on $procdff$1897 ($dff) from module yingxu_yxv_loader.
+
+6.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+Removed 113 unused cells and 1027 unused wires.
+<suppressed ~114 debug messages>
+
+6.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+<suppressed ~7 debug messages>
+
+6.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+6.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~39 debug messages>
+
+6.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 0 changes.
+
+6.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+<suppressed ~129 debug messages>
+Removed a total of 43 cells.
+
+6.13. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $auto$ff.cc:266:slice$1960 ($sdff) from module yingxu_yxv_loader (D = $2$lookahead\slot_valid$48[1:0]$187, Q = \slot_valid, rval = 2'00).
+
+6.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+Removed 1 unused cells and 44 unused wires.
+<suppressed ~2 debug messages>
+
+6.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+6.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+6.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~39 debug messages>
+
+6.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 0 changes.
+
+6.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+6.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+6.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+6.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+6.23. Rerunning OPT passes. (Maybe there is more to do..)
+
+6.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~39 debug messages>
+
+6.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 0 changes.
+
+6.26. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+6.27. Executing OPT_DFF pass (perform DFF optimizations).
+
+6.28. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+
+6.29. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+6.30. Finished OPT passes. (There is nothing left to do.)
+
+7. Executing WREDUCE pass (reducing word size of cells).
+Removed top 7 bits (of 13) from port B of cell yingxu_yxv_loader.$sub$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:35$11 ($sub).
+Removed top 1 bits (of 17) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:38$13 ($add).
+Removed top 8 bits (of 17) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:38$13 ($add).
+Removed top 1 bits (of 20) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:39$15 ($add).
+Removed top 12 bits (of 20) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:39$15 ($add).
+Removed top 1 bits (of 14) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:40$17 ($add).
+Removed top 13 bits (of 14) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:40$17 ($add).
+Removed top 6 bits (of 20) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:41$18 ($add).
+Removed top 6 bits (of 23) from port B of cell yingxu_yxv_loader.$sub$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:44$19 ($sub).
+Removed top 7 bits (of 23) from port B of cell yingxu_yxv_loader.$sub$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:44$20 ($sub).
+Removed top 4 bits (of 13) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:45$22 ($add).
+Removed top 28 bits (of 32) from port B of cell yingxu_yxv_loader.$lt$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:53$29 ($lt).
+Removed top 28 bits (of 32) from port B of cell yingxu_yxv_loader.$lt$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:56$42 ($lt).
+Removed top 1 bits (of 4) from port B of cell yingxu_yxv_loader.$eq$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:56$45 ($eq).
+Removed top 1 bits (of 3) from port B of cell yingxu_yxv_loader.$eq$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:85$87 ($eq).
+Removed top 28 bits (of 32) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:93$96 ($add).
+Removed top 11 bits (of 32) from port Y of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:93$96 ($add).
+Removed top 26 bits (of 32) from port B of cell yingxu_yxv_loader.$lt$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:104$113 ($lt).
+Removed top 2 bits (of 32) from port B of cell yingxu_yxv_loader.$ne$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:108$115 ($ne).
+Removed top 6 bits (of 32) from port B of cell yingxu_yxv_loader.$ne$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:109$116 ($ne).
+Removed top 11 bits (of 32) from port B of cell yingxu_yxv_loader.$ne$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:110$117 ($ne).
+Removed top 22 bits (of 32) from port B of cell yingxu_yxv_loader.$gt$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:113$119 ($gt).
+Removed top 16 bits (of 32) from port B of cell yingxu_yxv_loader.$ne$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:115$121 ($ne).
+Removed top 9 bits (of 32) from port B of cell yingxu_yxv_loader.$ne$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:118$122 ($ne).
+Removed top 26 bits (of 32) from port B of cell yingxu_yxv_loader.$ne$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:120$123 ($ne).
+Removed top 26 bits (of 32) from port B of cell yingxu_yxv_loader.$ge$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:129$130 ($ge).
+Removed top 7 bits (of 13) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:129$132 ($add).
+Removed top 22 bits (of 32) from port B of cell yingxu_yxv_loader.$ge$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:132$142 ($ge).
+Removed top 13 bits (of 16) from port B of cell yingxu_yxv_loader.$lt$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:132$149 ($lt).
+Removed top 9 bits (of 10) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:138$165 ($add).
+Removed top 21 bits (of 22) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:146$176 ($add).
+Removed top 22 bits (of 32) from port B of cell yingxu_yxv_loader.$gt$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:153$207 ($gt).
+Removed top 26 bits (of 32) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$215 ($add).
+Removed top 19 bits (of 32) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$215 ($add).
+Removed top 18 bits (of 32) from port Y of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$215 ($add).
+Removed top 18 bits (of 32) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$216 ($add).
+Removed top 23 bits (of 32) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$216 ($add).
+Removed top 17 bits (of 32) from port Y of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$216 ($add).
+Removed top 26 bits (of 32) from port A of cell yingxu_yxv_loader.$sub$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$218 ($sub).
+Removed top 31 bits (of 32) from port B of cell yingxu_yxv_loader.$sub$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$218 ($sub).
+Removed top 25 bits (of 32) from port Y of cell yingxu_yxv_loader.$sub$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$218 ($sub).
+Removed top 30 bits (of 32) from port B of cell yingxu_yxv_loader.$lt$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$219 ($lt).
+Removed top 6 bits (of 28) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$225 ($add).
+Removed top 9 bits (of 28) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$225 ($add).
+Removed top 5 bits (of 28) from port Y of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$225 ($add).
+Converting cell yingxu_yxv_loader.$neg$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$233 ($neg) from signed to unsigned.
+Removed top 1 bits (of 2) from port A of cell yingxu_yxv_loader.$neg$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$233 ($neg).
+Removed top 30 bits (of 32) from port Y of cell yingxu_yxv_loader.$or$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$235 ($or).
+Removed top 30 bits (of 32) from port A of cell yingxu_yxv_loader.$or$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$235 ($or).
+Removed top 30 bits (of 32) from port B of cell yingxu_yxv_loader.$or$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$235 ($or).
+Removed top 23 bits (of 32) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$237 ($add).
+Removed top 31 bits (of 32) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$237 ($add).
+Removed top 22 bits (of 32) from port Y of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$237 ($add).
+Removed top 22 bits (of 32) from port A of cell yingxu_yxv_loader.$eq$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$238 ($eq).
+Removed top 22 bits (of 32) from port Y of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$239 ($add).
+Removed top 23 bits (of 32) from mux cell yingxu_yxv_loader.$ternary$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$240 ($mux).
+Removed top 6 bits (of 28) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$244 ($add).
+Removed top 9 bits (of 28) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$244 ($add).
+Removed top 5 bits (of 28) from port Y of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$244 ($add).
+Removed top 1 bits (of 17) from port A of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$245 ($add).
+Removed top 8 bits (of 17) from port B of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$245 ($add).
+Removed top 6 bits (of 21) from mux cell yingxu_yxv_loader.$ternary$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$247 ($mux).
+Removed top 1 bits (of 2) from port B of cell yingxu_yxv_loader.$auto$opt_dff.cc:195:make_patterns_logic$2099 ($ne).
+Removed top 1 bits (of 2) from port B of cell yingxu_yxv_loader.$procmux$1157_CMP0 ($eq).
+Removed top 2 bits (of 3) from port B of cell yingxu_yxv_loader.$procmux$1568_CMP0 ($eq).
+Removed top 1 bits (of 3) from port B of cell yingxu_yxv_loader.$procmux$1721_CMP0 ($eq).
+Removed top 1 bits (of 3) from port B of cell yingxu_yxv_loader.$procmux$1724_CMP0 ($eq).
+Removed top 2 bits (of 3) from port B of cell yingxu_yxv_loader.$procmux$1727_CMP0 ($eq).
+Removed top 1 bits (of 3) from port B of cell yingxu_yxv_loader.$procmux$1840_CMP0 ($eq).
+Removed top 30 bits (of 32) from port Y of cell yingxu_yxv_loader.$and$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$232 ($and).
+Removed top 30 bits (of 32) from port B of cell yingxu_yxv_loader.$and$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$232 ($and).
+Removed top 1 bits (of 10) from port Y of cell yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$239 ($add).
+Removed top 30 bits (of 32) from port Y of cell yingxu_yxv_loader.$not$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$231 ($not).
+Removed top 30 bits (of 32) from port A of cell yingxu_yxv_loader.$not$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$231 ($not).
+Removed top 30 bits (of 32) from port Y of cell yingxu_yxv_loader.$shift$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$234 ($shift).
+Removed top 18 bits (of 32) from wire yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:153$206_Y.
+Removed top 17 bits (of 32) from wire yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$216_Y.
+Removed top 5 bits (of 28) from wire yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$225_Y.
+Removed top 22 bits (of 32) from wire yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$237_Y.
+Removed top 23 bits (of 32) from wire yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$239_Y.
+Removed top 5 bits (of 28) from wire yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$244_Y.
+Removed top 11 bits (of 32) from wire yingxu_yxv_loader.$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:93$96_Y.
+Removed top 30 bits (of 32) from wire yingxu_yxv_loader.$and$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$232_Y.
+Removed top 30 bits (of 32) from wire yingxu_yxv_loader.$not$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$231_Y.
+Removed top 30 bits (of 32) from wire yingxu_yxv_loader.$shift$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:0$230_Y.
+Removed top 16 bits (of 32) from wire yingxu_yxv_loader.$sub$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:154$218_Y.
+Removed top 23 bits (of 32) from wire yingxu_yxv_loader.$ternary$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:160$240_Y.
+Removed top 6 bits (of 21) from wire yingxu_yxv_loader.$ternary$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$247_Y.
+
+8. Executing OPT pass (performing simple optimizations).
+
+8.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+8.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+8.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~39 debug messages>
+
+8.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 0 changes.
+
+8.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+8.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+8.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+Removed 0 unused cells and 13 unused wires.
+<suppressed ~1 debug messages>
+
+8.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+8.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+8.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~39 debug messages>
+
+8.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 0 changes.
+
+8.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+8.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+8.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+
+8.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+8.16. Finished OPT passes. (There is nothing left to do.)
+
+9. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+Checking read port `\frame_table'[0] in module `\yingxu_yxv_loader': merging output FF to cell.
+    Write port 0: non-transparent.
+Checking read port `\write_buffer'[0] in module `\yingxu_yxv_loader': no output FF found.
+Checking read port address `\write_buffer'[0] in module `\yingxu_yxv_loader': merged address FF to cell.
+
+10. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+11. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+12. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+Removed 1 unused cells and 36 unused wires.
+<suppressed ~2 debug messages>
+
+13. Executing SYNTH_ANLOGIC pass.
+
+13.1. Executing MEMORY_LIBMAP pass (mapping memories to cells).
+mapping memory yingxu_yxv_loader.frame_table via $__ANLOGIC_BRAM_SDP_
+mapping memory yingxu_yxv_loader.write_buffer via $__ANLOGIC_DRAM16X4_
+Extracted addr FF from read port 0 of yingxu_yxv_loader.write_buffer: $\write_buffer$rdreg[0]
+<suppressed ~1040 debug messages>
+
+13.2. Executing TECHMAP pass (map to technology primitives).
+
+13.2.1. Executing Verilog-2005 frontend: /workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/lutrams_map.v
+Parsing Verilog input from `/workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/lutrams_map.v' to AST representation.
+Generating RTLIL representation for module `\$__ANLOGIC_DRAM16X4_'.
+Successfully finished Verilog frontend.
+
+13.2.2. Executing Verilog-2005 frontend: /workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/brams_map.v
+Parsing Verilog input from `/workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/brams_map.v' to AST representation.
+Generating RTLIL representation for module `\$__ANLOGIC_BRAM_TDP_'.
+Generating RTLIL representation for module `\$__ANLOGIC_BRAM_SDP_'.
+Generating RTLIL representation for module `\$__ANLOGIC_BRAM32K_'.
+Successfully finished Verilog frontend.
+
+13.2.3. Continuing TECHMAP pass.
+Using template $paramod$ceb62c6ee6668c3f0081f5dedfd4a1fe7e9c662b\$__ANLOGIC_DRAM16X4_ for cells of type $__ANLOGIC_DRAM16X4_.
+Using template $paramod$cb9edb25f097a9db7c218422825c551be1e03f14\$__ANLOGIC_BRAM_SDP_ for cells of type $__ANLOGIC_BRAM_SDP_.
+No more expansions possible.
+<suppressed ~50 debug messages>
+
+13.3. Executing OPT pass (performing simple optimizations).
+
+13.3.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+<suppressed ~93 debug messages>
+
+13.3.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+13.3.3. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $auto$mem.cc:1625:emulate_read_first$2194 ($dff) from module yingxu_yxv_loader (D = $6$memwr$\frame_table$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:137$6_EN[34:0]$164 [34], Q = $auto$mem.cc:1622:emulate_read_first$2191, rval = 1'0).
+Removing always-active EN on $auto$mem.cc:1146:emulate_transparency$2196 ($dffe) from module yingxu_yxv_loader.
+Adding SRST signal on $\write_buffer$rdreg[0] ($dff) from module yingxu_yxv_loader (D = $auto$rtlil.cc:2914:Mux$2186, Q = $\write_buffer$rdreg[0]$q, rval = 3'000).
+
+13.3.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+Removed 6 unused cells and 148 unused wires.
+<suppressed ~7 debug messages>
+
+13.3.5. Rerunning OPT passes. (Removed registers in this run.)
+
+13.3.6. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+13.3.7. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+13.3.8. Executing OPT_DFF pass (perform DFF optimizations).
+
+13.3.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+
+13.3.10. Finished fast OPT passes.
+
+13.4. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+13.5. Executing OPT pass (performing simple optimizations).
+
+13.5.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+13.5.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+13.5.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~34 debug messages>
+
+13.5.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1113:
+      Old ports: A=\cursor, B={ $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:93$96_Y [20:3] \cursor [2:0] }, Y=$procmux$1113_Y
+      New ports: A=\cursor [20:3], B=$add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:93$96_Y [20:3], Y=$procmux$1113_Y [20:3]
+      New connections: $procmux$1113_Y [2:0] = \cursor [2:0]
+    New ctrl vector for $pmux cell $procmux$1153: { \debug_flags [1] \cmd_valid }
+    Consolidated identical input bits for $mux cell $procmux$1333:
+      Old ports: A={ \audio_off [3:0] 9'000000000 }, B=13'0001000000000, Y=$procmux$1333_Y
+      New ports: A=\audio_off [3:0], B=4'0001, Y=$procmux$1333_Y [12:9]
+      New connections: $procmux$1333_Y [8:0] = 9'000000000
+    Consolidated identical input bits for $mux cell $procmux$1355:
+      Old ports: A={ \pcm_sectors [12:0] 9'000000000 }, B={ $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [5:0] 9'000000000 }, Y=$procmux$1355_Y
+      New ports: A=\pcm_sectors [12:0], B={ $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [5:0] }, Y=$procmux$1355_Y [21:9]
+      New connections: $procmux$1355_Y [8:0] = 9'000000000
+    Consolidated identical input bits for $mux cell $procmux$1555:
+      Old ports: A=3'001, B=3'100, Y=$procmux$1555_Y
+      New ports: A=2'01, B=2'10, Y={ $procmux$1555_Y [2] $procmux$1555_Y [0] }
+      New connections: $procmux$1555_Y [1] = 1'0
+    Consolidated identical input bits for $pmux cell $procmux$1794:
+      Old ports: A=8'10111111, B={ 4'0000 \count [5:2] 16'1011100000100000 }, Y=$procmux$1794_Y
+      New ports: A=6'111111, B={ 2'00 \count [5:2] 12'111000100000 }, Y=$procmux$1794_Y [5:0]
+      New connections: $procmux$1794_Y [7:6] = { $procmux$1794_Y [4] 1'0 }
+    Consolidated identical input bits for $mux cell $procmux$1811:
+      Old ports: A={ 2'00 \pcm_sectors }, B={ $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [5:0] }, Y=$procmux$1811_Y
+      New ports: A={ 1'0 \pcm_sectors }, B={ $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [15] $auto$wreduce.cc:514:run$2144 [5:0] }, Y=$procmux$1811_Y [14:0]
+      New connections: $procmux$1811_Y [15] = $procmux$1811_Y [14]
+    Consolidated identical input bits for $mux cell $procmux$1833:
+      Old ports: A={ 5'00000 $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$225_Y [22:6] \audio_off [5:0] }, B=28'0000001011011100011011000001, Y=$procmux$1833_Y
+      New ports: A={ $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:155$225_Y [22:6] \audio_off [5:0] }, B=23'01011011100011011000001, Y=$procmux$1833_Y [22:0]
+      New connections: $procmux$1833_Y [27:23] = 5'00000
+    Consolidated identical input bits for $mux cell $ternary$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$247:
+      Old ports: A=15'000000000000000, B=15'100000000000000, Y=$auto$wreduce.cc:514:run$2146 [14:0]
+      New ports: A=1'0, B=1'1, Y=$auto$wreduce.cc:514:run$2146 [14]
+      New connections: $auto$wreduce.cc:514:run$2146 [13:0] = 14'00000000000000
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1115:
+      Old ports: A=\cursor, B=$procmux$1113_Y, Y=$procmux$1115_Y
+      New ports: A=\cursor [20:3], B=$procmux$1113_Y [20:3], Y=$procmux$1115_Y [20:3]
+      New connections: $procmux$1115_Y [2:0] = \cursor [2:0]
+    Consolidated identical input bits for $pmux cell $procmux$1326:
+      Old ports: A=13'0000000000000, B={ $procmux$1333_Y \table_q [3:0] 9'000000000 }, Y=$procmux$1326_Y
+      New ports: A=4'0000, B={ $procmux$1333_Y [12:9] \table_q [3:0] }, Y=$procmux$1326_Y [12:9]
+      New connections: $procmux$1326_Y [8:0] = 9'000000000
+    Consolidated identical input bits for $pmux cell $procmux$1348:
+      Old ports: A=22'0000000000001000000000, B={ $procmux$1355_Y 5'00000 $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$245_Y [16:9] 9'000000000 }, Y=$procmux$1348_Y
+      New ports: A=13'0000000000001, B={ $procmux$1355_Y [21:9] 5'00000 $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$245_Y [16:9] }, Y=$procmux$1348_Y [21:9]
+      New connections: $procmux$1348_Y [8:0] = 9'000000000
+    Consolidated identical input bits for $mux cell $procmux$1558:
+      Old ports: A=$procmux$1555_Y, B=3'001, Y=$procmux$1558_Y
+      New ports: A={ $procmux$1555_Y [2] $procmux$1555_Y [0] }, B=2'01, Y={ $procmux$1558_Y [2] $procmux$1558_Y [0] }
+      New connections: $procmux$1558_Y [1] = 1'0
+    Consolidated identical input bits for $pmux cell $procmux$1804:
+      Old ports: A=16'0000000000000001, B={ $procmux$1811_Y 8'00000000 $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$245_Y [16:9] }, Y=$procmux$1804_Y
+      New ports: A=15'000000000000001, B={ $procmux$1811_Y [14:0] 7'0000000 $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$245_Y [16:9] }, Y=$procmux$1804_Y [14:0]
+      New connections: $procmux$1804_Y [15] = $procmux$1804_Y [14]
+    Consolidated identical input bits for $pmux cell $procmux$1826:
+      Old ports: A=28'0000001011011100011011000000, B={ $procmux$1833_Y 5'00000 $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$244_Y [22:6] \table_q [5:0] }, Y=$procmux$1826_Y
+      New ports: A=23'01011011100011011000000, B={ $procmux$1833_Y [22:0] $add$/workspace/yingxu-fpga/out/mjpeg_d4h/loader_before.v:168$244_Y [22:6] \table_q [5:0] }, Y=$procmux$1826_Y [22:0]
+      New connections: $procmux$1826_Y [27:23] = 5'00000
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 15 changes.
+
+13.5.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+13.5.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $auto$ff.cc:266:slice$2127 ($sdff) from module yingxu_yxv_loader (D = $procmux$1118_Y [2:0], Q = \cursor [2:0]).
+
+13.5.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+
+13.5.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+<suppressed ~1 debug messages>
+
+13.5.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+13.5.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~34 debug messages>
+
+13.5.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1122:
+      Old ports: A=21'100000000000000000000, B={ $procmux$1115_Y [20:3] 3'x }, Y=$procmux$1122_Y
+      New ports: A=19'1000000000000000000, B={ $procmux$1115_Y [20:3] 1'x }, Y={ $procmux$1122_Y [20:3] $procmux$1122_Y [0] }
+      New connections: $procmux$1122_Y [2:1] = { $procmux$1122_Y [0] $procmux$1122_Y [0] }
+    Consolidated identical input bits for $mux cell $procmux$1133:
+      Old ports: A={ $procmux$1115_Y [20:3] 3'x }, B=21'000000000000000000000, Y=$procmux$1133_Y
+      New ports: A={ $procmux$1115_Y [20:3] 1'x }, B=19'0000000000000000000, Y={ $procmux$1133_Y [20:3] $procmux$1133_Y [0] }
+      New connections: $procmux$1133_Y [2:1] = { $procmux$1133_Y [0] $procmux$1133_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1125:
+      Old ports: A=$procmux$1122_Y, B=21'000000000000000000000, Y=$procmux$1125_Y
+      New ports: A={ $procmux$1122_Y [20:3] $procmux$1122_Y [0] }, B=19'0000000000000000000, Y={ $procmux$1125_Y [20:3] $procmux$1125_Y [0] }
+      New connections: $procmux$1125_Y [2:1] = { $procmux$1125_Y [0] $procmux$1125_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1128:
+      Old ports: A=$procmux$1125_Y, B={ $procmux$1115_Y [20:3] 3'x }, Y=$procmux$1128_Y
+      New ports: A={ $procmux$1125_Y [20:3] $procmux$1125_Y [0] }, B={ $procmux$1115_Y [20:3] 1'x }, Y={ $procmux$1128_Y [20:3] $procmux$1128_Y [0] }
+      New connections: $procmux$1128_Y [2:1] = { $procmux$1128_Y [0] $procmux$1128_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $mux cell $procmux$1130:
+      Old ports: A={ $procmux$1115_Y [20:3] 3'x }, B=$procmux$1128_Y, Y=$procmux$1130_Y
+      New ports: A={ $procmux$1115_Y [20:3] 1'x }, B={ $procmux$1128_Y [20:3] $procmux$1128_Y [0] }, Y={ $procmux$1130_Y [20:3] $procmux$1130_Y [0] }
+      New connections: $procmux$1130_Y [2:1] = { $procmux$1130_Y [0] $procmux$1130_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+    Consolidated identical input bits for $pmux cell $procmux$1118:
+      Old ports: A={ $procmux$1115_Y [20:3] 3'x }, B={ $procmux$1133_Y $procmux$1130_Y 6'010000 $auto$wreduce.cc:514:run$2146 [14] 14'00000000000000 }, Y=$procmux$1118_Y
+      New ports: A={ $procmux$1115_Y [20:3] 1'x }, B={ $procmux$1133_Y [20:3] $procmux$1133_Y [0] $procmux$1130_Y [20:3] $procmux$1130_Y [0] 6'010000 $auto$wreduce.cc:514:run$2146 [14] 12'000000000000 }, Y={ $procmux$1118_Y [20:3] $procmux$1118_Y [0] }
+      New connections: $procmux$1118_Y [2:1] = { $procmux$1118_Y [0] $procmux$1118_Y [0] }
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 6 changes.
+
+13.5.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+13.5.13. Executing OPT_DFF pass (perform DFF optimizations).
+Setting constant 0-bit at position 23 on $auto$ff.cc:266:slice$1902 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 24 on $auto$ff.cc:266:slice$1902 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 25 on $auto$ff.cc:266:slice$1902 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 26 on $auto$ff.cc:266:slice$1902 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 27 on $auto$ff.cc:266:slice$1902 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 6 on $auto$ff.cc:266:slice$1930 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 0 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 1 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 2 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 3 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 4 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 5 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 6 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 7 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 8 on $auto$ff.cc:266:slice$2066 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 0 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 1 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 2 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 3 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 4 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 5 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 6 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 7 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+Setting constant 0-bit at position 8 on $auto$ff.cc:266:slice$2080 ($sdffe) from module yingxu_yxv_loader.
+
+13.5.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+Removed 0 unused cells and 2 unused wires.
+<suppressed ~1 debug messages>
+
+13.5.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+<suppressed ~2 debug messages>
+
+13.5.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+13.5.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_yxv_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~34 debug messages>
+
+13.5.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_yxv_loader.
+Performed a total of 0 changes.
+
+13.5.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+Removed a total of 0 cells.
+
+13.5.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+13.5.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+
+13.5.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+
+13.5.23. Finished OPT passes. (There is nothing left to do.)
+
+13.6. Executing TECHMAP pass (map to technology primitives).
+
+13.6.1. Executing Verilog-2005 frontend: /workspace/.yingxu-env/yosys/usr/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/workspace/.yingxu-env/yosys/usr/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+13.6.2. Executing Verilog-2005 frontend: /workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/arith_map.v
+Parsing Verilog input from `/workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/arith_map.v' to AST representation.
+Generating RTLIL representation for module `\_80_anlogic_alu'.
+Successfully finished Verilog frontend.
+
+13.6.3. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $logic_and.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=4:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=4:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=4:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=8:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=8:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=8:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=8:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=8:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=8:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=9:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=9:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=9:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $reduce_or.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=13:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=14:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=13:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=14:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=13:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=14:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=14:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=14:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=14:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=17:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=17:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=17:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=10:B_SIGNED=0:B_WIDTH=6:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=10:B_SIGNED=0:B_WIDTH=6:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=10:B_SIGNED=0:B_WIDTH=6:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $logic_or.
+Using extmapper simplemap for cells of type $logic_not.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $and.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=18:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=18:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=18:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=18:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=18:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=18:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $ne.
+Running "alumacc" on wrapper $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=10:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $reduce_bool.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=8:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=8:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=8:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=13:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=13:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=13:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=19:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=19:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=19:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $mux.
+Running "alumacc" on wrapper $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$gt:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=10:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=10:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=10:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=22:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=22:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=22:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=22:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=22:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=22:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=9:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=9:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=8:Y_WIDTH=9:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=11:B_SIGNED=0:B_WIDTH=6:Y_WIDTH=12:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=11:B_SIGNED=0:B_WIDTH=6:Y_WIDTH=12:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=11:B_SIGNED=0:B_WIDTH=6:Y_WIDTH=12:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=6:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=7:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=6:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=7:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=6:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=7:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=13:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$neg:A_SIGNED=0:A_WIDTH=1:Y_WIDTH=2:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$neg:A_SIGNED=0:A_WIDTH=1:Y_WIDTH=2:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$neg:A_SIGNED=0:A_WIDTH=1:Y_WIDTH=2:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $paramod$constmap:3080718f4bce01ac90ad6aa7a95528797d496a22$paramod$5aa0fbdc3e385f336e95d2896ce5aed0c003c799\_90_shift_shiftx for cells of type $shift.
+Using extmapper simplemap for cells of type $or.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=16:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=16:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=9:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=9:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=9:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=10:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=9:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=9:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=9:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=9:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=9:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=9:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $sdff.
+Using extmapper simplemap for cells of type $reduce_and.
+Using extmapper simplemap for cells of type $dff.
+Using template $paramod$3fab3f21e55e95622ebf6caf13e26721edfa8c67\_90_pmux for cells of type $pmux.
+Using template $paramod$521ce43182eecb9f60c72393a788160d2c356bf5\_90_pmux for cells of type $pmux.
+Using template $paramod$c2e415ef15bc3ccd2723772353a6b450d3d76206\_90_pmux for cells of type $pmux.
+Using template $paramod$aa21a8cfcdb2d038c61c16c25c37cdf209d597be\_90_pmux for cells of type $pmux.
+Using template $paramod$d629d85c8826a74239b9178d1930215a43b0ceb0\_90_pmux for cells of type $pmux.
+Using template $paramod$bf2533632d512eac76dd186c0da49367e29b8e98\_90_pmux for cells of type $pmux.
+Using template $paramod$0c16c00f0f574905a99617e9ad4871dd8ff9dbb0\_90_pmux for cells of type $pmux.
+Using template $paramod$4e99ce8f3ff8355c2fa6eaa8d174fb317480c146\_90_pmux for cells of type $pmux.
+Using template $paramod$57f63e8a3282e053be0430389b09fa050ac7dca0\_90_pmux for cells of type $pmux.
+Using extmapper simplemap for cells of type $sdffe.
+Using template $paramod$72f7795a18b8bd21d2def9f98cbb7d0e4ff65a7f\_90_pmux for cells of type $pmux.
+Using template $paramod$c15e84c77f007506123baf6c4be45847f0e33a3b\_90_pmux for cells of type $pmux.
+Using template $paramod$21a993a8c398891107be36c3a76332f0d1652884\_90_pmux for cells of type $pmux.
+Using template $paramod$effdbe410bf3703e86b78efd494cb4fd1aaa75f9\_90_pmux for cells of type $pmux.
+Using template $paramod$cdae3353b27ab850babf0dd0bd8137257ebea1f2\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$080e6a70eb8bfa1ccf22d9718e795074645029a4\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$32a7b7b86c07519b7537abc18e96f0331f97914d\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$740b056ede97228d3eae64ea2fdc81f0a33e0fe7\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$403a3c2fa431a154c52a6a5429d7a6260b5d144f\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$754650b284649a026620fc6856e5b6886cbfe794\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$106402fc14ba87a4d8643cf9e9a3de5e7eff24e1\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$399807c27c4fdeac437f01ebb03dd1f024e3febd\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$a6959b5d672956bd73f958508e8995d0b7255dc3\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$6fc37af1c109ae54e8aed83fcd995c12d378ce93\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$4e6ee5eb737cf7428f8e246e911ae1dac9ae2979\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$c3cd1564c35d873179656addd6052d7ea8b6d991\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$2780480d52179e2db572a6e5133edf36e733d32e\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$9c32b45917accb56be6667e7eba7742d064d7fbb\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$a0dfe387bc162e0d7dd14b5e9b894c48cf5ae3bf\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$d566760d838ee30f101ec7ab5e06e191341e6c49\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$53700bbee849b2010ad0b60a61ccd204a10e24ca\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$164425da9a642c721ceb4fe98751d7127315654b\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$2af30114e9bd4ccb04dad757b3f0a8f6bf0615b0\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$6a42b6fefed750f8a1c58eab59479d960557103c\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$ea402187f386206c0840504755479bf827f47707\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$9e8c19db10db5b8954224cafa0587db20bab09bd\_90_alu for cells of type $alu.
+Using template $paramod$a2af9b43308e3114c3b5dd3f4dc3329b2387395d\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$56ffe09b5a71a8ca14e439c8160bf3113326c2a3\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$ac45afa5bcd8e16ca475cce13f9d19bb109f1516\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$b1f4188eff752b8d0cb539239f972fa4c4d4c520\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$03499a1e647b958d83458b9ec10517ac23e1268b\_80_anlogic_alu for cells of type $alu.
+Using template $paramod$b2626aff51a34e60b9c57dceb41667aaf5650a38\_80_anlogic_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $xor.
+Using extmapper simplemap for cells of type $pos.
+Using template $paramod\_90_lcu_brent_kung\WIDTH=32'00000000000000000000000000000010 for cells of type $lcu.
+No more expansions possible.
+<suppressed ~2209 debug messages>
+
+13.7. Executing OPT pass (performing simple optimizations).
+
+13.7.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+<suppressed ~1760 debug messages>
+
+13.7.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_yxv_loader'.
+<suppressed ~1521 debug messages>
+Removed a total of 507 cells.
+
+13.7.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+13.7.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_yxv_loader..
+Removed 841 unused cells and 2266 unused wires.
+<suppressed ~842 debug messages>
+
+13.7.5. Finished fast OPT passes.
+
+13.8. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+13.9. Executing TECHMAP pass (map to technology primitives).
+
+13.9.1. Executing Verilog-2005 frontend: /workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/cells_map.v
+Parsing Verilog input from `/workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/cells_map.v' to AST representation.
+Generating RTLIL representation for module `\$_DFFE_PN0P_'.
+Generating RTLIL representation for module `\$_DFFE_PN1P_'.
+Generating RTLIL representation for module `\$_DFFE_PP0P_'.
+Generating RTLIL representation for module `\$_DFFE_PP1P_'.
+Generating RTLIL representation for module `\$_SDFFE_PN0P_'.
+Generating RTLIL representation for module `\$_SDFFE_PN1P_'.
+Generating RTLIL representation for module `\$_SDFFE_PP0P_'.
+Generating RTLIL representation for module `\$_SDFFE_PP1P_'.
+Generating RTLIL representation for module `\$_DLATCH_NN0_'.
+Generating RTLIL representation for module `\$_DLATCH_NN1_'.
+Generating RTLIL representation for module `\$_DLATCH_NP0_'.
+Generating RTLIL representation for module `\$_DLATCH_NP1_'.
+Successfully finished Verilog frontend.
+
+13.9.2. Continuing TECHMAP pass.
+Using template \$_SDFFE_PP0P_ for cells of type $_SDFFE_PP0P_.
+Using template \$_SDFFE_PP1P_ for cells of type $_SDFFE_PP1P_.
+No more expansions possible.
+<suppressed ~536 debug messages>
+
+13.10. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_yxv_loader.
+<suppressed ~9 debug messages>
+
+13.11. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+
+14. Executing ABC pass (technology mapping using ABC).
+
+14.1. Extracting gate netlist of module `\yingxu_yxv_loader' to `<abc-temp-dir>/input.blif'..
+Extracted 1882 gates and 2440 wires to a netlist network with 556 inputs and 230 outputs.
+
+14.1.1. Executing ABC.
+Running ABC command: "<yosys-exe-dir>/yosys-abc" -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_lut <abc-temp-dir>/lutdefs.txt 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &fraig -x 
+ABC: + &put 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + dch -f 
+ABC: + if 
+ABC: + mfs2 
+ABC: + lutpack -S 1 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+14.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      495
+ABC RESULTS:        internal signals:     1654
+ABC RESULTS:           input signals:      556
+ABC RESULTS:          output signals:      230
+Removing temp directory.
+Removed 0 unused cells and 4244 unused wires.
+
+15. Executing SYNTH_ANLOGIC pass.
+
+15.1. Executing TECHMAP pass (map to technology primitives).
+
+15.1.1. Executing Verilog-2005 frontend: /workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/cells_map.v
+Parsing Verilog input from `/workspace/.yingxu-env/yosys/usr/bin/../share/yosys/anlogic/cells_map.v' to AST representation.
+Generating RTLIL representation for module `\$_DFFE_PN0P_'.
+Generating RTLIL representation for module `\$_DFFE_PN1P_'.
+Generating RTLIL representation for module `\$_DFFE_PP0P_'.
+Generating RTLIL representation for module `\$_DFFE_PP1P_'.
+Generating RTLIL representation for module `\$_SDFFE_PN0P_'.
+Generating RTLIL representation for module `\$_SDFFE_PN1P_'.
+Generating RTLIL representation for module `\$_SDFFE_PP0P_'.
+Generating RTLIL representation for module `\$_SDFFE_PP1P_'.
+Generating RTLIL representation for module `\$_DLATCH_NN0_'.
+Generating RTLIL representation for module `\$_DLATCH_NN1_'.
+Generating RTLIL representation for module `\$_DLATCH_NP0_'.
+Generating RTLIL representation for module `\$_DLATCH_NP1_'.
+Generating RTLIL representation for module `\$lut'.
+Successfully finished Verilog frontend.
+
+15.1.2. Continuing TECHMAP pass.
+Using template $paramod$658b9ed803f0d3d335616d3858b53e0a2522f1e8\$lut for cells of type $lut.
+Using template $paramod$6e238df02989b317f10820a22773676e71120644\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11101111 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0100 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1000 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'01000000 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0001 for cells of type $lut.
+Using template $paramod$571404c0889eaf57f492cb5e37f8acb5df5852f9\$lut for cells of type $lut.
+Using template $paramod$6d6beead1425af15cf78b27fd9b11b41b5d4bce8\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11111000 for cells of type $lut.
+Using template $paramod$179512a187da069f3b79ef6612a41e494e7d54b6\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10000000 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00000001 for cells of type $lut.
+Using template $paramod$272652f6c6fbe9a75eff76e45cc7e2788835518b\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'01110000 for cells of type $lut.
+Using template $paramod$2d07c1a6c53c7b878509360922c4fa5ebedc3011\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10010000 for cells of type $lut.
+Using template $paramod$6b0849254d6c87461fb93e37cc18f089f61eb912\$lut for cells of type $lut.
+Using template $paramod$ba05b8a1a425003df083aea0e69541f5cbdc68f2\$lut for cells of type $lut.
+Using template $paramod$df196ed0a1da5c4a58c5e08a1dac304fd3fccaab\$lut for cells of type $lut.
+Using template $paramod$b431bfd938e35871dd0b7668e1503c7e8b9d491c\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00010000 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1110 for cells of type $lut.
+Using template $paramod$a50be0e6fa3a01511bb234559cb74fb8bd3e2061\$lut for cells of type $lut.
+Using template $paramod$5a621b016c894274d07edef48c49b401a15fd796\$lut for cells of type $lut.
+Using template $paramod$d76856c88fdca5609a1600b549559282bda8a7dc\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00001110 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11001010 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1011 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10110000 for cells of type $lut.
+Using template $paramod$a2d691ba21e093558f2a36669ee489fbccffbcd3\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11110100 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00000111 for cells of type $lut.
+Using template $paramod$3bc026de04535b25786da249981f824248a39a05\$lut for cells of type $lut.
+Using template $paramod$052ca015f1400ebf950f85d5f181f7a5865c336c\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1001 for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'01000001 for cells of type $lut.
+Using template $paramod$bd88c80bf5b189e5316f23149e23660c7f342be7\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11010000 for cells of type $lut.
+Using template $paramod$baa939b0bd5b3e0c8760492528669bd58f640542\$lut for cells of type $lut.
+Using template $paramod$43779580bfffd5d5a9f321249a174febf1dac288\$lut for cells of type $lut.
+Using template $paramod$04b674496422df8889c01c3744b94097628ccfbc\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'01001111 for cells of type $lut.
+Using template $paramod$4b2297966ddb718657b80566604f97685ffc0120\$lut for cells of type $lut.
+Using template $paramod$e9c77024ca501b890c641f9c0b10e27242db8730\$lut for cells of type $lut.
+Using template $paramod$5c32c59025c0b98f20e63f249d83e7ebb4b085e3\$lut for cells of type $lut.
+Using template $paramod$608f40069c27841a5b3bdf03643a34bdc8974072\$lut for cells of type $lut.
+Using template $paramod$22ee34ebaae3e885b4012d7036d75a6112129095\$lut for cells of type $lut.
+Using template $paramod$bba54c1ef87367812b4c15f4aed5ac70773df775\$lut for cells of type $lut.
+Using template $paramod$a3d9d50a26c80b5c42d9b864ac52f329113a426e\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11100000 for cells of type $lut.
+Using template $paramod$973818279bc95792902f3c09371fd2407d04a2a5\$lut for cells of type $lut.
+Using template $paramod$a3cdc1eb771a2c6a16f64da161e11100ac409d2b\$lut for cells of type $lut.
+Using template $paramod$f63fe32f78d5f3c5de711945c592c8c5ec2303ae\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00110101 for cells of type $lut.
+Using template $paramod$a54d8b8d2c90a828ee71c2d82e7e1612992a7ab8\$lut for cells of type $lut.
+Using template $paramod$1843b3c15f2447d117e2d5de9b00f791ef5f9fa3\$lut for cells of type $lut.
+Using template $paramod$ef55f89c74d994c27b4ec4bac79af43e8b1d7e25\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10001111 for cells of type $lut.
+Using template $paramod$c1a19a87ccbbb03d43a72335db63f692ddf82cc1\$lut for cells of type $lut.
+Using template $paramod$722bfd9af0ae56ca9d1d12a221cb5ede16461f26\$lut for cells of type $lut.
+Using template $paramod$e49f6e3576ef1a6d2f58c54414dbb786af8cc869\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0111 for cells of type $lut.
+Using template $paramod$b4f15f202f50520dbc381cd0880ac94f830f05a8\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000001\LUT=2'01 for cells of type $lut.
+Using template $paramod$aefabbfb9c1b4f52428d3138553c9ded9b193061\$lut for cells of type $lut.
+Using template $paramod$8ccdbc229a73aa05f22f69e41613d5e079a18645\$lut for cells of type $lut.
+Using template $paramod\$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10101100 for cells of type $lut.
+Using template $paramod$b22e1de0c50840dcbbf24001663ffaaba9d5d7b8\$lut for cells of type $lut.
+Using template $paramod$4fca3b92a07e69b87d718c5500dfd8ffb1121619\$lut for cells of type $lut.
+Using template $paramod$e13d53d2f7f4329c814f78d8202f66066122bbc4\$lut for cells of type $lut.
+Using template $paramod$b4f85a6321a00b090afc4e21d68e7b99eb94d149\$lut for cells of type $lut.
+Using template $paramod$ef26adabe6060e01077b576cfe34e95e55a26aef\$lut for cells of type $lut.
+Using template $paramod$3525bc88021caeb0b6fb10b051fd947bd104e42a\$lut for cells of type $lut.
+Using template $paramod$a9f5a04efe71156d9a1acb777d452a8dd4d379fa\$lut for cells of type $lut.
+Using template $paramod$de3d8c0ac9a85f776878d56395b6e0bf04ae72e7\$lut for cells of type $lut.
+Using template $paramod$bdb7f9ed72fd4f5c7ad81c376f2d8a5c72a0098d\$lut for cells of type $lut.
+Using template $paramod$c8262806cc9d020df6bc7f276a113f46edae22ac\$lut for cells of type $lut.
+Using template $paramod$f372bf1b294e01fd043eb05a6280cd9dfb6e2e04\$lut for cells of type $lut.
+Using template $paramod$adac5163f2ca606e303e4fcb6e4ac1a8cfe9825d\$lut for cells of type $lut.
+Using template $paramod$5898ae4e52b22eca363a418fa94151158a507d30\$lut for cells of type $lut.
+Using template $paramod$b4410865e8124402796f9dfbf73ef8d279fdbd08\$lut for cells of type $lut.
+Using template $paramod$cd05f04889088c47a0a5abae8c2d644fd314805e\$lut for cells of type $lut.
+No more expansions possible.
+<suppressed ~1586 debug messages>
+Removed 0 unused cells and 1151 unused wires.
+
+15.2. Executing anlogic_fixcarry pass (fix invalid carry chain).
+
+15.3. Executing ANLOGIC_EQN pass (calculate equations for luts).
+
+15.4. Updated 492 of AL_MAP_LUT* elements with equation.
+
+15.5. Executing HIERARCHY pass (managing design hierarchy).
+Attribute `top' found on module `yingxu_yxv_loader'. Setting top module to yingxu_yxv_loader.
+
+15.5.1. Analyzing design hierarchy..
+Top module:  \yingxu_yxv_loader
+
+15.5.2. Analyzing design hierarchy..
+Top module:  \yingxu_yxv_loader
+Removed 0 unused modules.
+
+15.6. Printing statistics.
+
+=== yingxu_yxv_loader ===
+
+   Number of wires:                475
+   Number of wire bits:           3943
+   Number of public wires:          84
+   Number of public wire bits:    1193
+   Number of ports:                 43
+   Number of port bits:            420
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               1580
+     AL_MAP_ADDER                  556
+     AL_MAP_LUT1                    41
+     AL_MAP_LUT2                    82
+     AL_MAP_LUT3                   108
+     AL_MAP_LUT4                   261
+     AL_MAP_SEQ                    522
+     EG_LOGIC_DRAM16X4               8
+     EG_PHY_BRAM                     2
+
+15.7. Executing CHECK pass (checking for obvious problems).
+Checking module yingxu_yxv_loader...
+Found and reported 0 problems.
+
+16. Executing JSON backend.

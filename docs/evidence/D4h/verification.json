@@ -1,0 +1,143 @@
+{
+  "rtl_commit": "0f50ee6",
+  "base": "8eb0151",
+  "production_RTL_changed": [
+    "src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v"
+  ],
+  "TD_performed": false,
+  "board_performed": false,
+  "mem_clk_zero_negative_slack_verified": false,
+  "change": "previous_end updates at each complete table candidate, validation uses old value; rejected candidate cannot be used again because invalid is sticky until reset",
+  "functional_boundary": "previous_end differs intentionally after a rejected table entry; table commit, audio_off, rejection and external valid-path behavior unchanged",
+  "diagnostics": {
+    "cases": 27,
+    "bad_table_rejection_invariants": "10/10 PASS",
+    "no_PCM_JPEG_after_rejection": true,
+    "word_index_outputs": "constant zero preserved"
+  },
+  "units": {
+    "frames36": "full table/PCM/JPEG/wrap zero diff",
+    "frames512": "4096000B PCM and packed table/JPEG/wrap zero diff",
+    "physical": "1..8word stalls, bounds, actual controller service model",
+    "scanout": "PASS",
+    "PCM": "4loops zero diff"
+  },
+  "normal_short_play": {
+    "samples": 4001,
+    "duration_ns": 83333334,
+    "drops": "0/2",
+    "AV_samples": "1849/2000",
+    "decoded_words_exact_at_target": 460800,
+    "scanout_pixels_exact": 1985280,
+    "HDMI_samples_exact": 4000,
+    "sample_rate_error_ppm": 0,
+    "exit_photo_reload": 1,
+    "three_second_playback_rerun": false
+  },
+  "pending_actual_UART": {
+    "MISE": "929F",
+    "LS": "6",
+    "F": "A",
+    "owned": 1,
+    "failed": 0
+  },
+  "7594_physical_preload_rerun": false,
+  "proxy": {
+    "TD_measured": false,
+    "scope": "loader only; native LUT4/carry charge and CE/data cones, not ns slack",
+    "configurations": {
+      "before": {
+        "LUT4_charge": 1080,
+        "FF_cells": 522,
+        "BRAM": 2,
+        "previous_end_flops": 19,
+        "raw_data_reaches_previous_end_CE": true,
+        "raw_data_reaches_previous_end_bit0_CE": true,
+        "raw_data_reaches_previous_end_D": true,
+        "bit0_witness": [
+          {
+            "cell": "$auto$ff.cc:266:slice$5443",
+            "type": "AL_MAP_SEQ",
+            "ports": {
+              "ce": [
+                523
+              ],
+              "clk": [
+                2
+              ],
+              "d": [
+                1388
+              ],
+              "q": [
+                1104
+              ],
+              "sr": [
+                3
+              ]
+            }
+          }
+        ],
+        "word_index_ports_all_zero": true,
+        "cell_counts": {
+          "AL_MAP_ADDER": 556,
+          "AL_MAP_LUT1": 41,
+          "AL_MAP_LUT2": 82,
+          "AL_MAP_LUT3": 108,
+          "AL_MAP_LUT4": 261,
+          "AL_MAP_SEQ": 522,
+          "EG_LOGIC_DRAM16X4": 8,
+          "EG_PHY_BRAM": 2
+        }
+      },
+      "after": {
+        "LUT4_charge": 1082,
+        "FF_cells": 522,
+        "BRAM": 2,
+        "previous_end_flops": 19,
+        "raw_data_reaches_previous_end_CE": false,
+        "raw_data_reaches_previous_end_bit0_CE": false,
+        "raw_data_reaches_previous_end_D": true,
+        "bit0_witness": [
+          {
+            "cell": "$auto$ff.cc:266:slice$5436",
+            "type": "AL_MAP_SEQ",
+            "ports": {
+              "ce": [
+                531
+              ],
+              "clk": [
+                2
+              ],
+              "d": [
+                1390
+              ],
+              "q": [
+                1123
+              ],
+              "sr": [
+                3
+              ]
+            }
+          }
+        ],
+        "word_index_ports_all_zero": true,
+        "cell_counts": {
+          "AL_MAP_ADDER": 556,
+          "AL_MAP_LUT1": 41,
+          "AL_MAP_LUT2": 84,
+          "AL_MAP_LUT3": 121,
+          "AL_MAP_LUT4": 248,
+          "AL_MAP_SEQ": 522,
+          "EG_LOGIC_DRAM16X4": 8,
+          "EG_PHY_BRAM": 2
+        }
+      }
+    },
+    "delta": {
+      "LUT4_charge": 2,
+      "FF_cells": 0,
+      "BRAM": 0
+    }
+  },
+  "next_gate": "User TD mem_clk100MHz zero negative slack including previous_end CE/D and all other mem endpoints, D4g snapshot removal retained, then board flash"
+}

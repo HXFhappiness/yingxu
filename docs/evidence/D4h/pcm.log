@@ -1,0 +1,5 @@
+PCMCHK: PASS pops=512 source_samples=128 loops=4 zero-diff L/R including EOF virtual-header reuse-WAV 48k
+- tb/tb_yxv_pcm.v:37: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 11ms; walltime 1.181 s; speed 9.132 ms/s
+- Verilator: cpu 1.170 s on 1 threads; alloced 33 MB

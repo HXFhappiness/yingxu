@@ -85,3 +85,10 @@ scanout在第一帧发布/预充之前禁止RD2弹出，避免启动空FIFO被�
 生产RTL6e84711。接受用户D4f TD FAIL（同类mem负slack最差−0.765ns）；D4f代理检查不足以覆盖头字/写错remember与TD实现，不能当作mem干净基线。D4g删除loader候选数据/word/index、pipeline MEM/SYS word/index及D5输出；仅从已有功能寄存器取compact reason，93统一B8，保留D4e首fault提前显示及phase/flags/ACC。
 
 27例、真实UART坏头/退场未完成、正常短程与36/512帧相关单元通过。loader代理−258 LUT4/−146FF/BRAM不变，不是全工程TD或时序结论；必须本地确认mem100零违例才烧写。见 [D4G_COMPACT_DIAGNOSTICS.md](D4G_COMPACT_DIAGNOSTICS.md) / [evidence/D4g](evidence/D4g)。
+
+
+## D4h：previous_end写使能去内容校验（2026-11-01）
+
+生产RTL0f50ee6，仅loader移动一条赋值：完整表项到达即更新候选previous_end，校验仍读旧值，坏表不提交且invalid锁存后不再使用候选。保留全部范围/重叠检查、D4g快照删除、时钟域和约束。用户D4g诊断端点已清零，余1条assembly→previous_end.ce −0.221ns；本轮仍须TD mem100整域零违例后烧写。
+
+27例及10/10拒绝不变量、36/512帧表/PCM/回绕、正常短程和pending真实UART通过。代理+2LUT4/FF与BRAM不变，raw数据至previous_end.CE锥在代理中断开，D端仍有计算，非TD时序通过。见 [D4H_PREVIOUS_END_ENABLE.md](D4H_PREVIOUS_END_ENABLE.md) / [evidence/D4h](evidence/D4h)。

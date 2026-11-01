@@ -35,3 +35,12 @@
 本地TD必须确认mem_clk/clk2=100MHz **零负slack**，同时查看previous_end的CE、D端以及其他功能端点；不能只确认旧路径不再列出。若仍存在任何mem负slack，停在门禁，不烧写。保持D4g诊断端点清零；不修改TMDS/LVDS历史路径或用false_path/set_max_delay豁免本路径。
 
 门禁通过才烧写并复测头/表/PCM→解码链。若仍949F，继续在时序干净的固件上二分写数据/物理授权/done。本轮云端未执行TD或烧录，不宣称门禁已经通过。
+
+
+## 软件结果（生产RTL 0f50ee6）
+
+27例诊断及10/10坏表拒绝不变量通过；36/512帧完整表、PCM/JPEG与回绕逐点零diff，物理侧口、scanout、PCM单元通过。实际top短程4001采样、0/2丢帧、AV1849/2000、460800写字与1985280扫描像素零diff、HDMI4000样本零diff、48k误差0ppm、退出照片一次；pending实际UART保持MISE929F/LS6/FA、owned1/failed0。
+
+loader native代理1080→1082 LUT4（+2），FF522→522、BRAM2→2，未新增乘法。原始数据到previous_end全部CE及bit0 CE的映射组合锥：旧版存在、新版不存在；到D端仍存在，符合本次只移除内容校验对CE门控的目标。**这不是TD slack或门禁通过结论。**
+
+原始输出、源码哈希、bit0寄存器CE/D连接见 [evidence/D4h](evidence/D4h) / [verification.json](evidence/D4h/verification.json)。生产RTL只有loader的赋值位置变化；后续证据提交不改变0f50ee6生产代码。未执行TD或烧录，待本地整域零违例验收。
