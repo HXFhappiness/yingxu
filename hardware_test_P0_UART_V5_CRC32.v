@@ -664,7 +664,11 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
                     // owned by the key-handler block; HDL-8007 otherwise).
                     // Gated by photo mode: in cart mode the carousel must never
                     // auto-trigger and the BMP loader would swallow the cart stream.
-                    if (!game_mode && (img_idx != load_idx)) begin
+                    // D5gate: only trigger once the SD subsystem is out of its
+                    // 2 s power-on reset + 40 ms flush. Firing at ~400 ms (fade
+                    // time) drops the request inside the probe's reset and the
+                    // FSM never retries because img_idx then equals load_idx.
+                    if (!game_mode && sd_dbg_init_done && (img_idx != load_idx)) begin
                         load_idx <= img_idx;
                         tr_state <= TR_OUT;
                     end
