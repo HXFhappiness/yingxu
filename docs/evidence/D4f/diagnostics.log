@@ -1,0 +1,32 @@
+METANEXTCHK: PASS done_phase=-4 first512 accepted next_LBA=3000001 sectors=7
+METANEXTCHK: PASS done_phase=0 first512 accepted next_LBA=3000001 sectors=7
+METANEXTCHK: PASS done_phase=1 first512 accepted next_LBA=3000001 sectors=7
+METANEXTCHK: PASS done_phase=2 first512 accepted next_LBA=3000001 sectors=7
+METANEXTCHK: PASS done_phase=4 first512 accepted next_LBA=3000001 sectors=7
+METANEXTCHK: PASS done_phase=16 first512 accepted next_LBA=3000001 sectors=7
+FAULTSNAPCHK: PASS MISE=3992 SP=01ce ACC=200 WC=000 WORD=31565800 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3992 SP=02ce ACC=200 WC=000 WORD=02800202 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3992 SP=03ce ACC=200 WC=000 WORD=001901e0 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3992 SP=04ce ACC=200 WC=000 WORD=00000000 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3992 SP=05ce ACC=200 WC=1e6 WORD=0000bb00 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3992 SP=06ce ACC=200 WC=1e6 WORD=003b5381 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3992 SP=07ce ACC=200 WC=1e6 WORD=00000000 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3992 SP=08ce ACC=200 WC=1e6 WORD=00001001 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3992 SP=06ce ACC=200 WC=1e6 WORD=003b631c retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=11ce ACC=200 WC=000 WORD=00001001 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=13ce ACC=200 WC=03b WORD=01000b2b retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=13ce ACC=200 WC=03b WORD=01000b2b retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=13ce ACC=200 WC=03b WORD=01000b2b retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=12ce ACC=200 WC=000 WORD=10001000 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=14ce ACC=200 WC=000 WORD=00001200 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=15ce ACC=200 WC=001 WORD=00001000 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=16ce ACC=200 WC=000 WORD=0ffffe00 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=17ce ACC=200 WC=000 WORD=0008000f retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=3993 SP=11ce ACC=200 WC=000 WORD=00001001 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=189f SP=0086 ACC=200 WC=000 WORD=00000000 retained-after-owned-release
+FAULTSNAPCHK: PASS MISE=109f SP=004e ACC=1ff WC=000 WORD=00000000 retained-after-owned-release
+DIAGCHK: PASS 27 cases; six done phases, eight header words, PCM tail +3996, all reachable table reasons/priority and final-byte errors, lost done, lost byte
+- tb/tb_yxv_diagnostics.v:114: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 316us; walltime 0.036 s; speed 8.691 ms/s
+- Verilator: cpu 0.036 s on 1 threads; alloced 33 MB

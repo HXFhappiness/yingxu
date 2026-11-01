@@ -43,13 +43,13 @@
 
 ## 4. 验证方法与可判定结果
 
-- `python tools/yxv_diagnostics_verify.py`：原18例加3种最后字节坏表项done相位，共21例。必须逐字段正确且owned释放/MEM复位后仍保留；包括用户实际事故形态PCM尾巴+3996B。
+- `python tools/yxv_diagnostics_verify.py`：原18例加3种最后字节坏表项done相位、6种表项原因/优先级用例，共27例。覆盖可达的11…17原因及多错误优先级；10的entry_index≥512被有效头frames≤512与表范围门控排除，不用不可达刺激冒充自然用例。必须逐字段正确且owned释放/MEM复位后仍保留；包括用户实际事故形态PCM尾巴+3996B。
 - `python tools/yxv_pending_verify.py`：D4e的PCM命令未接受就超时用例，必须仍在owned1/failed0时读到929F/ACC020，保留提前显示机制。
 - `python tools/yxv_d3_verify.py --bad 1` / `--pending`：真实top及115200 UART校验。正常短程用 `--frames 2`，不冒充重跑3秒播放。
 - `python tools/yxv_preload_verify.py`：生成非版权合成486帧素材、非零并跨sector变化的PCM；实际probe/reader（默认两拍排空）、SYS50↔MEM100 CDC、完整pipeline、两层仲裁、四口控制器及原command/control/data层共同工作。SD服务模型按1.30MB/s供给并实际写512B RAM；PHY/FIFO/PLL/外部卡以模型表示，不能声称pin级SD时序或板测已复现。必须读1头+7表+7594 PCM，972032个SDRAM字逐字零diff，121504个8字突发完成，成功初始化后init_done保持1。
 - 同一preload测试 `--block 1/2/3/4` 分别不给首写数据、给4字后背压、以LOAD阻止物理授权、丢弃完成回执；四者均要求949F/SP0001/ACC020/FA。它们用于证明旧现场码不能唯一判成SD问题，不是板上根因断言。正常写完成周期用比值 `max_latency/1000≤1` 验收；不要只数完成个数。
 - `python tools/yxv_d3_units.py`：物理侧口、36/512帧完整表/PCM/回绕、scanout和PCM单元回归。
-- `python tools/yxv_d4f_structure.py`：loader功能状态/输出等价检查（排除有意延迟的reason/word/index），以及Anlogic native LUT代理/组合锥检查。代理映射和组合路径断开不能替代TD的10ns检查。
+- `python tools/yxv_d4f_structure.py`：Anlogic native LUT代理及组合锥检查，自动确认assembly至最终debug寄存器的原组合通路在新版本被打断。功能验证使用上述逐点回归，不宣称已完成形式等价证明。代理映射和组合路径断开不能替代TD的10ns检查。
 
 ## 5. TD/板测门禁（本地执行）
 
@@ -62,3 +62,14 @@
 - 干净构建中的其他fault：按原D4d/D4e的MISE/SP/ACC字段诊断。早期RSP=D4仍是首magic保留值，不是实时初始化响应。
 
 本地TD是下一门禁，云端交付源码/自动化/原始日志；不生成或声称已烧录固件。
+
+
+## 最终软件结果（生产RTL 6823dce）
+
+27项诊断、最后字节坏表项的早/同/晚done、首错保留及D4e提前显示均通过；真实top坏头回退和pending UART通过。正常短程4001采样/83,333,334ns、0/2丢帧、AV1849/2000，460800写字、1985280扫描像素与HDMI4000样本零diff，48k误差0ppm，退出照片一次。36/512帧loader及PCM/回绕、scanout、物理端口单元通过。
+
+完整486帧/7594扇区预载在本次源码下通过：3888000B有效PCM、3888128B补齐，121504/121504突发、972032/972032字零diff；首写31拍、最大44/1000拍，init_done=1、failed=0。四种受控写等待也都产生949F/SP0001/ACC020/FA，不能用该码唯一归因SD。完整预载仿真约3秒，不把它称为3秒播放测试。
+
+Anlogic native代理中loader计费1373→1338 LUT4（−35）、566→668寄存器（+102）、BRAM2→2；DSP本模块为0且未新增乘法。映射图自动确认旧assembly至最终debug寄存器组合通路存在、新版该直达组合通路不存在。此结果不等于TD slack，特别要查新diag_entry_flags/diag_audio_end等端点。
+
+原始输出、源码/向量哈希、代理统计及 [verification.json](evidence/D4f/verification.json) 在 [evidence/D4f](evidence/D4f)。生产RTL仅loader修改；后续文档/测试提交不改变6823dce的生产代码。未执行TD或烧录，不宣称板上根因已结案。

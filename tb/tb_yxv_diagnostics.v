@@ -88,10 +88,30 @@ module tb_yxv_diagnostics;
             expected_word={data[511],data[510],data[509],data[508]};
             failure(16'h3993,8'h13,512,59,expected_word,2'b11);
         end
+        // Exercise the staged priority and all reachable table reasons.
+        prepare(0,512,0);data[35]=8'h10;
+        failure(16'h3993,8'h12,512,0,32'h10001000,2'b11);
+        prepare(0,512,0);data[33]=8'h12;
+        failure(16'h3993,8'h14,512,0,32'h00001200,2'b11);
+        prepare(0,512,0);data[40]=data[32];data[41]=data[33];data[42]=data[34];data[43]=data[35];
+        failure(16'h3993,8'h15,512,1,32'h00001000,2'b11);
+        prepare(0,512,0);
+        data[28]=0;data[29]=8'hfe;data[30]=8'hff;data[31]=8'h0f;
+        data[32]=0;data[33]=8'hfe;data[34]=8'hff;data[35]=8'h0f;
+        failure(16'h3993,8'h16,512,0,32'h0ffffe00,2'b11);
+        prepare(0,512,0);
+        data[12]=1;data[13]=0;data[14]=0;data[15]=0;
+        data[20]=8'h40;data[21]=8'h1f;data[22]=0;data[23]=0;
+        data[28]=0;data[29]=8'hfc;data[30]=8'hff;data[31]=8'h0f;
+        data[32]=0;data[33]=8'hfc;data[34]=8'hff;data[35]=8'h0f;
+        data[36]=4;data[37]=0;data[38]=0;data[39]=0;
+        failure(16'h3993,8'h17,512,0,32'h0008000f,2'b11);
+        prepare(0,512,0);data[32]=data[32]^1;data[39]=1;
+        failure(16'h3993,8'h11,512,0,32'h00001001,2'b11);
         prepare(0,512,1);failure(16'h189F,0,512,0,0,2'b10);
         prepare(0,511,0);failure(16'h109F,0,511,0,0,2'b01);
-        if(cases!=21)$fatal(1,"vacuous cases");
-        $display("DIAGCHK: PASS 21 cases; six done phases, eight header words, PCM tail +3996, bad table and final-byte errors, lost done, lost byte");$finish;
+        if(cases!=27)$fatal(1,"vacuous cases");
+        $display("DIAGCHK: PASS 27 cases; six done phases, eight header words, PCM tail +3996, all reachable table reasons/priority and final-byte errors, lost done, lost byte");$finish;
     end
     initial begin #1000000;$fatal(1,"diagnostic timeout");end
 endmodule

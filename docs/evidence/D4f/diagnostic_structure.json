@@ -1,0 +1,43 @@
+{
+  "TD_measured": false,
+  "scope": "loader including diagnostics; native LUT4/carry charge, not board area or timing",
+  "configurations": {
+    "before": {
+      "LUT4_charge": 1373,
+      "BRAM": 2,
+      "FF_cells": 566,
+      "assembly_reaches_final_debug_flop_without_register": true,
+      "cell_counts": {
+        "AL_MAP_ADDER": 556,
+        "AL_MAP_LUT1": 41,
+        "AL_MAP_LUT2": 109,
+        "AL_MAP_LUT3": 198,
+        "AL_MAP_LUT4": 437,
+        "AL_MAP_SEQ": 566,
+        "EG_LOGIC_DRAM16X4": 8,
+        "EG_PHY_BRAM": 2
+      }
+    },
+    "after": {
+      "LUT4_charge": 1338,
+      "BRAM": 2,
+      "FF_cells": 668,
+      "assembly_reaches_final_debug_flop_without_register": false,
+      "cell_counts": {
+        "AL_MAP_ADDER": 556,
+        "AL_MAP_LUT1": 41,
+        "AL_MAP_LUT2": 101,
+        "AL_MAP_LUT3": 219,
+        "AL_MAP_LUT4": 389,
+        "AL_MAP_SEQ": 668,
+        "EG_LOGIC_DRAM16X4": 8,
+        "EG_PHY_BRAM": 2
+      }
+    }
+  },
+  "delta": {
+    "LUT4_charge": -35,
+    "BRAM": 0,
+    "FF_cells": 102
+  }
+}

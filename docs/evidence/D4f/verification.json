@@ -1,0 +1,123 @@
+{
+  "rtl_commit": "6823dce",
+  "base": "0018a81",
+  "branch": "feat/mjpeg",
+  "production_RTL_changed": [
+    "src/user_source/hdl_source/media/mjpeg/yingxu_yxv_loader.v"
+  ],
+  "functional_validation": "pointwise regression, no formal-equivalence claim",
+  "diagnostics": {
+    "cases": 27,
+    "last_sector_byte_error_done_phases": [
+      -4,
+      0,
+      16
+    ],
+    "all_reachable_table_reasons": [
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "multiple_errors_priority": true,
+    "snapshot_after_release": true
+  },
+  "PCM_preload": {
+    "frames": 486,
+    "sectors": 7594,
+    "payload_bytes": 3888000,
+    "padded_bytes": 3888128,
+    "bursts": "121504/121504",
+    "words": "972032/972032",
+    "first_write_latency_cycles": 31,
+    "max_write_latency_cycles": "44/1000",
+    "init_done_at_completion": 1,
+    "failed": 0,
+    "vector_sha256": "caff456267d7fed37e9d56264e9b271f54dd8e1a4b2c01fee15d3372c00707b8",
+    "model": "actual reader + CDC + pipeline + two arbiters + four-port RTL and original command/control/data; external SD service, FIFOs, PLL, SDRAM modeled, no pin-level claim"
+  },
+  "controlled_wait_cases": {
+    "count": 4,
+    "all": "MISE949F SP0001 ACC020 F=A",
+    "causes": [
+      "write data blocked before beat0",
+      "write data blocked after beat4",
+      "LOAD held prevents physical grant",
+      "completion return suppressed"
+    ],
+    "board_root_cause_proven": false
+  },
+  "UART": {
+    "bad_header": "MISE3992 SP01CE ACC200 RSPD531565800 fallback retained",
+    "pending_fault": "MISE929F LS6 F=A while owned1/failed0"
+  },
+  "normal_short_play": {
+    "samples": 4001,
+    "duration_ns": 83333334,
+    "drops": "0/2",
+    "max_abs_AV": "1849/2000",
+    "decoded_words_zero_diff_at_target": 460800,
+    "scanout_pixels_zero_diff": 1985280,
+    "HDMI_samples_zero_diff": 4000,
+    "sample_rate_error_ppm": 0,
+    "exit_photo_reload": 1,
+    "three_second_playback_rerun": false
+  },
+  "units": [
+    "physical 1..8word read/write and boundary",
+    "36-frame loader/PCM/wrap",
+    "512-frame loader PCM4096000B/wrap",
+    "scanout banks/swap",
+    "PCM 4 loops zero-diff"
+  ],
+  "proxy": {
+    "TD_measured": false,
+    "scope": "loader including diagnostics; native LUT4/carry charge, not board area or timing",
+    "configurations": {
+      "before": {
+        "LUT4_charge": 1373,
+        "BRAM": 2,
+        "FF_cells": 566,
+        "assembly_reaches_final_debug_flop_without_register": true,
+        "cell_counts": {
+          "AL_MAP_ADDER": 556,
+          "AL_MAP_LUT1": 41,
+          "AL_MAP_LUT2": 109,
+          "AL_MAP_LUT3": 198,
+          "AL_MAP_LUT4": 437,
+          "AL_MAP_SEQ": 566,
+          "EG_LOGIC_DRAM16X4": 8,
+          "EG_PHY_BRAM": 2
+        }
+      },
+      "after": {
+        "LUT4_charge": 1338,
+        "BRAM": 2,
+        "FF_cells": 668,
+        "assembly_reaches_final_debug_flop_without_register": false,
+        "cell_counts": {
+          "AL_MAP_ADDER": 556,
+          "AL_MAP_LUT1": 41,
+          "AL_MAP_LUT2": 101,
+          "AL_MAP_LUT3": 219,
+          "AL_MAP_LUT4": 389,
+          "AL_MAP_SEQ": 668,
+          "EG_LOGIC_DRAM16X4": 8,
+          "EG_PHY_BRAM": 2
+        }
+      }
+    },
+    "delta": {
+      "LUT4_charge": -35,
+      "BRAM": 0,
+      "FF_cells": 102
+    }
+  },
+  "TD_performed": false,
+  "mem_clk_zero_negative_slack_verified": false,
+  "board_performed": false,
+  "next_gate": "User TD mem_clk100MHz zero negative slack including new diagnostic stage endpoints, then same-card board comparison"
+}

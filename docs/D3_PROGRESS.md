@@ -71,3 +71,10 @@ scanout在第一帧发布/预充之前禁止RD2弹出，避免启动空FIFO被�
 ## D4e：连续读与首fault可见性（2026-11-01）
 
 源码44ad637。确认reader正常restart已是init-once，DNE是每笔读完成锁存、DIV3E也可能是idle，F=A才表明真正init_done为0。复现PCM命令未接受→9F→持续SD reset、owned无法退出、D4d诊断仍0000的盲点；仅提前公开既有快照，视频LS={sd_rst,video_sd_reset,init_done}。38笔普通与1/7/7594动态count、18项诊断、pending实际UART、正常短程和坏头回退通过，原始证据见 [D4E_SD_REQUEST_REVIEW.md](D4E_SD_REQUEST_REVIEW.md) / [evidence/D4e](evidence/D4e)。未更改厂商层/读调度/退场，不宣称板上根因已确定或楔死已修复。
+
+
+## D4f：诊断时序隔离（2026-11-01）
+
+生产RTL6823dce，仅loader：表项raw字段与并行错误谓词先寄存，下一拍再选reason/word/index，打断assembly→remember的长组合锥，保留D4e提前显示。用户TD指出D4e mem100域10条诊断路径负slack、最差−0.765ns；本轮必须由本地TD复验mem域零负slack后才作板测判决。未叠加SD/仲裁/物理遥测改动。
+
+27项诊断、正常短程及实际UART回退/pending、36/512帧单元通过；完整7594扇区972032字/121504突发零diff，最大写等待44/1000拍。代理−35 LUT4/+102FF/BRAM不变，旧组合锥已在映射图断开，非TD时序结论。949F表示PCM写已接受后的等待；ACC为mod2048，不能据020断言首写或头阶段。见 [D4F_DIAGNOSTIC_TIMING.md](D4F_DIAGNOSTIC_TIMING.md) / [evidence/D4f](evidence/D4f)。

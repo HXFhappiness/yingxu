@@ -1,0 +1,6 @@
+DIAGWIRECHK: MISE=3992 SP=01ce ACC=200 WC=000 RDT_I1=31565800
+FALLBACKCHK: PASS bad-header=1 no-init=0 finite reject owned=0 failed=1 photo-reloads=1 next-LBA=32672
+- tb/tb_yxv_top.v:148: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 260ms; walltime 88.983 s; speed 3.553 ms/s
+- Verilator: cpu 73.285 s on 1 threads; alloced 47 MB
