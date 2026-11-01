@@ -103,6 +103,7 @@ module hardware_test #(
     reg [2:0]  menu_sel;
     reg [7:0]  sw_real_q;
     reg        sw_real_valid;
+    reg [26:0] sw_boot_cnt;   // D6: 0.5 s switch settling window
     wire [7:0] sw_eff = menu_override ? menu_pattern : sw;
     localparam [7:0] MENU_PAT_PHOTO = 8'hFF;   // SW7 OFF: photo / menu
     localparam [7:0] MENU_PAT_GAME  = 8'h1F;   // SW7/SW5/SW6 active-low: invaders cart
@@ -445,6 +446,14 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             else menu_hold_cnt <= menu_hold_cnt + 27'd1;
         end else menu_hold_cnt <= 27'd0;
     end
+    // D6: physical SW7 ON (sw[7]=0) + key0 = leave the current mode, back to menu.
+    // Replaces the 2 s hold, which collided with key0 use inside modes.
+    reg key0_pp;
+    wire key0_exit = (sw[7] == 1'b0) && key0_pp && !key_0;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) key0_pp <= 1'b1;
+        else        key0_pp <= key_0;
+    end
     wire menu_ui = menu_override && (menu_pattern == MENU_PAT_PHOTO) && (img_idx == 4'd0);
     wire menu_real_change = menu_override && sw_real_valid && (sw_real_q != sw);
 
@@ -490,7 +499,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             menu_override <= 1'b1;
             menu_pattern <= MENU_PAT_PHOTO;
             menu_sel <= 3'd0;
-            sw_real_q <= 8'hFF;sw_real_valid <= 1'b0;
+            sw_real_q <= 8'hFF;sw_real_valid <= 1'b0;sw_boot_cnt <= 27'd0;
             img_idx     <= 4'd0;
             img_restart <= 1'b0;
             key0_p      <= 1'b1;
@@ -503,7 +512,14 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         else begin
             key0_p      <= key_0;
             key1_p      <= key_1;
-            sw_real_q <= sw;sw_real_valid <= 1'b1;
+            // D6: keep sw_real_q tracking, but only accept a real DIP change
+            // after the pins have settled (0.5 s). Power-on glitches otherwise
+            // looked like a DIP change and dropped the menu into photo mode.
+            sw_real_q <= sw;
+            if (sw_boot_cnt != 27'd25_000_000) begin
+                sw_boot_cnt <= sw_boot_cnt + 27'd1;
+                sw_real_valid <= 1'b0;
+            end else sw_real_valid <= 1'b1;
             sw6_sync    <= {sw6_sync[0], sw_eff[6]};
             sw6_p       <= sw6_sync[1];
             img_restart <= 1'b0;
@@ -515,7 +531,8 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             if (menu_real_change) begin
                 menu_override <= 1'b0; img_idx <= 4'd0;
             end
-            else if ((menu_override && !menu_ui && menu_hold_2s) ||
+            else if ((!menu_ui && key0_exit && key_lock == 24'd0) ||
+                     (menu_override && !menu_ui && menu_hold_2s) ||
                      (menu_override && !video_failed_q && video_failed) ||
                      (!menu_override && menu_hold_2s)) begin
                 menu_override <= 1'b1; menu_pattern <= MENU_PAT_PHOTO;
