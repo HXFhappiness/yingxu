@@ -129,12 +129,17 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
                     if(!invalid && absolute>=32 && absolute<13'd32+{frames,3'd0}) begin
                         assembly<={sd_byte,assembly[55:8]};
                         if(count[2:0]==7) begin
+                            // D4h: data-independent candidate enable. The
+                            // validation below still sees OLD previous_end
+                            // (nonblocking assignment). A rejected candidate
+                            // is never used again: invalid sticks until reset.
+                            previous_end<=entry_end[18:0];
                             if(entry_index>=512 || entry_off[8:0]!=0 || entry_off[31:28]!=0 || entry_size[31:16]!=0 || entry_size[15:0]<16'd4 ||
                                (entry_index==0 ? entry_off[27:9]!=frame_start : entry_off[27:9]<previous_end) || entry_end[19] ||
                                (entry_index+10'd1==frames && audio_end>20'h80000)) begin
                                 invalid<=1;error_code<=8'h93;
                             end else begin
-                                frame_table[entry_index[8:0]]<={entry_size[15:0],entry_off[27:9]};previous_end<=entry_end[18:0];
+                                frame_table[entry_index[8:0]]<={entry_size[15:0],entry_off[27:9]};
                                 if(entry_index+10'd1==frames) audio_off<=entry_end[18:0];
                             end
                         end

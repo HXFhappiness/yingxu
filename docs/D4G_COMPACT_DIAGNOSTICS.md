@@ -1,5 +1,7 @@
 # D4g：删除 word/index 快照，优先恢复 mem_clk 门禁（2026-11-01）
 
+> 用户后续TD：诊断端点清零已确认，但新增previous_end_reg[0].ce的mem违例−0.221ns，D4g未达到整域零违例。D4h只修该CE，见 [D4H_PREVIOUS_END_ENABLE.md](D4H_PREVIOUS_END_ENABLE.md)。
+
 基线 feat/mjpeg@ecd1bbf。用户TD门禁明确FAIL：D4f仍有assembly_reg[39]或sd_bytes/rp_reg到debug_reason/debug_word/debug_index的20条负slack，最差−0.765ns；LUT12387→12586确认使用了新网表。**接受该板级时序证据，D4f不是干净基线，云端映射不能替代TD结论。**
 
 ## 1. 复核与本次选择

@@ -38,6 +38,21 @@ module tb_yxv_diagnostics;
             if(sdreset)begin busy<=0;reading<=0;end
         end
     end
+    reg rejected=0;integer rejected_cases=0;
+    reg [18:0] rejected_end;
+    always @(posedge clk)begin
+        if(rst || dut.local_rst)rejected<=0;
+        else begin
+            if(dut.loader.invalid && dut.loader.error_code==8'h93 && !rejected)begin
+                rejected<=1;rejected_end<=dut.loader.previous_end;rejected_cases<=rejected_cases+1;
+            end
+            if(rejected)begin
+                if(!dut.loader.invalid || dut.loader.purpose>=2 || dut.loader.ready || dut.loader.slot_valid!=0)
+                    $fatal(1,"rejected table advanced to PCM/JPEG");
+                if(dut.loader.previous_end!==rejected_end)$fatal(1,"rejected candidate reused by later entry");
+            end
+        end
+    end
     task prepare(input integer ph,input integer lim,input integer drop);
         begin
             @(negedge sys);rst=1;phase=ph;limit=lim;dropped_done=drop;
@@ -111,6 +126,8 @@ module tb_yxv_diagnostics;
         prepare(0,512,1);failure(16'h189F,0,512,2'b10);
         prepare(0,511,0);failure(16'h109F,0,511,2'b01);
         if(cases!=27)$fatal(1,"vacuous cases");
+        if(rejected_cases!=10)$fatal(1,"vacuous rejected-table invariant cases=%0d",rejected_cases);
+        $display("REJECTCHK: PASS 10/10 invalid tables remain rejected; no PCM/JPEG request or reuse of rejected candidate before reset");
         $display("DIAGCHK: PASS 27 cases; six done phases, eight header words, PCM tail +3996, coarse B8 table cases and final-byte errors; all word/index outputs zero, lost done, lost byte");$finish;
     end
     initial begin #1000000;$fatal(1,"diagnostic timeout");end
