@@ -1,0 +1,5 @@
+SCANOUTCHK: PASS centered640x480 high-half-first both banks pixels=306240/305602 vblank swaps=2 stretched flush no-underflow
+- tb/tb_yxv_scanout.v:34: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 47ms; walltime 1.481 s; speed 31.890 ms/s
+- Verilator: cpu 1.481 s on 1 threads; alloced 32 MB

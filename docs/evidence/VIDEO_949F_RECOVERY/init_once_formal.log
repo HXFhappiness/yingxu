@@ -1,0 +1,377 @@
+
+-- Running command `read_verilog src/user_source/hdl_source/media/sd/sd_stream_reader_core.v tb/formal/sd_init_once.v; prep -top init_once_formal -flatten; async2sync; opt_clean; sat -seq 4 -tempinduct -maxsteps 12 -set-init-zero -set rst 0 -set-at 1 rst 1 -prove safe 1 -verify' --
+
+1. Executing Verilog-2005 frontend: src/user_source/hdl_source/media/sd/sd_stream_reader_core.v
+Parsing Verilog input from `src/user_source/hdl_source/media/sd/sd_stream_reader_core.v' to AST representation.
+Generating RTLIL representation for module `\sd_stream_reader_core'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: tb/formal/sd_init_once.v
+Parsing Verilog input from `tb/formal/sd_init_once.v' to AST representation.
+Generating RTLIL representation for module `\init_once_formal'.
+Successfully finished Verilog frontend.
+
+3. Executing PREP pass.
+
+3.1. Executing HIERARCHY pass (managing design hierarchy).
+
+3.1.1. Analyzing design hierarchy..
+Top module:  \init_once_formal
+Used module:     \sd_stream_reader_core
+
+3.1.2. Analyzing design hierarchy..
+Top module:  \init_once_formal
+Used module:     \sd_stream_reader_core
+Removed 0 unused modules.
+
+3.2. Executing PROC pass (convert processes to netlists).
+
+3.2.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+3.2.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 1 switch rules as full_case in process $proc$tb/formal/sd_init_once.v:4$27 in module init_once_formal.
+Marked 4 switch rules as full_case in process $proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15 in module sd_stream_reader_core.
+Removed a total of 0 dead cases.
+
+3.2.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 2 redundant assignments.
+Promoted 0 assignments to connections.
+
+3.2.4. Executing PROC_INIT pass (extract init attributes).
+
+3.2.5. Executing PROC_ARST pass (detect async resets in processes).
+Found async reset \rst in `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+
+3.2.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~9 debug messages>
+
+3.2.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\init_once_formal.$proc$tb/formal/sd_init_once.v:4$27'.
+     1/1: $0\seen[0:0]
+Creating decoders for process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+     1/11: $0\done[0:0]
+     2/11: $0\ctrl_start[0:0]
+     3/11: $0\byte_count[31:0]
+     4/11: $0\drain_addr[8:0]
+     5/11: $0\sectors_left[15:0]
+     6/11: $0\current_sector[27:0]
+     7/11: $0\state[3:0]
+     8/11: $0\busy[0:0]
+     9/11: $0\init_done[0:0]
+    10/11: $0\ctrl_sector_addr[27:0]
+    11/11: $0\ctrl_mode[1:0]
+
+3.2.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+3.2.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\init_once_formal.\seen' using process `\init_once_formal.$proc$tb/formal/sd_init_once.v:4$27'.
+  created $dff cell `$procdff$193' with positive edge clock.
+Creating register for signal `\sd_stream_reader_core.\ctrl_start' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$196' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\ctrl_mode' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$199' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\ctrl_sector_addr' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$202' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\init_done' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$205' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\busy' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$208' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\done' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$211' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\state' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$214' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\current_sector' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$217' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\sectors_left' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$220' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\drain_addr' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$223' with positive edge clock and positive level reset.
+Creating register for signal `\sd_stream_reader_core.\byte_count' using process `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+  created $adff cell `$procdff$226' with positive edge clock and positive level reset.
+
+3.2.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+3.2.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 2 empty switches in `\init_once_formal.$proc$tb/formal/sd_init_once.v:4$27'.
+Removing empty process `init_once_formal.$proc$tb/formal/sd_init_once.v:4$27'.
+Found and cleaned up 7 empty switches in `\sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+Removing empty process `sd_stream_reader_core.$proc$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:101$15'.
+Cleaned up 9 empty switches.
+
+3.2.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module init_once_formal.
+<suppressed ~1 debug messages>
+Optimizing module sd_stream_reader_core.
+<suppressed ~22 debug messages>
+
+3.3. Executing FLATTEN pass (flatten design).
+Deleting now unused module sd_stream_reader_core.
+<suppressed ~1 debug messages>
+
+3.4. Executing FUTURE pass.
+
+3.5. Executing OPT_EXPR pass (perform const folding).
+Optimizing module init_once_formal.
+
+3.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \init_once_formal..
+Removed 60 unused cells and 131 unused wires.
+<suppressed ~71 debug messages>
+
+3.7. Executing CHECK pass (checking for obvious problems).
+Checking module init_once_formal...
+Found and reported 0 problems.
+
+3.8. Executing OPT pass (performing simple optimizations).
+
+3.8.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module init_once_formal.
+
+3.8.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\init_once_formal'.
+<suppressed ~48 debug messages>
+Removed a total of 16 cells.
+
+3.8.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \init_once_formal..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~7 debug messages>
+
+3.8.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \init_once_formal.
+    New ctrl vector for $pmux cell $flatten\dut.$procmux$160: { $flatten\dut.$procmux$137_CMP $auto$opt_reduce.cc:137:opt_pmux$229 }
+    New ctrl vector for $pmux cell $flatten\dut.$procmux$54: $auto$opt_reduce.cc:137:opt_pmux$231
+  Optimizing cells in module \init_once_formal.
+Performed a total of 2 changes.
+
+3.8.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\init_once_formal'.
+Removed a total of 0 cells.
+
+3.8.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \init_once_formal..
+Removed 0 unused cells and 16 unused wires.
+<suppressed ~1 debug messages>
+
+3.8.7. Executing OPT_EXPR pass (perform const folding).
+Optimizing module init_once_formal.
+
+3.8.8. Rerunning OPT passes. (Maybe there is more to do..)
+
+3.8.9. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \init_once_formal..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~7 debug messages>
+
+3.8.10. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \init_once_formal.
+Performed a total of 0 changes.
+
+3.8.11. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\init_once_formal'.
+Removed a total of 0 cells.
+
+3.8.12. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \init_once_formal..
+
+3.8.13. Executing OPT_EXPR pass (perform const folding).
+Optimizing module init_once_formal.
+
+3.8.14. Finished OPT passes. (There is nothing left to do.)
+
+3.9. Executing WREDUCE pass (reducing word size of cells).
+Removed top 3 bits (of 4) from port B of cell init_once_formal.$flatten\dut.$procmux$137_CMP0 ($eq).
+Removed top 2 bits (of 4) from port B of cell init_once_formal.$flatten\dut.$procmux$131_CMP0 ($eq).
+Removed top 1 bits (of 4) from port B of cell init_once_formal.$flatten\dut.$procmux$130_CMP0 ($eq).
+Removed top 1 bits (of 4) from port B of cell init_once_formal.$flatten\dut.$procmux$127_CMP0 ($eq).
+Removed top 1 bits (of 4) from port B of cell init_once_formal.$flatten\dut.$procmux$126_CMP0 ($eq).
+Removed top 3 bits (of 4) from mux cell init_once_formal.$flatten\dut.$procmux$119 ($mux).
+Removed top 2 bits (of 4) from port B of cell init_once_formal.$flatten\dut.$procmux$101_CMP0 ($eq).
+Removed top 8 bits (of 9) from port B of cell init_once_formal.$flatten\dut.$add$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:198$26 ($add).
+Removed top 15 bits (of 16) from port B of cell init_once_formal.$flatten\dut.$sub$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:190$24 ($sub).
+Removed top 15 bits (of 16) from port B of cell init_once_formal.$flatten\dut.$eq$src/user_source/hdl_source/media/sd/sd_stream_reader_core.v:177$19 ($eq).
+Removed top 3 bits (of 4) from wire init_once_formal.$flatten\dut.$procmux$119_Y.
+
+3.10. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \init_once_formal..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+3.11. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+3.12. Executing OPT pass (performing simple optimizations).
+
+3.12.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module init_once_formal.
+
+3.12.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\init_once_formal'.
+Removed a total of 0 cells.
+
+3.12.3. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \init_once_formal..
+
+3.12.4. Finished fast OPT passes.
+
+3.13. Printing statistics.
+
+=== init_once_formal ===
+
+   Number of wires:                 75
+   Number of wire bits:            392
+   Number of public wires:          31
+   Number of public wire bits:     180
+   Number of ports:                  9
+   Number of port bits:             58
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 53
+     $add                            1
+     $adff                           6
+     $dff                            1
+     $eq                             8
+     $logic_and                      3
+     $logic_not                      4
+     $logic_or                       1
+     $mux                           19
+     $pmux                           5
+     $reduce_bool                    1
+     $reduce_or                      2
+     $scopeinfo                      1
+     $sub                            1
+
+3.14. Executing CHECK pass (checking for obvious problems).
+Checking module init_once_formal...
+Found and reported 0 problems.
+
+4. Executing ASYNC2SYNC pass.
+Replacing init_once_formal.$flatten\dut.$procdff$196 ($adff): ARST=\rst, D=$flatten\dut.$0\ctrl_start[0:0], Q=\dut.ctrl_start
+Replacing init_once_formal.$flatten\dut.$procdff$199 ($adff): ARST=\rst, D=$flatten\dut.$0\ctrl_mode[1:0], Q=\dut.ctrl_mode
+Replacing init_once_formal.$flatten\dut.$procdff$205 ($adff): ARST=\rst, D=$flatten\dut.$0\init_done[0:0], Q=\dut.init_done
+Replacing init_once_formal.$flatten\dut.$procdff$214 ($adff): ARST=\rst, D=$flatten\dut.$0\state[3:0], Q=\dut.state
+Replacing init_once_formal.$flatten\dut.$procdff$220 ($adff): ARST=\rst, D=$flatten\dut.$0\sectors_left[15:0], Q=\dut.sectors_left
+Replacing init_once_formal.$flatten\dut.$procdff$223 ($adff): ARST=\rst, D=$flatten\dut.$0\drain_addr[8:0], Q=\dut.drain_addr
+
+5. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \init_once_formal..
+
+6. Executing SAT pass (solving SAT problems in the circuit).
+
+Setting up time step 1:
+Import set-constraint: \rst = 1'0
+Import set-constraint for this timestep: \rst = 1'1
+Final constraint equation: \rst = 1'1
+Imported 59 cells to SAT database.
+Final init constraint equation: { \seen $auto$async2sync.cc:228:execute$243 $auto$async2sync.cc:228:execute$241 $auto$async2sync.cc:228:execute$239 $auto$async2sync.cc:228:execute$237 $auto$async2sync.cc:228:execute$235 $auto$async2sync.cc:228:execute$233 } = 34'0000000000000000000000000000000000
+
+Setting up time step 2:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 59 cells to SAT database.
+
+Setting up time step 3:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 59 cells to SAT database.
+
+Setting up time step 4:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 59 cells to SAT database.
+
+Setting up time step 1:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 59 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+** Trying induction with length 1 **
+
+Setting up time step 5:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 59 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[base case 1] Solving problem with 10213 variables and 27820 clauses..
+Base case for induction length 1 proven.
+
+Setting up time step 2:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 59 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[induction step 1] Solving problem with 3960 variables and 10717 clauses..
+Induction step failed. Incrementing induction length.
+
+  Time Signal Name                                      Dec       Hex                 Bin
+  ---- ---------------------------------------- ----------- --------- -------------------
+  init $auto$async2sync.cc:228:execute$233                0         0                   0
+  init $auto$async2sync.cc:228:execute$235                0         0                  00
+  init $auto$async2sync.cc:228:execute$237                1         1                   1
+  init $auto$async2sync.cc:228:execute$239                0         0                0000
+  init $auto$async2sync.cc:228:execute$241                0         0    0000000000000000
+  init $auto$async2sync.cc:228:execute$243                0         0           000000000
+  init \seen                                              1         1                   1
+  ---- ---------------------------------------- ----------- --------- -------------------
+     1 \clk                                               0         0                   0
+     1 \ctrl_done                                         0         0                   0
+     1 \rst                                               0         0                   0
+     1 \safe                                              1         1                   1
+     1 \sectors                                           0         0    0000000000000000
+     1 \start                                             0         0                   0
+     1 \stream_ready                                      0         0                   0
+  ---- ---------------------------------------- ----------- --------- -------------------
+     2 \clk                                               0         0                   0
+     2 \ctrl_done                                         0         0                   0
+     2 \rst                                               0         0                   0
+     2 \safe                                              0         0                   0
+     2 \sectors                                       32768      8000    1000000000000000
+     2 \start                                             0         0                   0
+     2 \stream_ready                                      0         0                   0
+
+** Trying induction with length 2 **
+
+Setting up time step 6:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 59 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[base case 2] Solving problem with 12380 variables and 33792 clauses..
+Base case for induction length 2 proven.
+
+Setting up time step 3:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 59 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[induction step 2] Solving problem with 6230 variables and 17031 clauses..
+Induction step proven: SUCCESS!
+
+                  /$$$$$$      /$$$$$$$$     /$$$$$$$    
+                 /$$__  $$    | $$_____/    | $$__  $$   
+                | $$  \ $$    | $$          | $$  \ $$   
+                | $$  | $$    | $$$$$       | $$  | $$   
+                | $$  | $$    | $$__/       | $$  | $$   
+                | $$/$$ $$    | $$          | $$  | $$   
+                |  $$$$$$/ /$$| $$$$$$$$ /$$| $$$$$$$//$$
+                 \____ $$$|__/|________/|__/|_______/|__/
+                       \__/                              
+
