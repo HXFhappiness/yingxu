@@ -118,16 +118,28 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
         nframes=le32(12);pcm_bytes=le32(20);pcm_off=(le32(32+(nframes-1)*8)+le32(36+(nframes-1)*8)+511)/512*512;
         gfd=$fopen(goldname,"rb");if(!gfd)$fatal(1,"top gold open");
         #200;rst_n=1;
+        // D5 boots into the menu. Exercise the physical DIP escape before
+        // the existing D4 direct-mode playback/fault regressions.
+        repeat(10)@(negedge clk);sw[0]=~sw[0];
+        repeat(10)@(negedge clk);sw[0]=~sw[0];
         if(pending)begin
             // Test-only injection: keep a memory command pending, then inject
             // the same no-progress fault tested by tb_yxv_fault_pending.
-            wait(`VIDEO.loader.purpose==2 && `VIDEO.loader.mstate==1);
-            force `VIDEO.cmd_ready=1'b0;
+            if(pending==2)begin
+                wait(`VIDEO.loader.purpose==2 && `VIDEO.loader.mstate==2 && `VIDEO.loader.sent==4);
+                @(negedge `WRAPPER.video_mem_clk);
+                force `WRAPPER.vm_wready=1'b0;force `WRAPPER.vm_wvalid=1'b0;
+            end else begin
+                wait(`VIDEO.loader.purpose==2 && `VIDEO.loader.mstate==1);
+                force `VIDEO.cmd_ready=1'b0;
+            end
             force `VIDEO.fault_code=8'h9F;force `VIDEO.fault=1'b1;
             repeat(50)@(negedge clk);
             if(!dut.video_owned || dut.video_failed || !dut.video_sd_reset || !dut.sd_rst || dut.sd_dbg_init_done || !dut.sd_dbg_busy)
                 $fatal(1,"pending fault signature");
             if(dut.video_diagnosis[7:0]!=8'h9f || !dut.video_diag_valid)$fatal(1,"pending diagnostic absent");
+            if(pending==2 && (dut.video_diagnosis!=16'h949f || dut.video_fail_word!=32'h214))
+                $fatal(1,"half-write snapshot not on actual top");
             #250000000;
             if(dut.video_failed || !dut.video_owned || dut.video_diagnosis[7:0]!=8'h9f)$fatal(1,"pending fault unstable");
             $display("PENDING_UARTCHK: PASS held SD reset owned=1 failed=0 init_done=0; fault visible before release MISE=%h SP=%h LS=6 F=A",dut.video_diagnosis,dut.video_detail);$finish;

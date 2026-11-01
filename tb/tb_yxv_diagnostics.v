@@ -12,7 +12,7 @@ module tb_yxv_diagnostics;
         .sd_start(start),.sd_lba(lba),.sd_sectors(sectors),.sd_reset(sdreset),.owned(owned),.failed(failed),.error_code(code),
         .diagnosis(diagnosis),.detail(detail),.fail_count(count),.fail_index(badindex),.fail_word(badword),
         .audio_ready(1'b0),.audio_pop(1'b0),.x(11'd0),.y(10'd0),.pixel_active(1'b0),.rd2_data(32'd0),.rd2_empty(1'b1),
-        .cmd_ready(1'b0),.wready(1'b0),.rvalid(1'b0),.rdata(32'd0),.rlast(1'b0),.mem_done(1'b0),.mem_error(1'b0),.port_idle(1'b1));
+        .cmd_ready(1'b0),.wready(1'b0),.rvalid(1'b0),.rdata(32'd0),.rlast(1'b0),.mem_done(1'b0),.mem_error(1'b0),.port_idle(1'b1),.port_debug_write(7'd0));
     always @(posedge sys)begin
         if(rst)begin busy<=0;done<=0;reading<=0;second<=0;pos<=0;cmds<=0;delay_done<=0;end
         else begin

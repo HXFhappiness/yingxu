@@ -100,6 +100,7 @@ module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
     // D3: mode controls cross through synchronizers; RGB selection uses the
     // existing replay output register, preserving the compositor logic depth.
     wire video_mem_clk,video_mem_ready,video_port_idle;
+    wire [6:0] video_write_debug;
     wire vm_valid,vm_ready,vm_write,vm_wvalid,vm_wready,vm_wlast,vm_rvalid,vm_rready,vm_rlast,vm_done,vm_error;
     wire [20:0] vm_addr;wire [3:0] vm_words;wire [31:0] vm_wdata,vm_rdata;
     wire video_sd_byte_ready,video_audio_enable,video_audio_valid,video_actual_pop;
@@ -648,29 +649,42 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
 
     // A table wipe always wins, so switching modes or games cannot leave stale
     // sprites behind. G4: ???????????????????????????????????????/??????è???·??????????è???????????
-    // D5: menu selection bar (slot 15 of the shared sprite table). The bar
-    // rewrites itself every 2^23 pixel clocks so a table wipe self-heals.
+    // D5: slot 15 selection bar. Keep the coordinate ROM as an explicit case
+    // rather than a chained conditional in the clocked process (TD reader).
     reg menu_ctx_q, menu_ctx_qq;reg [2:0] menu_sel_q, menu_sel_qq;
     reg bar_we_q;reg [9:0] bar_y_q;reg [22:0] bar_refresh;
-    wire bar_fire = (menu_ctx_q && !menu_ctx_qq) ||
-                    (menu_ctx_q && (menu_sel_q != menu_sel_qq)) ||
-                    (menu_ctx_q && (&bar_refresh));
+    reg bar_wipe_q, bar_ctx_prev, bar_enabled_q;
+    reg [2:0] bar_sel_prev;
+    wire bar_refresh_due = &bar_refresh;
+    wire bar_clear = !menu_ctx_qq && bar_ctx_prev;
+    wire bar_fire = menu_ctx_qq && !clr_active &&
+                    (!bar_ctx_prev || (bar_sel_prev != menu_sel_qq) ||
+                     bar_refresh_due || bar_wipe_q);
     always @(posedge S_pixel_clk or posedge S_rst_pix) begin
         if (S_rst_pix) begin menu_ctx_q<=0;menu_ctx_qq<=0;menu_sel_q<=0;menu_sel_qq<=0;
-            bar_we_q<=0;bar_y_q<=0;bar_refresh<=0;end
+            bar_we_q<=0;bar_y_q<=0;bar_refresh<=0;bar_wipe_q<=0;
+            bar_ctx_prev<=0;bar_sel_prev<=0;bar_enabled_q<=0;end
         else begin
             menu_ctx_q<=I_menu_ctx;menu_ctx_qq<=menu_ctx_q;
             menu_sel_q<=I_menu_sel;menu_sel_qq<=menu_sel_q;
             bar_refresh<=bar_refresh+1'b1;
-            bar_we_q<=bar_fire;
-            bar_y_q<=I_menu_sel==3'd0?10'd268:I_menu_sel==3'd1?10'd355:
-                     I_menu_sel==3'd2?10'd442:I_menu_sel==3'd3?10'd529:10'd616;
+            bar_wipe_q<=clr_active;
+            bar_ctx_prev<=menu_ctx_qq;bar_sel_prev<=menu_sel_qq;
+            bar_we_q<=bar_fire || bar_clear;
+            bar_enabled_q<=menu_ctx_qq;
+            case (menu_sel_qq)
+                3'd0: bar_y_q <= 10'd268;
+                3'd1: bar_y_q <= 10'd355;
+                3'd2: bar_y_q <= 10'd442;
+                3'd3: bar_y_q <= 10'd529;
+                default: bar_y_q <= 10'd616;
+            endcase
         end
     end
-    wire        sel_menu      = menu_ctx_q;
+    wire        sel_menu      = menu_ctx_qq || bar_we_q;
     wire        menu_spr_we   = bar_we_q;
     wire [3:0]  menu_spr_slot = 4'd15;
-    wire        menu_spr_en   = 1'b1;
+    wire        menu_spr_en   = bar_enabled_q;
     wire [10:0] menu_spr_x    = 11'd930;
     wire [9:0]  menu_spr_y    = bar_y_q;
     wire [6:0]  menu_spr_w    = 7'd12;
@@ -874,7 +888,7 @@ assign O_inv_wave  = 4'd0;
         .i_mj_active(O_video_owned),.i_mj_valid(vm_valid),.o_mj_ready(vm_ready),.i_mj_write(vm_write),
         .i_mj_addr(vm_addr),.i_mj_words(vm_words),.i_mj_wvalid(vm_wvalid),.o_mj_wready(vm_wready),
         .i_mj_wdata(vm_wdata),.i_mj_wlast(vm_wlast),.o_mj_rvalid(vm_rvalid),.i_mj_rready(vm_rready),
-        .o_mj_rdata(vm_rdata),.o_mj_rlast(vm_rlast),.o_mj_done(vm_done),.o_mj_error(vm_error),.o_mj_idle(video_port_idle),
+        .o_mj_rdata(vm_rdata),.o_mj_rlast(vm_rlast),.o_mj_done(vm_done),.o_mj_error(vm_error),.o_mj_idle(video_port_idle),.o_mj_debug_write(video_write_debug),
         .sys_clk                            (I_sys_clk                           ),
         .pixel_clk                          (S_pixel_clk                         ),
         .rst                                (video_reset_sys                     ),
@@ -925,7 +939,7 @@ assign O_inv_wave  = 4'd0;
         .x(S_pixel_x),.y(S_pixel_y),.pixel_active(S_pixel_active),.rd2_data(S_rd2_data),.rd2_empty(S_rd2_empty),
         .rd2_en(video_rd_en),.rd2_load(video_rd_load),.rd2_addr(video_rd_addr),.rd2_max(video_rd_max),.rd2_len(video_rd_len),.rgb(video_rgb),
         .cmd_valid(vm_valid),.cmd_ready(vm_ready),.cmd_write(vm_write),.cmd_addr(vm_addr),.cmd_words(vm_words),
-        .wvalid(vm_wvalid),.wready(vm_wready),.wdata(vm_wdata),.wlast(vm_wlast),.rvalid(vm_rvalid),.rready(vm_rready),.rdata(vm_rdata),.rlast(vm_rlast),.mem_done(vm_done),.mem_error(vm_error),.port_idle(video_port_idle),
+        .wvalid(vm_wvalid),.wready(vm_wready),.wdata(vm_wdata),.wlast(vm_wlast),.rvalid(vm_rvalid),.rready(vm_rready),.rdata(vm_rdata),.rlast(vm_rlast),.mem_done(vm_done),.mem_error(vm_error),.port_idle(video_port_idle),.port_debug_write(video_write_debug),
         .decoded_frames(O_video_decoded),.displayed_frames(O_video_displayed),.dropped_frames(O_video_dropped),.played_samples(O_video_samples),.sd_occupancy(O_video_sd_occupancy),.status(O_video_status));
 
     hdmi_1_4b_transmitter_core_wrapper#(

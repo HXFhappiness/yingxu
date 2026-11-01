@@ -8,6 +8,7 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
     input wire sd_done,input wire [7:0] sd_byte,input wire sd_byte_valid,output wire sd_byte_ready,
     output wire idle,
     output wire [7:0] debug_phase,debug_flags,
+    output wire [3:0] debug_sent,
     output reg [7:0] debug_reason,output wire [31:0] debug_word,
     output wire [9:0] debug_index,output wire [10:0] debug_count,
     output reg ready,failed,output reg [7:0] error_code,
@@ -45,6 +46,7 @@ module yingxu_yxv_loader #(parameter [27:0] VIDEO_LBA=28'd3000000)(
     wire [12:0] minimum_frame_start=(13'd32+{frames,3'd0}+13'd511)&13'h1E00;
     assign debug_phase={purpose,state,mstate,invalid};
     assign debug_flags={rx_complete,ack,sd_done,sd_valid,sd_ready,(filled==0),(mstate==0),sd_byte_valid};
+    assign debug_sent=sent;
     assign debug_count=count[10:0];
     // D4g: compatibility ports are constants. No bad-word/index registers,
     // candidate registers or raw-data comparator feeds the diagnostic reason.

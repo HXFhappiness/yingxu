@@ -13,7 +13,7 @@ module tb_yxv_preload;
     wire block_data=(block==1 || block==2) && first_pcm_command && beats>=(block==1 ? 0:4);
     wire block_grant=block==3 && dut.loader.purpose==2;
     wire block_done=block==4 && first_pcm_command;
-    wire phy_wr;
+    wire phy_wr;wire [6:0] write_debug;
     function integer le32(input integer p);le32={source[p+3],source[p+2],source[p+1],source[p]};endfunction
     yingxu_sd_integration_probe #(.DYNAMIC_COUNT(1),.SECTOR_COUNT(1)) probe(
         .clk(sys),.rst(rst || sdreset),.trigger_sw(1'b0),.legacy_inhibit(1'b0),.dynamic_enable(owned),.dynamic_count(sectors),
@@ -26,7 +26,7 @@ module tb_yxv_preload;
         .diagnosis(diagnosis),.detail(detail),.fail_count(count),.fail_index(index),.fail_word(word),
         .audio_ready(1'b0),.audio_pop(1'b0),.x(11'd0),.y(10'd0),.pixel_active(1'b0),.rd2_data(32'd0),.rd2_empty(1'b1),
         .cmd_valid(cv),.cmd_ready(cr),.cmd_write(cw),.cmd_addr(ca),.cmd_words(cn),.wvalid(wv),.wready(wr),.wdata(wd),.wlast(wl),
-        .rvalid(rv),.rready(rr),.rdata(rd),.rlast(rl),.mem_done(mdone && !block_done),.mem_error(merror),.port_idle(idle));
+        .rvalid(rv),.rready(rr),.rdata(rd),.rlast(rl),.mem_done(mdone && !block_done),.mem_error(merror),.port_idle(idle),.port_debug_write(write_debug));
     assign wr=phy_wr && !block_data;
     yingxu_sdram_control_4port #(.MJPEG_PORT(1)) phy(
         .REF_CLK(sys),.RESET_N(!rst),.CLK(clk),.DQ(dq),
@@ -36,7 +36,7 @@ module tb_yxv_preload;
         .RD2(1'b0),.RD2_ADDR(21'd0),.RD2_MAX_ADDR(21'd153600),.RD2_LENGTH(9'd128),.RD2_LOAD(block_grant),.RD2_CLK(pix),
         .MJ_ACTIVE(owned),.MJ_VALID(cv),.MJ_READY(cr),.MJ_WRITE(cw),.MJ_ADDR(ca),.MJ_WORDS(cn),
         .MJ_WVALID(wv && !block_data),.MJ_WREADY(phy_wr),.MJ_WDATA(wd),.MJ_WLAST(wl),
-        .MJ_RVALID(rv),.MJ_RREADY(rr),.MJ_RDATA(rd),.MJ_RLAST(rl),.MJ_DONE(mdone),.MJ_ERROR(merror),.MJ_IDLE(idle));
+        .MJ_RVALID(rv),.MJ_RREADY(rr),.MJ_RDATA(rd),.MJ_RLAST(rl),.MJ_DONE(mdone),.MJ_ERROR(merror),.MJ_IDLE(idle),.MJ_DEBUG_WRITE(write_debug));
     d3_sdram_memory memory(.clk(clk),.read(phy.Read),.write(phy.Write),.oe(phy.oe),.addr(phy.mADDR),
         .in_req(phy.IN_REQ),.out_valid(phy.OUT_VALID),.mask(phy.mj_owner ? phy.mj_mask:4'd0),.data(phy.mDATAIN),.dq(dq));
     always @(posedge sys)if(!rst && sdstart)begin
@@ -72,11 +72,23 @@ module tb_yxv_preload;
         pcm_off=(le32(32+(frames-1)*8)+le32(36+(frames-1)*8)+511)/512*512;
         repeat(8)@(negedge sys);rst=0;
         if(block)begin
+            if(block>=5)begin
+                wait(first_pcm_command);@(negedge clk);
+                force phy.mj_port.port_adapter.phy_done=1'b0;
+                if(block==5)force phy.mj_port.port_adapter.phy_in_req=1'b0;
+            end
             wait(diagnosis!=0);repeat(50)@(negedge sys);
             $display("PCM_STALL_REPRO block=%0d MISE=%h SP=%h ACC=%h sent=%0d phy_state=%0d position=%0d ST=%0d reset=%b F=%h",
                 block,diagnosis,detail,count,dut.loader.sent,phy.mj_port.port_adapter.state,phy.mj_port.port_adapter.position,phy.ST,sdreset,{owned,sdinit,sdbusy,1'b0});
             if(diagnosis!=16'h949f || detail!=16'h0001 || count!=32 || requests!=3 || !sdreset || !owned || sdinit || !sdbusy)$fatal(1,"board signature not reproduced");
             if(dut.loader.sent!=(block==1 ? 0:block==2 ? 4:8))$fatal(1,"bad write-beat witness");
+            if(word !== (block==1 ? 32'h010 : block==2 ? 32'h214 : block==3 ? 32'h420 : block==4 ? 32'h408 : block==5 ? 32'h430 : 32'h438))
+                $fatal(1,"compact write snapshot mismatch block=%0d I1=%h",block,word);
+            force write_debug=7'h7f;
+            force dut.loader.sent=4'hf;
+            repeat(30)@(negedge sys);
+            if(word !== {21'd0,dut.frozen_write})$fatal(1,"write snapshot changed after fault");
+            $display("WRITE_DIAGCHK: PASS block=%0d I1=%h sent=%0d state=%0d position=%0d",block,word,word[10:7],word[6:4],word[3:0]);
             $display("PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault");$finish;
         end
         wait(dut.loader_ready);@(negedge clk);

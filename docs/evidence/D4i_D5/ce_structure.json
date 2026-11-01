@@ -1,0 +1,97 @@
+{
+  "TD_measured": false,
+  "scope": "loader only; native LUT4/carry charge and CE/data cones, not ns slack",
+  "configurations": {
+    "before": {
+      "LUT4_charge": 1080,
+      "FF_cells": 522,
+      "BRAM": 2,
+      "previous_end_flops": 19,
+      "raw_data_reaches_previous_end_CE": true,
+      "raw_data_reaches_previous_end_bit0_CE": true,
+      "raw_data_reaches_previous_end_D": true,
+      "bit0_witness": [
+        {
+          "cell": "$auto$ff.cc:266:slice$5443",
+          "type": "AL_MAP_SEQ",
+          "ports": {
+            "ce": [
+              523
+            ],
+            "clk": [
+              2
+            ],
+            "d": [
+              1388
+            ],
+            "q": [
+              1104
+            ],
+            "sr": [
+              3
+            ]
+          }
+        }
+      ],
+      "word_index_ports_all_zero": true,
+      "cell_counts": {
+        "AL_MAP_ADDER": 556,
+        "AL_MAP_LUT1": 41,
+        "AL_MAP_LUT2": 82,
+        "AL_MAP_LUT3": 108,
+        "AL_MAP_LUT4": 261,
+        "AL_MAP_SEQ": 522,
+        "EG_LOGIC_DRAM16X4": 8,
+        "EG_PHY_BRAM": 2
+      }
+    },
+    "after": {
+      "LUT4_charge": 1082,
+      "FF_cells": 522,
+      "BRAM": 2,
+      "previous_end_flops": 19,
+      "raw_data_reaches_previous_end_CE": false,
+      "raw_data_reaches_previous_end_bit0_CE": false,
+      "raw_data_reaches_previous_end_D": true,
+      "bit0_witness": [
+        {
+          "cell": "$auto$ff.cc:266:slice$5436",
+          "type": "AL_MAP_SEQ",
+          "ports": {
+            "ce": [
+              535
+            ],
+            "clk": [
+              2
+            ],
+            "d": [
+              1390
+            ],
+            "q": [
+              1123
+            ],
+            "sr": [
+              3
+            ]
+          }
+        }
+      ],
+      "word_index_ports_all_zero": true,
+      "cell_counts": {
+        "AL_MAP_ADDER": 556,
+        "AL_MAP_LUT1": 41,
+        "AL_MAP_LUT2": 84,
+        "AL_MAP_LUT3": 121,
+        "AL_MAP_LUT4": 248,
+        "AL_MAP_SEQ": 522,
+        "EG_LOGIC_DRAM16X4": 8,
+        "EG_PHY_BRAM": 2
+      }
+    }
+  },
+  "delta": {
+    "LUT4_charge": 2,
+    "FF_cells": 0,
+    "BRAM": 0
+  }
+}

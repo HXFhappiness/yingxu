@@ -1,0 +1,5 @@
+PENDING_UARTCHK: PASS held SD reset owned=1 failed=0 init_done=0; fault visible before release MISE=949f SP=0001 LS=6 F=A
+- tb/tb_yxv_top.v:145: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 261ms; walltime 72.290 s; speed 3.608 ms/s
+- Verilator: cpu 72.276 s on 1 threads; alloced 47 MB

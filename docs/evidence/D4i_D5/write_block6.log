@@ -1,0 +1,8 @@
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=6 MISE=949f SP=0001 ACC=020 sent=8 phy_state=3 position=8 ST=0 reset=1 F=a
+WRITE_DIAGCHK: PASS block=6 I1=00000438 sent=8 state=3 position=8
+PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:92: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 5ms; walltime 0.568 s; speed 7.977 ms/s
+- Verilator: cpu 0.568 s on 1 threads; alloced 57 MB

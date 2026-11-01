@@ -1,0 +1,24 @@
+{
+  "baseline": "c1738d76da292688a445e63eb11b49f7b1bd53b4",
+  "TD_executed": false,
+  "board_tested": false,
+  "checks": {
+    "D5_actual_top_menu": "pass",
+    "D5_production_bar_Yosys_read_proc_check": "pass",
+    "write_stalls_1_to_6": "pass",
+    "actual_top_UART_949F_I1_000214": "pass",
+    "header_table_diagnostics_27_cases": "pass",
+    "pending_fault_before_release": "pass",
+    "physical_1_to_8_words_16_transactions": "pass",
+    "loader_36_and_512_frames": "pass",
+    "scanout_and_PCM": "pass",
+    "short_top_4001_samples_48k_RGB565_HDMI": "pass",
+    "D4h_previous_end_CE_structure_proxy": "pass"
+  },
+  "limits": [
+    "TD syn/read_design and mem_clk timing require local verification",
+    "No full 7594-sector positive preload rerun",
+    "Existing rectangle selection bar retained; BRAM arrow asset not added",
+    "Hold/lock counters accelerated only in menu testbench"
+  ]
+}

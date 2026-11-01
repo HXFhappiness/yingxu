@@ -1,0 +1,3 @@
+top_sw77_72_bad0_writepending.log: exit=0 seconds=72.33
+PENDING_WIRECHK: PASS actual UART MISE low=9F LS=6 F=A while video_failed=0
+WRITE_UARTCHK: PASS MISE=949F I1=000214 sent=4 physical=COLLECT position=4

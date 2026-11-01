@@ -19,7 +19,7 @@ module yingxu_yxv_pipeline #(
     output wire cmd_valid,input wire cmd_ready,output wire cmd_write,output wire [20:0] cmd_addr,output wire [3:0] cmd_words,
     output wire wvalid,input wire wready,output wire [31:0] wdata,output wire wlast,
     input wire rvalid,output wire rready,input wire [31:0] rdata,input wire rlast,input wire mem_done,mem_error,
-    input wire port_idle,
+    input wire port_idle,input wire [6:0] port_debug_write,
     output wire [31:0] decoded_frames,displayed_frames,dropped_frames,played_samples,
     output wire [15:0] sd_occupancy,output wire [23:0] status
 );
@@ -30,16 +30,20 @@ module yingxu_yxv_pipeline #(
     wire [7:0] lp,lf,lr;wire [10:0] lc;
     reg diag_frozen;reg [7:0] frozen_phase,frozen_reason,frozen_flags;
     reg [10:0] frozen_count;
-    // D4g removes all data snapshots, including MEM and SYS copies.
-    assign fail_index=10'd0;assign fail_word=32'd0;
+    wire [3:0] loader_sent;
+    reg [10:0] frozen_write,fail_write;
+    // D4g data/word/index snapshots stay removed. Reuse the old word port
+    // for only 11 existing control bits, frozen with the first MEM fault.
+    assign fail_index=10'd0;assign fail_word={21'd0,fail_write};
     // Capture before abort changes loader state. Held until common release;
     // fault_sys gives multiple clocks of stability before the SYS snapshot.
     always @(posedge clk)begin
-        if(local_rst)begin diag_frozen<=0;frozen_phase<=0;frozen_reason<=0;frozen_flags<=0;frozen_count<=0;end
+        if(local_rst)begin diag_frozen<=0;frozen_phase<=0;frozen_reason<=0;frozen_flags<=0;frozen_count<=0;frozen_write<=0;end
         else if(fault && !diag_frozen)begin
             diag_frozen<=1;
             frozen_phase<=fault_code==8'h95 ? 8'h0E:fault_code==8'h9E ? 8'h1E:
                 (fault_code==8'h91 || fault_code==8'h92 || fault_code==8'h93 || fault_code==8'h9F) ? lp:8'h16;
+            frozen_write<={loader_sent,port_debug_write};
             frozen_reason<=lr;frozen_flags<=lf;frozen_count<=lc;
         end
     end
@@ -58,27 +62,27 @@ module yingxu_yxv_pipeline #(
     wire quiet;reg [1:0] quiet_sys,fault_sys;
     reg [1:0] audio_sys;reg [27:0] acquire_wait;
     always @(posedge sys_clk) begin
-        if(rst) begin owned<=0;failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;quiet_sys<=0;fault_sys<=0;audio_sys<=0;abort_sys<=0;acquire_wait<=0;end
+        if(rst) begin owned<=0;failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;fail_write<=0;quiet_sys<=0;fault_sys<=0;audio_sys<=0;abort_sys<=0;acquire_wait<=0;end
         else begin
             quiet_sys<={quiet_sys[0],quiet};fault_sys<={fault_sys[0],fault};
             audio_sys<={audio_sys[0],audio_run};abort_sys<={abort_sys[0],fault};
-            if(!owned && !enable) begin failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;end
+            if(!owned && !enable) begin failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;fail_write<=0;end
             if(owned || !enable || failed)acquire_wait<=0;
             else if(sd_init && !sd_busy) begin owned<=1;acquire_wait<=0;end
-            else if(acquire_wait==ACQUIRE_LIMIT-1)begin failed<=1;error_code<=8'h9F;diagnosis<=16'h069F;detail<=0;fail_count<=0;end
+            else if(acquire_wait==ACQUIRE_LIMIT-1)begin failed<=1;error_code<=8'h9F;diagnosis<=16'h069F;detail<=0;fail_count<=0;fail_write<=0;end
             else acquire_wait<=acquire_wait+1'b1;
             // D4e: an in-flight memory command may prevent quiet/release.
             // The first MEM snapshot is already stable before fault_sys[1].
             // Publish it independently of teardown; do not change abort/reset.
             if(owned && fault_sys[1] && diagnosis==16'd0) begin
                 error_code<=fault_code;diagnosis<={frozen_phase,fault_code};
-                detail<={frozen_reason,frozen_flags};fail_count<=frozen_count;
+                detail<={frozen_reason,frozen_flags};fail_count<=frozen_count;fail_write<=frozen_write;
             end
             if(owned && (!enable || fault_sys[1]) && quiet_sys[1] && !sd_inflight) begin
                 owned<=0;
                 if(fault_sys[1]) begin failed<=1;error_code<=fault_code;
                     diagnosis<={frozen_phase,fault_code};detail<={frozen_reason,frozen_flags};
-                    fail_count<=frozen_count;end
+                    fail_count<=frozen_count;fail_write<=frozen_write;end
             end
         end
     end
@@ -113,7 +117,7 @@ module yingxu_yxv_pipeline #(
     yingxu_yxv_loader loader(.clk(clk),.rst(local_rst),.enable(request_sync[1] && !fault),.abort(fault),
         .sd_valid(sdv),.sd_ready(sdr),.sd_lba(sdlba),.sd_sectors(sdn),.sd_done(sdd),
         .sd_byte(byte_data),.sd_byte_valid(byte_valid),.sd_byte_ready(byte_ready),
-        .debug_phase(lp),.debug_flags(lf),.debug_reason(lr),.debug_word(),.debug_index(),.debug_count(lc),
+        .debug_sent(loader_sent),.debug_phase(lp),.debug_flags(lf),.debug_reason(lr),.debug_word(),.debug_index(),.debug_count(lc),
         .idle(loader_idle),.ready(loader_ready),.failed(loader_failed),.error_code(loader_code),.frames(frames),.pcm_bytes(pcm_bytes),
         .slot_valid(slots),.slot_release(slot_release),.slot_tag0(slot_tag0),.slot_tag1(slot_tag1),.slot_len0(slot_len0),.slot_len1(slot_len1),
         .sd_accepted(sd_accepted),.sd_ticks(sd_ticks),
@@ -205,9 +209,9 @@ module yingxu_yxv_pipeline #(
             if(!request_sync[1] || fault) audio_run<=0;
         end
     end
+    wire source_ready_mem=sdr;
     assign quiet=loader_idle && !decode_busy && pcm_idle && !exchange_pending && source_ready_mem &&
         !cmd_valid && port_idle && !lv && !pv && !dv;
-    wire source_ready_mem=sdr;
     // Others: audio reads > SD staging writes > compressed reads. Physical RD2
     // display is higher priority inside the four-port controller.
     wire [2:0] ir,iwready,irvalid,idone,ierror;
