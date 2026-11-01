@@ -80,10 +80,18 @@ module tb_yxv_diagnostics;
         failure(16'h3992,8'h06,512,486,expected_word,2'b11);
         prepare(0,512,0);data[32]=data[32]^1;expected_word={data[35],data[34],data[33],data[32]};
         failure(16'h3993,8'h11,512,0,expected_word,2'b11);
+        // First bad entry ends at the final byte of the first sector. The
+        // extra diagnostic stage must beat fault/abort even with early done.
+        for(j=0;j<3;j=j+1)begin
+            case(j)0:phase=-4;1:phase=0;2:phase=16;endcase
+            prepare(phase,512,0);data[511]=1;
+            expected_word={data[511],data[510],data[509],data[508]};
+            failure(16'h3993,8'h13,512,59,expected_word,2'b11);
+        end
         prepare(0,512,1);failure(16'h189F,0,512,0,0,2'b10);
         prepare(0,511,0);failure(16'h109F,0,511,0,0,2'b01);
-        if(cases!=18)$fatal(1,"vacuous cases");
-        $display("DIAGCHK: PASS 18 cases; six done phases, eight header words, PCM tail +3996, bad table, lost done, lost byte");$finish;
+        if(cases!=21)$fatal(1,"vacuous cases");
+        $display("DIAGCHK: PASS 21 cases; six done phases, eight header words, PCM tail +3996, bad table and final-byte errors, lost done, lost byte");$finish;
     end
     initial begin #1000000;$fatal(1,"diagnostic timeout");end
 endmodule
