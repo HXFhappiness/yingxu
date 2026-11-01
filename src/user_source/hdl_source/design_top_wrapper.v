@@ -23,6 +23,8 @@ module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
     output wire [9:0] O_video_fail_index,output wire [31:0] O_video_fail_word,
     output wire [15:0] O_video_sd_occupancy,output wire [23:0] O_video_status,
     input  wire                             I_game_mode                            ,
+    input  wire                             I_menu_ctx                            ,
+    input  wire         [ 2: 0]             I_menu_sel                            ,
     input  wire                             I_music_en                             ,
     output wire [27:0]                      O_wav_base                             ,
     output wire                             O_wav_restart                          ,
@@ -646,6 +648,33 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
 
     // A table wipe always wins, so switching modes or games cannot leave stale
     // sprites behind. G4: ???????????????????????????????????????/??????è???·??????????è???????????
+    // D5 bisect v3: menu bar FSM + wires present, mux untouched.
+    reg menu_ctx_q, menu_ctx_qq;reg [2:0] menu_sel_q, menu_sel_qq;
+    reg bar_we_q;reg [9:0] bar_y_q;reg [22:0] bar_refresh;
+    wire bar_fire = (menu_ctx_q && !menu_ctx_qq) ||
+                    (menu_ctx_q && (menu_sel_q != menu_sel_qq)) ||
+                    (menu_ctx_q && (&bar_refresh));
+    always @(posedge S_pixel_clk or posedge S_rst_pix) begin
+        if (S_rst_pix) begin menu_ctx_q<=0;menu_ctx_qq<=0;menu_sel_q<=0;menu_sel_qq<=0;
+            bar_we_q<=0;bar_y_q<=0;bar_refresh<=0;end
+        else begin
+            menu_ctx_q<=I_menu_ctx;menu_ctx_qq<=menu_ctx_q;
+            menu_sel_q<=I_menu_sel;menu_sel_qq<=menu_sel_q;
+            bar_refresh<=bar_refresh+1'b1;
+            bar_we_q<=bar_fire;
+            bar_y_q<=I_menu_sel==3'd0?10'd268:I_menu_sel==3'd1?10'd355:
+                     I_menu_sel==3'd2?10'd442:I_menu_sel==3'd3?10'd529:10'd616;
+        end
+    end
+    wire        sel_menu      = menu_ctx_q;
+    wire        menu_spr_we   = bar_we_q;
+    wire [3:0]  menu_spr_slot = 4'd15;
+    wire        menu_spr_en   = 1'b1;
+    wire [10:0] menu_spr_x    = 11'd930;
+    wire [9:0]  menu_spr_y    = bar_y_q;
+    wire [6:0]  menu_spr_w    = 7'd12;
+    wire [5:0]  menu_spr_h    = 6'd56;
+    wire [23:0] menu_spr_c    = 24'h00A651;
 wire        src_we   = sel_hw ? hw_spr_we   : c_spr_we;
     wire [3:0]  src_slot = sel_hw ? hw_spr_slot : c_spr_slot;
     wire        src_en   = sel_hw ? hw_spr_en   : c_spr_en;
