@@ -1,0 +1,12 @@
+CHUNKCHK: OK base_off=0 fed=0
+CHUNKCHK: OK base_off=16 fed=16
+CHUNKCHK: OK base_off=32 fed=32
+CHUNKCHK: OK base_off=48 fed=48
+CHUNKCHK: OK base_off=64 fed=64
+CHUNKCHK: OK base_off=80 fed=80
+CHUNKCHK: OK base_off=96 fed=96
+CHUNKCHK: OK base_off=112 fed=112
+CHUNKCHK: OK base_off=128 fed=128
+WAVCHK: PASS rate=48000 pops=16001 nonzero=15997 crossings=195
+RATECHK: PASS ratio_x10000=9991 expected=10000; CHUNKCHK count=9 exact-match
+tb/tb_sd_drain.v:455: $finish called at 13975793238 (1ps)

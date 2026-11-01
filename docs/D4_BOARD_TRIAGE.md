@@ -89,3 +89,12 @@ D SW=1F LS=4 WC=25C PC=014 F=F
 - 已烧写过：d3_video_976624e.bit（当前在板）、d4a、d4b（位流均已备份于 bitstream_backup/）
 - P1 已知好位流：p1_12p5mhz_2cyc.bit（随时可回滚）
 - 本地 commit：D4a=372005d、D4b=612fe6c（均已推送）；D4c 待 Codex 交付后本地构建板测
+
+
+## 6. D4c 实现补记（保留上文原始板测）
+
+§1…§3是当时诊断，不能将其中F解释直接当作源码证明：D4a/b的F仍是cart_flags，不代表video_owned；D4c才明确定义F={owned,init_done,busy,handoff}。旧I0=249200中的92是YXV头校验错误，SEEN=1表示init_done曾到达，DNE是读取完成而非初始化完成。视频头错误后原管线会sd_reset，导致OFF清零、响应寄存器回到FF；失败后快照不能唯一还原之前的SPI初始化失败机制。真实SPI故障仍不能由服务模型排除。
+
+D4c源码162e91f已按§4实现：清排队请求、排空在途读取后claim，取消入口裸restart；77主入口与E7诊断入口同路；有效游戏模式让位视频/失败照片回退；UART断言同步77。管线claim依赖init_done&&!busy，首个邮箱命令才允许首次读，不依赖DNE。厂商init状态机、SPI12.5MHz、两拍排空未改。
+
+新增首请求取证：OFF=D02DC6C0表示首LBA3000000，WC=001表示count1，RSP=D459585631表示实际收到59585631（YXV1）；RSP未出现D4前仍为原SPI响应。首次头留存跨失败复位，能区分未初始化、尚未读到头、首读地址错误、头不匹配。不能仅据旧RSP全FF宣称SD init电气问题已修复。实现/回归状态见 [D4C_REPORT.md](D4C_REPORT.md)。

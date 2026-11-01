@@ -1,0 +1,22 @@
+{
+  "TD_measured": false,
+  "mapping": "native LUT4 ABC target, Yosys width reduction; not a TD netlist",
+  "scope": "entire pipeline including decoder, loader, two arbiters, CDC, PCM, scanout; excludes external physical adapter/controller delta",
+  "conservative_LUT4_charge": 7898,
+  "split_product_adders": 344,
+  "pipeline_LUT_estimate": 8242,
+  "BRAM_structural": 7,
+  "DSP18_estimate": 21,
+  "cell_counts": {
+    "$scopeinfo": 13,
+    "AL_MAP_ADDER": 3104,
+    "AL_MAP_LUT1": 312,
+    "AL_MAP_LUT2": 1387,
+    "AL_MAP_LUT3": 1106,
+    "AL_MAP_LUT4": 1829,
+    "AL_MAP_SEQ": 3589,
+    "EG_LOGIC_DRAM16X4": 40,
+    "EG_PHY_BRAM": 7,
+    "MJPEG_DSP_PROXY": 13
+  }
+}

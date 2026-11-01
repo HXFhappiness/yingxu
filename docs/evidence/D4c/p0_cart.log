@@ -1,0 +1,5 @@
+CART_HEADER expected_words=604 expected_WC_hex=0000025c file_bytes=1844 sectors=4
+CART_DIAG wc=604 words_r=604 requested=1 file_bytes=1844 loaded=1 state=4
+CART_WORDCHK: BADC0UNT=0 of 604; WC=604 expected=604
+CARTCHK: PASS BADC0UNT=0 of 604; cart_wcnt(WC)=604 (hex=25c); padding/meta zero-diff
+tb/tb_sd_drain.v:398: $finish called at 20123231548 (1ps)

@@ -1,0 +1,2 @@
+BMPCHK: PASS 1280x720 words=460800/460800 pixels=921600/921600 zero-diff
+tb/tb_sd_drain.v:336: $finish called at 166243100000 (1ps)
