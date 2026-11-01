@@ -1,0 +1,102 @@
+{
+  "rtl_commit": "6e84711",
+  "base": "ecd1bbf",
+  "branch": "feat/mjpeg",
+  "TD_performed": false,
+  "mem_clk_zero_negative_slack_verified": false,
+  "board_performed": false,
+  "scope": "remove all word/index snapshots; compact reason from registered invalid/error_code/count; remove D5 output; no SD/protocol/arbitration/constraint change",
+  "diagnostic_contract": {
+    "word_index": "constant zero at loader and pipeline MEM/SYS interface, no snapshot registers",
+    "header_reason": "1..8 from registered counter after rejection",
+    "table_reason": "B8 coarse rejection",
+    "write_error_reason": "20",
+    "phase_flags_ACC": "unchanged",
+    "D4e_early_publication": "preserved",
+    "D5": "removed, RSP uses existing D4 first magic or raw SPI response"
+  },
+  "diagnostic_cases": 27,
+  "bad_header_actual_UART": {
+    "MISE": "3992",
+    "SP": "01CE",
+    "ACC": "200",
+    "WC": "000",
+    "RDT": "00",
+    "I1": "000000",
+    "RSP": "D400585631",
+    "photo_fallback": "PASS"
+  },
+  "pending_actual_UART": {
+    "MISE": "929F",
+    "LS": "6",
+    "F": "A",
+    "owned": 1,
+    "failed": 0
+  },
+  "normal_short_play": {
+    "samples": 4001,
+    "duration_ns": 83333334,
+    "drops": "0/2",
+    "AV_max_samples": "1849/2000",
+    "decoded_words_exact_at_target": 460800,
+    "scanout_pixels_exact": 1985280,
+    "HDMI_samples_exact": 4000,
+    "sample_rate_error_ppm": 0,
+    "exit_photo_reload": 1,
+    "three_second_playback_rerun": false
+  },
+  "units": [
+    "physical boundary and 1..8word bursts",
+    "36/512 frames full table/PCM/JPEG staging/wrap",
+    "scanout",
+    "PCM4loops"
+  ],
+  "7594_physical_preload_rerun": false,
+  "prior_D4f_TD_gate": "FAIL per user; proxy did not certify TD",
+  "proxy": {
+    "TD_measured": false,
+    "scope": "loader including diagnostics; native LUT4/carry charge, not board area or timing",
+    "configurations": {
+      "before": {
+        "LUT4_charge": 1338,
+        "BRAM": 2,
+        "FF_cells": 668,
+        "raw_assembly_or_sd_byte_reaches_reason_without_register": true,
+        "word_index_ports_all_zero": false,
+        "cell_counts": {
+          "AL_MAP_ADDER": 556,
+          "AL_MAP_LUT1": 41,
+          "AL_MAP_LUT2": 101,
+          "AL_MAP_LUT3": 219,
+          "AL_MAP_LUT4": 389,
+          "AL_MAP_SEQ": 668,
+          "EG_LOGIC_DRAM16X4": 8,
+          "EG_PHY_BRAM": 2
+        }
+      },
+      "after": {
+        "LUT4_charge": 1080,
+        "BRAM": 2,
+        "FF_cells": 522,
+        "raw_assembly_or_sd_byte_reaches_reason_without_register": false,
+        "word_index_ports_all_zero": true,
+        "cell_counts": {
+          "AL_MAP_ADDER": 556,
+          "AL_MAP_LUT1": 41,
+          "AL_MAP_LUT2": 82,
+          "AL_MAP_LUT3": 108,
+          "AL_MAP_LUT4": 261,
+          "AL_MAP_SEQ": 522,
+          "EG_LOGIC_DRAM16X4": 8,
+          "EG_PHY_BRAM": 2
+        }
+      }
+    },
+    "delta": {
+      "LUT4_charge": -258,
+      "BRAM": 0,
+      "FF_cells": -146
+    }
+  },
+  "next_gate": "User TD mem100 zero negative slack including reason and retained status endpoints; word/index/candidate snapshot registers must be absent before board flash"
+}

@@ -47,3 +47,10 @@ D4f只把表项详细诊断分拍，头字及写错误支路仍当拍调用remem
 TD必须确认mem_clk/clk2=100MHz **零负slack**；同时确认debug_word_reg/debug_index_reg、候选数据寄存器与frozen_word/frozen_index数据寄存器已移除。若仍报告这些端点，核对综合顶层/源码绝对路径、网表和最终位流的对应关系；不能只看LUT变化判门禁通过。若出现新的reason/phase路径违例，同样停在门禁，不烧写。
 
 mem_clk零违例后才按用户既定方案板测。若楔死消失再结时序问题；若仍949F，用这版简化诊断继续PCM写等待二分。云端没有TD，交付不宣称门禁已过、也不生成板上固件。
+
+
+## 软件交付结果（生产RTL 6e84711）
+
+27例全部通过，word/index全零；头字原因1…8与表项B8在退场/MEM复位后保留。实际UART坏头：MISE3992/SP01CE/ACC200/WC000/RDT00/I1000000/RSPD400585631；pending：MISE929F/LS6/FA，owned1/failed0仍能看首fault。正常短程4001采样、0/2丢帧、AV1849/2000、460800写字和1985280扫描像素零diff、HDMI4000样本零diff、采样误差0ppm、退出照片一次；36/512帧表/PCM/回绕与相关单元通过。
+
+loader原生代理1338→1080 LUT4（−258）、668→522寄存器（−146）、BRAM2→2；pipeline另删除MEM/SYS两份word/index寄存器，不把loader代理当作全工程TD增量。word/index常量端口与reason无raw assembly/SD byte直达组合来源的检查通过。原始日志、源码哈希与 [verification.json](evidence/D4g/verification.json) 见 [evidence/D4g](evidence/D4g)。**TD零违例仍未由云端验证，不以代理结果宣布门禁通过。**

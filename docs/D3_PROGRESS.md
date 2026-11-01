@@ -78,3 +78,10 @@ scanout在第一帧发布/预充之前禁止RD2弹出，避免启动空FIFO被�
 生产RTL6823dce，仅loader：表项raw字段与并行错误谓词先寄存，下一拍再选reason/word/index，打断assembly→remember的长组合锥，保留D4e提前显示。用户TD指出D4e mem100域10条诊断路径负slack、最差−0.765ns；本轮必须由本地TD复验mem域零负slack后才作板测判决。未叠加SD/仲裁/物理遥测改动。
 
 27项诊断、正常短程及实际UART回退/pending、36/512帧单元通过；完整7594扇区972032字/121504突发零diff，最大写等待44/1000拍。代理−35 LUT4/+102FF/BRAM不变，旧组合锥已在映射图断开，非TD时序结论。949F表示PCM写已接受后的等待；ACC为mod2048，不能据020断言首写或头阶段。见 [D4F_DIAGNOSTIC_TIMING.md](D4F_DIAGNOSTIC_TIMING.md) / [evidence/D4f](evidence/D4f)。
+
+
+## D4g：删除数据快照，TD门禁优先（2026-11-01）
+
+生产RTL6e84711。接受用户D4f TD FAIL（同类mem负slack最差−0.765ns）；D4f代理检查不足以覆盖头字/写错remember与TD实现，不能当作mem干净基线。D4g删除loader候选数据/word/index、pipeline MEM/SYS word/index及D5输出；仅从已有功能寄存器取compact reason，93统一B8，保留D4e首fault提前显示及phase/flags/ACC。
+
+27例、真实UART坏头/退场未完成、正常短程与36/512帧相关单元通过。loader代理−258 LUT4/−146FF/BRAM不变，不是全工程TD或时序结论；必须本地确认mem100零违例才烧写。见 [D4G_COMPACT_DIAGNOSTICS.md](D4G_COMPACT_DIAGNOSTICS.md) / [evidence/D4g](evidence/D4g)。
