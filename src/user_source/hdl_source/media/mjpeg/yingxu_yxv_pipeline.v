@@ -46,7 +46,7 @@ module yingxu_yxv_pipeline #(
             audio_sys<={audio_sys[0],audio_run};abort_sys<={abort_sys[0],fault};
             if(!owned && !enable) begin failed<=0;error_code<=0;end
             if(owned || !enable || failed)acquire_wait<=0;
-            else if(!sd_busy) begin owned<=1;acquire_wait<=0;end
+            else if(sd_init && !sd_busy) begin owned<=1;acquire_wait<=0;end
             else if(acquire_wait==ACQUIRE_LIMIT-1)begin failed<=1;error_code<=8'h9F;end
             else acquire_wait<=acquire_wait+1'b1;
             if(owned && (!enable || fault_sys[1]) && quiet_sys[1] && !sd_inflight) begin

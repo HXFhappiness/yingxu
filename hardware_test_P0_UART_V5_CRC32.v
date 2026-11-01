@@ -96,21 +96,50 @@ module hardware_test #(
 
     // SW7 selects the mode. The DIP switch reads inverted on this board, so
     // switch OFF (pin high) selects the game and ON selects the photo browser.
-    wire game_mode = ~sw[7];
+    wire switch_game_mode = ~sw[7];
+    reg video_photo_mode;
+    wire game_mode = switch_game_mode && !video_requested && !video_owned && !video_photo_mode;
     reg [1:0] video_sw3;
     always @(posedge clk or negedge rst_n)begin if(!rst_n)video_sw3<=2'b11;else video_sw3<={video_sw3[0],sw[3]};end
-    wire video_requested=game_mode && !music_sw4 && !video_sw3[1] && sw5_s[1] && sw6_sync[1]; // D4a: SW7 ON + SW3 ON, SW4/5/6 OFF
+    // 77 is the demo entry; E7 remains a diagnostic compatibility entry.
+    wire video_requested=!video_sw3[1] && sw5_s[1] && sw6_sync[1] &&
+        ((switch_game_mode && !music_sw4) || (!switch_game_mode && music_sw4));
+    wire video_handoff=video_requested && !video_failed && !video_owned;
+    reg [1:0] video_quiesced;
+    reg [3:0] video_base_q;
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)begin video_quiesced<=0;video_photo_mode<=0;video_base_q<=0;end
+        else begin
+            video_quiesced<=video_handoff ? {video_quiesced[0],1'b1}:2'b00;
+            video_base_q<={sw[7],sw4_s[1],sw5_s[1],sw6_sync[1]};
+            if(video_requested || video_base_q!={sw[7],sw4_s[1],sw5_s[1],sw6_sync[1]})video_photo_mode<=0;
+            if((video_owned && !video_requested)||(!video_failed_q && video_failed))video_photo_mode<=1;
+        end
+    end
+    wire video_run_request=video_requested && (video_owned || video_failed || video_quiesced[1]);
     wire video_owned,video_failed,video_sd_start,video_sd_reset,video_sd_done;
     wire [27:0] video_sd_lba;wire [15:0] video_sd_sectors,video_sd_occupancy;
     wire [31:0] video_decoded,video_displayed,video_dropped,video_samples;wire [23:0] video_status;
+    // D4c retained first-request evidence. Preserve raw SPI RSP until 4 bytes
+    // actually arrive; D4xxxxxxxx then identifies the captured container magic.
+    reg video_first_seen;reg [27:0] video_first_lba;reg [15:0] video_first_sectors;
+    reg [31:0] video_first_bytes;reg [2:0] video_first_count;
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)begin video_first_seen<=0;video_first_lba<=0;video_first_sectors<=0;video_first_bytes<=0;video_first_count<=0;end
+        else if(!video_requested && !video_owned && !video_failed)begin
+            video_first_seen<=0;video_first_count<=0;video_first_bytes<=0;
+        end else begin
+            if(video_sd_start && !video_first_seen)begin video_first_seen<=1;video_first_lba<=video_sd_lba;video_first_sectors<=video_sd_sectors;end
+            if(video_first_seen && video_owned && video_first_count<4 && sd_bmp_sd_valid && sd_bmp_sd_ready)begin
+                video_first_bytes<={video_first_bytes[23:0],sd_bmp_sd_data};video_first_count<=video_first_count+1'b1;
+            end
+        end
+    end
     reg video_owned_q,video_failed_q;reg video_photo_reload;
-    reg video_req_q,video_req_qq;reg video_entry_restart; // D4b: entry one-shot restart
     always @(posedge clk or negedge rst_n) begin
-        if(!rst_n) begin video_owned_q<=0;video_failed_q<=0;video_photo_reload<=0;video_req_q<=0;video_req_qq<=0;video_entry_restart<=0;end
+        if(!rst_n) begin video_owned_q<=0;video_failed_q<=0;video_photo_reload<=0;end
         else begin video_owned_q<=video_owned;video_failed_q<=video_failed;
-            video_req_q<=video_requested;video_req_qq<=video_req_q;
-            video_entry_restart<=(video_req_q&&!video_req_qq); // D4b: pulse once per video entry
-            video_photo_reload<=((video_owned_q&&!video_owned)||(!video_failed_q&&video_failed))&&!game_mode;end
+            video_photo_reload<=((video_owned_q&&!video_owned)||(!video_failed_q&&video_failed));end
     end
 
 
@@ -220,7 +249,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     wire [7:0] invader_mask = {1'b0, lives_nib, wave_nib};
 
     design_top_wrapper #(.VIDEO_ACQUIRE_LIMIT(VIDEO_ACQUIRE_LIMIT)) design_top_wrapper (
-        .I_video_mode(video_requested),.I_video_sd_init(sd_dbg_init_done),.I_video_sd_busy(sd_dbg_busy),.I_video_sd_done(video_sd_done),
+        .I_video_pending(video_handoff),.I_video_mode(video_run_request),.I_video_sd_init(sd_dbg_init_done),.I_video_sd_busy(sd_dbg_busy),.I_video_sd_done(video_sd_done),
         .O_video_owned(video_owned),.O_video_failed(video_failed),.O_video_sd_start(video_sd_start),.O_video_sd_reset(video_sd_reset),
         .O_video_sd_lba(video_sd_lba),.O_video_sd_sectors(video_sd_sectors),.O_video_decoded(video_decoded),.O_video_displayed(video_displayed),
         .O_video_dropped(video_dropped),.O_video_samples(video_samples),.O_video_sd_occupancy(video_sd_occupancy),.O_video_status(video_status),
@@ -236,7 +265,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .I_bmp_sd_data  (sd_bmp_sd_data),
         .I_bmp_sd_valid (sd_bmp_sd_valid),
         .O_bmp_sd_ready (sd_bmp_sd_ready),
-        .I_bmp_start    (sd_bmp_start_pulse | video_photo_reload),
+        .I_bmp_start    (video_handoff || video_owned ? 1'b0 : (sd_bmp_start_pulse | video_photo_reload)),
         .I_sd_fail      (sd_fail),
         .I_img_index    (img_index),
         .I_game_mode    (game_mode),
@@ -443,23 +472,23 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
                 key_lock <= key_lock - 24'd1;
 
             // SW6: reload the current image (must also re-arm the loader).
-            if (!game_mode && key_lock == 24'd0 && (sw6_sync[1] ^ sw6_p)) begin
+            if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && (sw6_sync[1] ^ sw6_p)) begin
                 key_lock    <= 24'hFFFFFF;
                 img_restart <= 1'b1;
             end
-            else if (!game_mode && key_lock == 24'd0 && key1_p && !key_1) begin
+            else if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && key1_p && !key_1) begin
                 key_lock    <= 24'hFFFFFF;
                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
                 img_restart <= 1'b1;
             end
-            else if (!game_mode && key_lock == 24'd0 && key0_p && !key_0) begin
+            else if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && key0_p && !key_0) begin
                 key_lock    <= 24'hFFFFFF;
                 img_idx     <= (img_idx == 4'd0) ? (IMG_COUNT - 1) : (img_idx - 4'd1);
                 img_restart <= 1'b1;
             end
             // Auto carousel: advance when the timer expires and nothing else is
             // holding the loader.
-            else if (!game_mode && key_lock == 24'd0 && !sd_dbg_busy &&
+            else if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && !sd_dbg_busy &&
                      carousel_cnt == CAROUSEL_MAX) begin
                 key_lock    <= 24'hFFFFFF;
                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
@@ -468,7 +497,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
 
             // The timer only runs while idle in photo mode; every key press (which
             // sets key_lock) or a load in progress clears it.
-            if (!game_mode && key_lock == 24'd0 && !sd_dbg_busy)
+            if (!game_mode && !video_requested && !video_owned && key_lock == 24'd0 && !sd_dbg_busy)
                 carousel_cnt <= carousel_cnt + 28'd1;
             else
                 carousel_cnt <= 28'd0;
@@ -530,7 +559,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     wire tr_step = (tr_ms == 20'd49_999) && (tr_div == 6'd24);   // 25 ms per fade step
 
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+        if (!rst_n || video_requested || video_owned) begin
             tr_state     <= TR_IDLE;
             fade_shift_r <= 4'd0;
             tr_ms        <= 20'd0;
@@ -813,11 +842,11 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     yingxu_sd_integration_probe #(.CLOCK_FREQ(50_000_000), .DYNAMIC_COUNT(1), .SECTOR_COUNT(16'd5401)) U_SD_INTEGRATION (
         .clk                       (clk),
         .rst                       (sd_rst),
-        .dynamic_enable(video_owned),.dynamic_count(video_sd_sectors),.transaction_done(video_sd_done),
+        .legacy_inhibit(video_handoff),.dynamic_enable(video_owned),.dynamic_count(video_sd_sectors),.transaction_done(video_sd_done),
         .trigger_sw                (1'b0),   // SW6 is handled in the top now
         .start_sector              (video_owned ? video_sd_lba : cart_busy_w ? cart_lba_sel :
                              music_on_w ? wav_base_w : img_lba),
-        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? video_entry_restart : (load_start | video_photo_reload | cart_restart_w | cart_swap | wav_restart_w)),
+        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? 1'b0 : (load_start | video_photo_reload | cart_restart_w | cart_swap | wav_restart_w)),
         .out_stream_data           (sd_bmp_sd_data),
         .out_stream_valid          (sd_bmp_sd_valid),
         .out_stream_ready          (sd_bmp_sd_ready),
@@ -922,10 +951,10 @@ wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? 16'd4800
         .i_ca    (cart_active),
         .i_sw    (sw),
         .i_ls    (cart_lstate_w),
-        .i_wc    (cart_wcnt_w),
+        .i_wc    ((video_requested || video_owned || video_failed) ? video_first_sectors[9:0]:cart_wcnt_w),
         .i_cbu   (cart_busy_w),
         .i_sprc  (t_sprc),
-        .i_cfl   (cart_flags_w),
+        .i_cfl   ((video_requested || video_owned || video_failed) ? {video_owned,sd_dbg_init_done,sd_dbg_busy,video_handoff}:cart_flags_w),
         .i_pc    (t_pc),
         .i_dwc   (t_dwc),
         .i_p0    (t_p0),
@@ -933,7 +962,7 @@ wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? 16'd4800
         .i_p18   (t_p18),
         .i_ctrl  (sd_dbg_ctrl_state),
         .i_init  (sd_dbg_init_state),
-        .i_rsp   (sd_dbg_init_response),
+        .i_rsp   (video_first_count==4 ? {8'hD4,video_first_bytes}:sd_dbg_init_response),
         .i_rd    (sd_dbg_read_state),
         .i_rdt   (sd_dbg_read_spi_rec_data),
         .i_div   (sd_dbg_spi_div_value),
@@ -949,7 +978,7 @@ wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? 16'd4800
         .i_acc   (sd_dbg_accept_count[10:0]),
         .i_mise  (t_mise),
         .i_sce   (t_sce),
-        .i_off   (sd_dbg_stream_offset),
+        .i_off   (video_first_seen ? {4'hD,video_first_lba}:sd_dbg_stream_offset),
         .i_vld   (sd_dbg_stream_valid),
         .i_w2f   (diag_wr2_full),
         .i_r2e   (diag_rd2_empty),

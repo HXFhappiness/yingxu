@@ -23,6 +23,7 @@ module yingxu_sd_integration_probe #(
     input  wire        trigger_sw,
     input  wire [27:0] start_sector,
     input  wire        restart,
+    input wire legacy_inhibit, // D4c: cancel queued starts, never interrupt a busy sector
     input wire dynamic_enable,
     input wire [15:0] dynamic_count,
     output wire transaction_done,
@@ -140,12 +141,16 @@ module yingxu_sd_integration_probe #(
     reg restart_hold;
     always @(posedge clk or posedge rst) begin
         if (rst)                restart_hold <= 1'b0;
+        else if (DYNAMIC_COUNT && legacy_inhibit) restart_hold <= 1'b0;
         else if (restart)       restart_hold <= 1'b1;
         else if (reader_start)  restart_hold <= 1'b0;
     end
 
     assign trigger_rise  = (sw_edge & (sw_lock == 20'd0)) | restart_hold;
-    assign reader_start  = trigger_rise & dbg_init_done & ~dbg_busy;
+    // init_done is automatic power-on initialization; reader_done/DNE is a
+    // separate read terminal. Handoff blocks/cancels starts, never init clocks.
+    assign reader_start = trigger_rise & dbg_init_done & ~dbg_busy &
+                          ~(DYNAMIC_COUNT && legacy_inhibit);
 
     // ??? Sector Reader????? SD/SPI ????????????? 50 MHz?
     sd_stream_reader #(

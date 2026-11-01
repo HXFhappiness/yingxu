@@ -15,7 +15,7 @@ module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
     input  wire                             I_bmp_start                             ,
     input  wire                             I_sd_fail                              ,
     input  wire [3:0]                       I_img_index                            ,
-    input wire I_video_mode,I_video_sd_init,I_video_sd_busy,I_video_sd_done,
+    input wire I_video_pending,I_video_mode,I_video_sd_init,I_video_sd_busy,I_video_sd_done,
     output wire O_video_owned,O_video_failed,O_video_sd_start,O_video_sd_reset,
     output wire [27:0] O_video_sd_lba,output wire [15:0] O_video_sd_sectors,
     output wire [31:0] O_video_decoded,O_video_displayed,O_video_dropped,O_video_samples,
@@ -360,7 +360,7 @@ reg [1:0] S_rst_g, S_rst_v, S_rst_t;
     wire        bmp_sd_ready;
     // G6: 音乐播放时把背压权交给播放器（探针一次 restart 连读 5401 扇区，
 // 不背压会冲爆 1024 样本 FIFO）
-assign O_bmp_sd_ready = O_video_owned ? video_sd_byte_ready : I_music_en ? wav_sd_ready : bmp_sd_ready;
+assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_ready : I_music_en ? wav_sd_ready : bmp_sd_ready;
 
     wire [23:0] S_player_rgb;
 
@@ -369,7 +369,7 @@ assign O_bmp_sd_ready = O_video_owned ? video_sd_byte_ready : I_music_en ? wav_s
         .V_ACTIVE                           (720                                 )
     ) U_yingxu_bmp_loader (
         .clk                                (I_sys_clk                           ),
-        .rst                                (S_rst                               ),
+        .rst                                (S_rst || O_video_owned               ),
 
         .start                              (I_bmp_start                         ),
         .i_base                             (I_wr_base                           ),

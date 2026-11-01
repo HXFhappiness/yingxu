@@ -377,7 +377,7 @@ Sdram_WR_FIFO 	write_fifo1(
 
 wire wr2_aempty_w;
 Sdram_WR_FIFO 	write_fifo2(
-                .rst(!RESET_N),//(WR2_LOAD),
+                .rst(!RESET_N || (MJPEG_PORT && MJ_ACTIVE)),//(WR2_LOAD),
 				.di(WR2_DATA),
 				.we(WR2),
 				.clkw(WR2_CLK),

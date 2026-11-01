@@ -8,9 +8,9 @@ bind yingxu_sdram_control_4port d3_sdram_memory model(
 `define VIDEO dut.design_top_wrapper.U_VIDEO
 `define WRAPPER dut.design_top_wrapper
 `define CTRL dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl
-module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000);
+module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter integer SWITCH_TEST=119);
     reg clk=0;always #10 clk=~clk;
-    reg rst_n=0;reg [7:0] sw=8'h77; // D4a: SW7 ON + SW3 ON (video), SW4/5/6 OFF
+    reg rst_n=0;reg [7:0] sw=SWITCH_TEST; // D4a: SW7 ON + SW3 ON (video), SW4/5/6 OFF
     wire uart_tx;
     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
         .sd_miso(1'b1),.I2S_DI(1'b0),.I2S_RCLK(1'b0),.I2S_BCLK(1'b0),
@@ -44,6 +44,8 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000);
     endfunction
     always @(posedge clk) if(dut.video_photo_reload) reloads=reloads+1;
     always @(posedge `WRAPPER.video_mem_clk) if(!`VIDEO.local_rst)begin
+        if(dut.video_sd_start && !dut.video_first_seen && (dut.video_sd_lba!=3000000 || dut.video_sd_sectors!=1))$fatal(1,"first SD request is not header");
+        if(dut.video_first_count==4 && !negative && dut.video_first_bytes!=32'h59585631)$fatal(1,"first YXV magic corrupted");
         if(`VIDEO.decode_done && !`VIDEO.decode_error)begin
             n=$fseek(gfd,(`VIDEO.decode_tag%nframes)*614400,0);
             n=$fread(gold,gfd,0,307200);if(n!=614400)$fatal(1,"top golden extent");
@@ -109,6 +111,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000);
     end
     initial begin
         if(!$value$plusargs("file=%s",filename)||!$value$plusargs("gold=%s",goldname))$fatal(1,"file/gold required");
+        n=$value$plusargs("sw=%h",sw);
         n=$value$plusargs("bad=%d",negative);n=$value$plusargs("frames=%d",frames_goal);
         n=$value$plusargs("noinit=%d",noinit);
         fd=$fopen(filename,"rb");nfile=$fread(container,fd);$fclose(fd);
@@ -117,7 +120,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000);
         #200;rst_n=1;
         if(negative || noinit)begin
             wait(dut.video_failed && !dut.video_owned);repeat(20)@(posedge clk);
-            if(reloads!=1 || !dut.sd_dbg_busy)$fatal(1,"fallback did not reload photo reloads=%0d busy=%b",reloads,dut.sd_dbg_busy);
+            if(reloads!=1 || !dut.video_failed || dut.game_mode || !dut.sd_dbg_busy)$fatal(1,"fallback did not reload photo reloads=%0d busy=%b",reloads,dut.sd_dbg_busy);
             if(noinit && `VIDEO.error_code!=8'h9F)$fatal(1,"no-init acquisition watchdog wrong error");
             $display("FALLBACKCHK: PASS bad-header=%0d no-init=%0d finite reject owned=0 failed=1 photo-reloads=1 next-LBA=%0d",negative,noinit,dut.img_lba);$finish;
         end
@@ -136,7 +139,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000);
         $display("RATECHK: PASS 48k error_ppm=%0d limit=100 HDMI_samples=%0d zero-diff",rate_error/(rate_expected/1000000),hdmi_audio_samples);
         $display("SDBUDGETCHK: PASS bytes=%0d measured_Bps=%0d limit_Bps=1300000 PCM-from-SDRAM",sd_play_bytes,sd_play_bytes*64'd1000000000/(last_audio-first_audio));
         sw[3]=1;wait(!dut.video_owned);repeat(20)@(posedge clk);
-        if(reloads!=1)$fatal(1,"mode exit missing photo reload");
+        if(reloads!=1 || dut.game_mode)$fatal(1,"mode exit missing effective photo mode/reload");
         $display("MODECHK: PASS switch-out quiescent photo-reload=1");$finish;
     end
     initial begin #4500000000; $display("DEBUG owned=%b SDinit=%b SDbusy=%b loader=%0d mstate=%0d ready=%b enable=%b phys=%0d decode=%b cmd=%b/%b bytes=%0d",dut.video_owned,dut.sd_dbg_init_done,dut.sd_dbg_busy,`VIDEO.loader.state,`VIDEO.loader.mstate,`VIDEO.loader_ready,`VIDEO.request_sync,`CTRL.ST,`VIDEO.decode_busy,`VIDEO.cmd_valid,`VIDEO.cmd_ready,`VIDEO.loader.absolute);$fatal(1,"top playback timeout pops=%0d frames=%0d",pops,gold_frames);end

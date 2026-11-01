@@ -17,3 +17,9 @@ handoff取消未接受请求，不取消已接受事务；物理内存/SD完成�
 - 坏头/noinit在77/E7均有限退出，一次照片reload；noinit不强行伪造init_done。
 - 照片/WAV48/44.1/卡带分别回归；不计CPU cosim基线为通过。
 - TD/板测用户执行，保留综合层次以核实DSP0/BRAM41是否包含完整decoder。旧3秒E7证据保持历史，不冒充D4c。
+
+## 实现检查点
+
+已实现quiesce清排队/在途排空、77/E7同路请求、有效游戏模式/照片回退、owned期间BMP/FIFO失效。HANDOFFCHK、77/E7坏头回退、77 noinit及三路原回归已过；完整3秒仍运行，不提前标通过。退出后照片保持，改变SW7/4/5/6基础模式返回原选择。
+
+板上取证字段：视频首请求后OFF=Dxxxxxxx（低28位为首LBA，预期D02DC6C0）；WC为首count低10位（预期001）；实际收到头4字节后RSP=D4xxxxxxxx（预期D459585631），此前保留原SPI RSP。F改为{owned,init_done,busy,handoff}；旧F是cart_flags，不能作为旧版claim证明。失败时首请求/头保留，I0错误码保持；不再用DNE推断init。
