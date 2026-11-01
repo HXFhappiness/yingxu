@@ -104,9 +104,12 @@ module hardware_test #(
     wire [27:0] video_sd_lba;wire [15:0] video_sd_sectors,video_sd_occupancy;
     wire [31:0] video_decoded,video_displayed,video_dropped,video_samples;wire [23:0] video_status;
     reg video_owned_q,video_failed_q;reg video_photo_reload;
+    reg video_req_q,video_req_qq;reg video_entry_restart; // D4b: entry one-shot restart
     always @(posedge clk or negedge rst_n) begin
-        if(!rst_n) begin video_owned_q<=0;video_failed_q<=0;video_photo_reload<=0;end
+        if(!rst_n) begin video_owned_q<=0;video_failed_q<=0;video_photo_reload<=0;video_req_q<=0;video_req_qq<=0;video_entry_restart<=0;end
         else begin video_owned_q<=video_owned;video_failed_q<=video_failed;
+            video_req_q<=video_requested;video_req_qq<=video_req_q;
+            video_entry_restart<=(video_req_q&&!video_req_qq); // D4b: pulse once per video entry
             video_photo_reload<=((video_owned_q&&!video_owned)||(!video_failed_q&&video_failed))&&!game_mode;end
     end
 
@@ -814,7 +817,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .trigger_sw                (1'b0),   // SW6 is handled in the top now
         .start_sector              (video_owned ? video_sd_lba : cart_busy_w ? cart_lba_sel :
                              music_on_w ? wav_base_w : img_lba),
-        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? 1'b0 : (load_start | video_photo_reload | cart_restart_w | cart_swap | wav_restart_w)),
+        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? video_entry_restart : (load_start | video_photo_reload | cart_restart_w | cart_swap | wav_restart_w)),
         .out_stream_data           (sd_bmp_sd_data),
         .out_stream_valid          (sd_bmp_sd_valid),
         .out_stream_ready          (sd_bmp_sd_ready),
