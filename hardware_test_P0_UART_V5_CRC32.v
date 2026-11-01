@@ -628,7 +628,10 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n || video_requested || video_owned) begin
-            load_idx     <= 4'd0;
+            // D5boot: reset to 15 so img_idx(0) != load_idx triggers the first
+            // load at power-on. Menu mode gates the carousel, so nothing else
+            // would ever start the initial menu background load.
+            load_idx     <= 4'd15;
             tr_state     <= TR_IDLE;
             fade_shift_r <= 4'd0;
             tr_ms        <= 20'd0;
