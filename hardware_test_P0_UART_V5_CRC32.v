@@ -136,6 +136,8 @@ module hardware_test #(
         end
     end
     wire [15:0] video_diagnosis,video_detail;wire [10:0] video_fail_count;wire [9:0] video_fail_index;wire [31:0] video_fail_word;
+    // D4e: expose the retained fault even while ownership cannot be released.
+    wire video_diag_valid=video_failed || (|video_diagnosis[7:0]);
     reg video_owned_q,video_failed_q;reg video_photo_reload;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin video_owned_q<=0;video_failed_q<=0;video_photo_reload<=0;end
@@ -445,9 +447,9 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     wire cart_swap = cart_active & (sw6_sel_q ^ (~sw6_sync[1]));
 
     // Only a real request may re-arm the loader. An earlier version also started
-    // it on the init_done rising edge, but init_done returns high after every
-    // transaction, which produced a spurious loader reset (a brief black flash)
-    // with no new read behind it.
+    // it on a completion edge, producing a spurious loader reset (black flash)
+    // with no new read behind it. init_done is sticky until an SD subsystem
+    // reset; reader_done is the per-read completion, not initialization.
     // The loader is started by the transition FSM after the fade-out, not
     // directly by the key press.
     assign sd_bmp_start_pulse = load_start;
@@ -708,9 +710,9 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
 
     // SD bring-up supervision.
     //
-    // sd_card_control clears init_done at the START of every transaction and
-    // never restores it, so init_done means "this power-on initialised once",
-    // not "the card is usable now". Both watchdogs below therefore:
+    // sd_stream_reader_core sets init_done once after power-on init and
+    // preserves it across reads. Probe DNE is a separate per-read done latch,
+    // cleared on reader_start. Both watchdogs below therefore:
     //   * are permanently disabled once a successful init has been seen
     //     (sd_seen is sticky),
     //   * never run while the SD core is busy,
@@ -932,10 +934,10 @@ wire [15:0] t_dwc = (video_requested || video_owned || video_failed) ? video_dro
 wire [23:0] t_p0  = (video_requested || video_owned || video_failed) ? video_status : music_on_w ? {wav_dbg_sstate_w, wav_dbg_occ_w, wav_dbg_wptr_w}
                                 : cart_prog0_w;
 wire [15:0] t_rc  = (video_requested || video_owned || video_failed) ? video_displayed[15:0] : music_on_w ? wav_dbg_wcnt_w    : cart_retire_w;
-wire [23:0] t_p18 = (video_requested || video_owned || video_failed) ? (video_failed ? video_fail_word[23:0]:video_samples[23:0]) : music_on_w ? {8'd0, wav_dbg_lastl_w} : cart_p18_w;
-wire [15:0] t_mise = (video_requested || video_owned || video_failed) ? (video_failed ? video_diagnosis:video_decoded[15:0]) : music_on_w ? wav_dbg_outp_w : cart_rst_cnt;
+wire [23:0] t_p18 = (video_requested || video_owned || video_failed) ? (video_diag_valid ? video_fail_word[23:0]:video_samples[23:0]) : music_on_w ? {8'd0, wav_dbg_lastl_w} : cart_p18_w;
+wire [15:0] t_mise = (video_requested || video_owned || video_failed) ? (video_diag_valid ? video_diagnosis:video_decoded[15:0]) : music_on_w ? wav_dbg_outp_w : cart_rst_cnt;
 wire [15:0] t_sce  = (video_requested || video_owned || video_failed) ? video_sd_occupancy : music_on_w ? wav_dbg_byte_w : gate_cnt;
-wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? (video_failed ? video_detail:16'd48000) : music_on_w ? wav_dbg_rate_w : spr_cnt_w;
+wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? (video_diag_valid ? video_detail:16'd48000) : music_on_w ? wav_dbg_rate_w : spr_cnt_w;
 
     yx8_uart_telem U_TELEM (
         .i_clk   (clk),
@@ -952,8 +954,8 @@ wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? (video_f
         .i_gm    (game_mode),
         .i_ca    (cart_active),
         .i_sw    (sw),
-        .i_ls    (cart_lstate_w),
-        .i_wc    ((video_requested || video_owned || video_failed) ? (video_failed ? video_fail_index:video_first_sectors[9:0]):cart_wcnt_w),
+        .i_ls    ((video_requested || video_owned || video_failed) ? {sd_rst,video_sd_reset,sd_dbg_init_done}:cart_lstate_w),
+        .i_wc    ((video_requested || video_owned || video_failed) ? (video_diag_valid ? video_fail_index:video_first_sectors[9:0]):cart_wcnt_w),
         .i_cbu   (cart_busy_w),
         .i_sprc  (t_sprc),
         .i_cfl   ((video_requested || video_owned || video_failed) ? {video_owned,sd_dbg_init_done,sd_dbg_busy,video_handoff}:cart_flags_w),
@@ -964,9 +966,9 @@ wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? (video_f
         .i_p18   (t_p18),
         .i_ctrl  (sd_dbg_ctrl_state),
         .i_init  (sd_dbg_init_state),
-        .i_rsp   (video_failed && video_detail[15:8]!=0 ? {8'hD5,video_fail_word}:video_first_count==4 ? {8'hD4,video_first_bytes}:sd_dbg_init_response),
+        .i_rsp   (video_diag_valid && video_detail[15:8]!=0 ? {8'hD5,video_fail_word}:video_first_count==4 ? {8'hD4,video_first_bytes}:sd_dbg_init_response),
         .i_rd    (sd_dbg_read_state),
-        .i_rdt   (video_failed ? video_fail_word[31:24]:sd_dbg_read_spi_rec_data),
+        .i_rdt   (video_diag_valid ? video_fail_word[31:24]:sd_dbg_read_spi_rec_data),
         .i_div   (sd_dbg_spi_div_value),
         .i_spik  (sd_dbg_spi_clk),
         .i_cnt   (sd_dbg_spi_driver_count),
@@ -977,7 +979,7 @@ wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? (video_f
         .i_mos   (sd_mosi_p),
         .i_sck   (sd_sclk_p),
         .i_miso  (sd_miso),
-        .i_acc   (video_failed ? video_fail_count:sd_dbg_accept_count[10:0]),
+        .i_acc   (video_diag_valid ? video_fail_count:sd_dbg_accept_count[10:0]),
         .i_mise  (t_mise),
         .i_sce   (t_sce),
         .i_off   (video_first_seen ? {4'hD,video_first_lba}:sd_dbg_stream_offset),

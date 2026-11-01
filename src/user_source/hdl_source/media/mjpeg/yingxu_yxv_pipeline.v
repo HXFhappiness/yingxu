@@ -65,6 +65,14 @@ module yingxu_yxv_pipeline #(
             else if(sd_init && !sd_busy) begin owned<=1;acquire_wait<=0;end
             else if(acquire_wait==ACQUIRE_LIMIT-1)begin failed<=1;error_code<=8'h9F;diagnosis<=16'h069F;detail<=0;fail_count<=0;fail_index<=0;fail_word<=0;end
             else acquire_wait<=acquire_wait+1'b1;
+            // D4e: an in-flight memory command may prevent quiet/release.
+            // The first MEM snapshot is already stable before fault_sys[1].
+            // Publish it independently of teardown; do not change abort/reset.
+            if(owned && fault_sys[1] && diagnosis==16'd0) begin
+                error_code<=fault_code;diagnosis<={frozen_phase,fault_code};
+                detail<={frozen_reason,frozen_flags};fail_count<=frozen_count;
+                fail_index<=frozen_index;fail_word<=frozen_word;
+            end
             if(owned && (!enable || fault_sys[1]) && quiet_sys[1] && !sd_inflight) begin
                 owned<=0;
                 if(fault_sys[1]) begin failed<=1;error_code<=fault_code;

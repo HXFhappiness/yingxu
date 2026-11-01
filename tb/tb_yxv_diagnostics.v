@@ -74,12 +74,16 @@ module tb_yxv_diagnostics;
             expected_word={data[j*4+3],data[j*4+2],data[j*4+1],data[j*4]};
             failure(16'h3992,j+1,512,(j<4 ? 0:486),expected_word,2'b11);
         end
+        // Real board incident: ffmpeg added 3996 trailing PCM bytes.
+        prepare(0,512,0);expected_word=486*8000+3996;
+        data[20]=expected_word[7:0];data[21]=expected_word[15:8];data[22]=expected_word[23:16];data[23]=expected_word[31:24];
+        failure(16'h3992,8'h06,512,486,expected_word,2'b11);
         prepare(0,512,0);data[32]=data[32]^1;expected_word={data[35],data[34],data[33],data[32]};
         failure(16'h3993,8'h11,512,0,expected_word,2'b11);
         prepare(0,512,1);failure(16'h189F,0,512,0,0,2'b10);
         prepare(0,511,0);failure(16'h109F,0,511,0,0,2'b01);
-        if(cases!=17)$fatal(1,"vacuous cases");
-        $display("DIAGCHK: PASS 17 cases; six done phases, eight header words, bad table, lost done, lost byte");$finish;
+        if(cases!=18)$fatal(1,"vacuous cases");
+        $display("DIAGCHK: PASS 18 cases; six done phases, eight header words, PCM tail +3996, bad table, lost done, lost byte");$finish;
     end
     initial begin #1000000;$fatal(1,"diagnostic timeout");end
 endmodule

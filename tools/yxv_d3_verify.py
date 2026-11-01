@@ -17,7 +17,7 @@ OUT=ROOT/'out/mjpeg_d3'
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--build-only',action='store_true');p.add_argument('--no-build',action='store_true')
-    p.add_argument('--sw',type=lambda x:int(x,0),default=0x77);p.add_argument('--frames',type=int,default=72);p.add_argument('--bad',type=int,default=0);p.add_argument('--noinit',action='store_true')
+    p.add_argument('--sw',type=lambda x:int(x,0),default=0x77);p.add_argument('--frames',type=int,default=72);p.add_argument('--bad',type=int,default=0);p.add_argument('--noinit',action='store_true');p.add_argument('--pending',action='store_true')
     a=p.parse_args();OUT.mkdir(parents=True,exist_ok=True)
     binary=shutil.which('verilator') or '/workspace/.yingxu-env/verilator/usr/bin/verilator'
     env=os.environ.copy()
@@ -38,10 +38,17 @@ def main():
         if rc:raise SystemExit((OUT/log).read_text()[-10000:])
     build=OUT/('vtop_noinit' if a.noinit else 'vtop')
     if not a.no_build:run([binary,'--binary','--timing','-j','4','-Wno-fatal','--top-module','tb_yxv_top','--Mdir',build,*(['-GACQUIRE_LIMIT_TEST=750000']if a.noinit else []),'-f',OUT/'top_sources.f'],'top_noinit_build.log'if a.noinit else 'top_build.log')
-    label=f'top_sw{a.sw:02x}_{a.frames}_bad{a.bad}'+('_noinit'if a.noinit else '')
+    label=f'top_sw{a.sw:02x}_{a.frames}_bad{a.bad}'+('_noinit'if a.noinit else '')+('_pending'if a.pending else '')
     if not a.build_only:
         uart=OUT/(label+'.uart.txt')
-        run([build/'Vtb_yxv_top','+file=tb/testvectors/testvec_budget.yxv','+gold=out/mjpeg_d2/budget.rgb565be',f'+sw={a.sw:02x}',f'+frames={a.frames}',f'+bad={a.bad}',f'+noinit={int(a.noinit)}',f'+uart={uart}'],label+'.log')
+        run([build/'Vtb_yxv_top','+file=tb/testvectors/testvec_budget.yxv','+gold=out/mjpeg_d2/budget.rgb565be',f'+sw={a.sw:02x}',f'+frames={a.frames}',f'+bad={a.bad}',f'+noinit={int(a.noinit)}',f'+pending={int(a.pending)}',f'+uart={uart}'],label+'.log')
+        if a.pending:
+            wire=uart.read_text()
+            rows=[{k:int(v,16) for k,v in re.findall(r'(\w+)=([0-9A-F]+)',ln)} for ln in wire.splitlines() if ln.startswith('D ')]
+            assert rows,'No physical UART pending-fault report'
+            for row in rows:
+                assert row['MISE']&255==0x9F and row['SP']!=48000 and row['LS']==6 and row['F']==10,row
+            print('PENDING_WIRECHK: PASS actual UART MISE low=9F LS=6 F=A while video_failed=0',flush=True)
         if a.bad==1 or a.noinit:
             wire=uart.read_text()
             ds=[{k:int(v,16)for k,v in re.findall(r'(\w+)=([0-9A-F]+)',ln)}for ln in wire.splitlines()if ln.startswith('D ')]
@@ -56,7 +63,7 @@ def main():
             assert all(((b['RDT']<<24)|d['I1'])==(0 if a.noinit else 0x31565800)for b,d in zip(bs,ds)),(bs,ds)
             if a.bad==1:assert all(b['RSP']==0xD531565800 for b in bs),bs
             print('DIAG_UARTCHK: PASS retained phase/error/reason/count/index/bad-word on real UART pad',flush=True)
-        if not a.bad and not a.noinit and a.frames>=72:
+        if not a.bad and not a.noinit and not a.pending and a.frames>=72:
             rows=[{k:int(v,16)for k,v in re.findall(r'(\w+)=([0-9A-F]+)',line)}for line in uart.read_text().splitlines()if line.startswith('D ')]
             owned=[d for d in rows if d.get('I0',0)&0x800000]
             assert len(owned)>=12 and all(d['DW']==0 and d['SP']==48000 and d['SW']==a.sw for d in owned),owned

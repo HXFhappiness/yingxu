@@ -20,7 +20,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
     reg [1023:0] filename,goldname;
     integer fd,gfd,nfile,n,pcm_off,pcm_bytes,nframes,i,base,gold_frames=0;
     integer pops=0,underflows=0,pixels=0,max_av=0,avs=0,negative=0,frames_goal=72;
-    integer reloads=0,swaps=0,checked_words=0,played_frame,av,location,noinit=0;
+    integer reloads=0,swaps=0,checked_words=0,played_frame,av,location,noinit=0,pending=0;
     reg [15:0] sl,sr;reg [23:0] el,er;
     time first_audio=0,last_audio=0;
     integer sd_play_bytes=0,hdmi_audio_samples=0;
@@ -61,7 +61,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
             if((`CTRL.mADDR<'h40000)==!`VIDEO.front_bank)
                 $fatal(1,"front buffer overwritten");
         end
-        if(`VIDEO.fault && !negative && !noinit)$fatal(1,"video fault=%h samples=%0d decoded=%0d display=%0d SDslots=%b",`VIDEO.fault_code,`VIDEO.sample_count,`VIDEO.completed,`VIDEO.present_number,`VIDEO.slots);
+        if(`VIDEO.fault && !negative && !noinit && !pending)$fatal(1,"video fault=%h samples=%0d decoded=%0d display=%0d SDslots=%b",`VIDEO.fault_code,`VIDEO.sample_count,`VIDEO.completed,`VIDEO.present_number,`VIDEO.slots);
     end
     reg [10:0] old_x;reg [9:0] old_y;reg [23:0] pixel_expected;
     reg [15:0] pixel565;integer pixel_addr;
@@ -113,11 +113,25 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
         if(!$value$plusargs("file=%s",filename)||!$value$plusargs("gold=%s",goldname))$fatal(1,"file/gold required");
         n=$value$plusargs("sw=%h",sw);
         n=$value$plusargs("bad=%d",negative);n=$value$plusargs("frames=%d",frames_goal);
-        n=$value$plusargs("noinit=%d",noinit);
+        n=$value$plusargs("noinit=%d",noinit);n=$value$plusargs("pending=%d",pending);
         fd=$fopen(filename,"rb");nfile=$fread(container,fd);$fclose(fd);
         nframes=le32(12);pcm_bytes=le32(20);pcm_off=(le32(32+(nframes-1)*8)+le32(36+(nframes-1)*8)+511)/512*512;
         gfd=$fopen(goldname,"rb");if(!gfd)$fatal(1,"top gold open");
         #200;rst_n=1;
+        if(pending)begin
+            // Test-only injection: keep a memory command pending, then inject
+            // the same no-progress fault tested by tb_yxv_fault_pending.
+            wait(`VIDEO.loader.purpose==2 && `VIDEO.loader.mstate==1);
+            force `VIDEO.cmd_ready=1'b0;
+            force `VIDEO.fault_code=8'h9F;force `VIDEO.fault=1'b1;
+            repeat(50)@(negedge clk);
+            if(!dut.video_owned || dut.video_failed || !dut.video_sd_reset || !dut.sd_rst || dut.sd_dbg_init_done || !dut.sd_dbg_busy)
+                $fatal(1,"pending fault signature");
+            if(dut.video_diagnosis[7:0]!=8'h9f || !dut.video_diag_valid)$fatal(1,"pending diagnostic absent");
+            #250000000;
+            if(dut.video_failed || !dut.video_owned || dut.video_diagnosis[7:0]!=8'h9f)$fatal(1,"pending fault unstable");
+            $display("PENDING_UARTCHK: PASS held SD reset owned=1 failed=0 init_done=0; fault visible before release MISE=%h SP=%h LS=6 F=A",dut.video_diagnosis,dut.video_detail);$finish;
+        end
         if(negative || noinit)begin
             wait(dut.video_failed && !dut.video_owned);repeat(20)@(posedge clk);
             if(reloads!=1 || !dut.video_failed || dut.game_mode || !dut.sd_dbg_busy)$fatal(1,"fallback did not reload photo reloads=%0d busy=%b",reloads,dut.sd_dbg_busy);

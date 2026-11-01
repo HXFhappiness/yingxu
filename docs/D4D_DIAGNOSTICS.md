@@ -90,3 +90,8 @@ SP低byte各位：7 rx_complete、6 ack、5当前sd_done脉冲、4 sd_valid、3 
 ## 最终软件结果
 
 源码318ceb7。17种相位/错误注入全部通过，36/512帧loader与PCM预载/回绕逐字节一致；物理burst、scanout、PCM单元通过。实际top正常短程4001采样、0/2丢帧、AV1849/2000、460800写字与HDMI4000样本零diff、退出照片通过。坏头实际UART读到MISE3992/SP01CE/ACC200/WC000/RSPD531565800；noinit实际UART为MISE069F/SP0000/ACC000。最终top编译通过。原始输出、源码哈希和 [verification.json](evidence/D4d/verification.json) 见 [evidence/D4d](evidence/D4d)。这些是故障注入/软件证据，不是当前板上根因的断言；未执行TD或烧录。
+
+
+## D4e后续说明
+
+用户板测已确认旧内容PCM长度多3996B；转换器已修复，重写卡后头校验通过。新现场F=A表明真正init_done为0；DNE下降不等于重新初始化。D4d快照只在owned释放后输出，不能覆盖fault后quiet不成立的现场，D4e修正此诊断盲点，并在视频LS显示reset来源。见 [D4E_SD_REQUEST_REVIEW.md](D4E_SD_REQUEST_REVIEW.md)。
