@@ -99,7 +99,7 @@ module hardware_test #(
     wire game_mode = ~sw[7];
     reg [1:0] video_sw3;
     always @(posedge clk or negedge rst_n)begin if(!rst_n)video_sw3<=2'b11;else video_sw3<={video_sw3[0],sw[3]};end
-    wire video_requested=sw[7] && music_sw4 && !video_sw3[1];
+    wire video_requested=game_mode && !music_sw4 && !video_sw3[1] && sw5_s[1] && sw6_sync[1]; // D4a: SW7 ON + SW3 ON, SW4/5/6 OFF
     wire video_owned,video_failed,video_sd_start,video_sd_reset,video_sd_done;
     wire [27:0] video_sd_lba;wire [15:0] video_sd_sectors,video_sd_occupancy;
     wire [31:0] video_decoded,video_displayed,video_dropped,video_samples;wire [23:0] video_status;

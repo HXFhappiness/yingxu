@@ -10,7 +10,7 @@ bind yingxu_sdram_control_4port d3_sdram_memory model(
 `define CTRL dut.design_top_wrapper.U_yingxu_sdram_framebuffer.U_sdram_ctrl
 module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000);
     reg clk=0;always #10 clk=~clk;
-    reg rst_n=0;reg [7:0] sw=8'he7;
+    reg rst_n=0;reg [7:0] sw=8'h77; // D4a: SW7 ON + SW3 ON (video), SW4/5/6 OFF
     wire uart_tx;
     hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
         .sd_miso(1'b1),.I2S_DI(1'b0),.I2S_RCLK(1'b0),.I2S_BCLK(1'b0),
