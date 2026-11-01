@@ -1,0 +1,7 @@
+GRANT_TRACE: owner=0 failure=0
+GRANT_TRACE: owner=1 failure=0
+GRANT_TRACE: owner=2 failure=1
+GRANT_TRACE: owner=2 failure=0
+GRANT_TRACE: owner=0 failure=0
+ARBCHK: PASS grants=5 priority=display>decode>other owner-until-done stalled-command-stable error-routed
+tb/tb_mjpeg_bus.v:42: $finish called at 400000 (1ps)

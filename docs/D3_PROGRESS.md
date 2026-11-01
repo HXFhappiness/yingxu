@@ -47,3 +47,7 @@ ARBCHK: PASS grants=5 priority=display>decode>other owner-until-done stalled-com
 ```
 
 scanout在第一帧发布/预充之前禁止RD2弹出，避免启动空FIFO被记为欠载。两bank颜色与消隐交换单测重跑通过。完整3秒顶层门禁和总面积账随最后集成提交提供。
+
+## 最终顶层交付
+
+696bde3已推。最终3秒actual-top门禁通过：144001音频采样、0/72丢帧、AV1849/2000采样、实际HDMI音频144000采样零diff、14条真实UART D帧；坏头/初始化超时回退均通过。完整报告及原始输出见 [D3_MJPEG_REPORT.md](D3_MJPEG_REPORT.md)。估计8740 LUT / 7 BRAM / 21 DSP，未做TD与板测，资源余量341 LUT须本地严守门禁。

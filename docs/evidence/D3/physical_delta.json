@@ -1,0 +1,42 @@
+{
+  "TD_measured": false,
+  "model": "same four-port+framebuffer both configurations; vendor PLL/FIFO/SDRAM macros black boxes",
+  "configurations": [
+    {
+      "ENABLE_MJPEG": 0,
+      "cells": {
+        "AL_MAP_SEQ": 617,
+        "$scopeinfo": 5,
+        "Sdram_WR_FIFO": 2,
+        "Sdram_PLL": 1,
+        "AL_MAP_LUT2": 340,
+        "EG_PHY_SDRAM_2M_32": 1,
+        "AL_MAP_LUT1": 212,
+        "Sdram_RD_FIFO": 2,
+        "AL_MAP_LUT4": 192,
+        "AL_MAP_LUT3": 233,
+        "AL_MAP_ADDER": 447
+      },
+      "LUT4_charge": 1424
+    },
+    {
+      "ENABLE_MJPEG": 1,
+      "cells": {
+        "AL_MAP_SEQ": 658,
+        "$scopeinfo": 6,
+        "Sdram_WR_FIFO": 2,
+        "Sdram_PLL": 1,
+        "EG_LOGIC_DRAM16X4": 8,
+        "AL_MAP_LUT2": 349,
+        "EG_PHY_SDRAM_2M_32": 1,
+        "AL_MAP_LUT1": 100,
+        "Sdram_RD_FIFO": 2,
+        "AL_MAP_LUT4": 308,
+        "AL_MAP_LUT3": 322,
+        "AL_MAP_ADDER": 470
+      },
+      "LUT4_charge": 1581
+    }
+  ],
+  "physical_LUT_delta": 157
+}

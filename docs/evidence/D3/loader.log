@@ -1,0 +1,6 @@
+SUPPLYCHK: PASS frames=36 PCM=288000 bytes zero-diff all packed table entries JPEG through wrap zero-diff commands=40
+HEADERCHK: PASS bad magic code=92 finite reject drained-SD
+- tb/tb_yxv_loader.v:67: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 33ms; walltime 1.746 s; speed 18.835 ms/s
+- Verilator: cpu 1.743 s on 1 threads; alloced 57 MB
