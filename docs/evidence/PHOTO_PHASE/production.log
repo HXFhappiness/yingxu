@@ -1,0 +1,12 @@
+FRAME 0 first_pair=0 buffered=255 next_addr=256
+FRAME 1 first_pair=1 buffered=254 next_addr=0
+FRAME 2 first_pair=460546 buffered=253 next_addr=0
+FRAME 3 first_pair=460547 buffered=252 next_addr=0
+FRAME 4 first_pair=460548 buffered=251 next_addr=0
+FRAME 5 first_pair=460549 buffered=250 next_addr=0
+FRAME 6 first_pair=460550 buffered=249 next_addr=0
+PHOTO_PHASE: DRIFT_REPRODUCED checked_pairs=2304000 mismatches=2304000 busy_reloads=1
+- /workspace/yingxu-fpga/tb/tb_photo_phase.v:58: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 101ms; walltime 7.533 s; speed 13.403 ms/s
+- Verilator: cpu 7.529 s on 1 threads; alloced 42 MB
