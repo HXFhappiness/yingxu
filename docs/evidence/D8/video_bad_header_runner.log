@@ -1,0 +1,2 @@
+top_sw77_72_bad1.log: exit=0 seconds=82.25
+DIAG_UARTCHK: PASS retained phase/error/reason/count; disabled word/index, no D5 on real UART pad

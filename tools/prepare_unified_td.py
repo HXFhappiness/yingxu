@@ -31,9 +31,9 @@ def main():
     paths=re.findall(r'<File Path="([^"]+)"',raw.decode('utf-8'))
     if not paths:
         raise SystemExit('No registered TD inputs found')
-    for module in ('yingxu_cn_font.v', 'yingxu_menu_ui.v'):
+    for module in ('yingxu_cn_font.v', 'yingxu_menu_ui.v', 'yingxu_logo.v', 'yingxu_breakout.v'):
         if 'src/user_source/hdl_source/'+module not in paths:
-            raise SystemExit(f'D7 module missing from TD project: {module}')
+            raise SystemExit(f'Menu/game module missing from TD project: {module}')
     files={}
     for name in paths:
         path=(ROOT/name.replace('\\','/')).resolve()

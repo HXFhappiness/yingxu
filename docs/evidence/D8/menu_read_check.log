@@ -1,0 +1,791 @@
+
+-- Running command `read_verilog /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_logo.v /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v; hierarchy -check -top yingxu_menu_ui; proc; opt; check -assert; stat' --
+
+1. Executing Verilog-2005 frontend: /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v
+Parsing Verilog input from `/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v' to AST representation.
+Generating RTLIL representation for module `\yingxu_cn_font'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_logo.v
+Parsing Verilog input from `/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_logo.v' to AST representation.
+Generating RTLIL representation for module `\yingxu_logo'.
+Successfully finished Verilog frontend.
+
+3. Executing Verilog-2005 frontend: /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v
+Parsing Verilog input from `/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v' to AST representation.
+Generating RTLIL representation for module `\yingxu_menu_ui'.
+Successfully finished Verilog frontend.
+
+4. Executing HIERARCHY pass (managing design hierarchy).
+
+4.1. Analyzing design hierarchy..
+Top module:  \yingxu_menu_ui
+Used module:     \yingxu_cn_font
+Used module:     \yingxu_logo
+
+4.2. Analyzing design hierarchy..
+Top module:  \yingxu_menu_ui
+Used module:     \yingxu_cn_font
+Used module:     \yingxu_logo
+Removed 0 unused modules.
+
+5. Executing PROC pass (convert processes to netlists).
+
+5.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+5.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 8 switch rules as full_case in process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:56$71 in module yingxu_menu_ui.
+Marked 5 switch rules as full_case in process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:43$43 in module yingxu_menu_ui.
+Marked 9 switch rules as full_case in process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18 in module yingxu_menu_ui.
+Marked 161 switch rules as full_case in process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_logo.v:8$2 in module yingxu_logo.
+Removed 17 dead cases from process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1 in module yingxu_cn_font.
+Marked 18 switch rules as full_case in process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1 in module yingxu_cn_font.
+Removed a total of 17 dead cases.
+
+5.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 0 redundant assignments.
+Promoted 8 assignments to connections.
+
+5.4. Executing PROC_INIT pass (extract init attributes).
+
+5.5. Executing PROC_ARST pass (detect async resets in processes).
+
+5.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 177 switches.
+<suppressed ~24 debug messages>
+
+5.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:56$71'.
+     1/13: $8\char_idx[4:0]
+     2/13: $7\char_idx[4:0]
+     3/13: $5\char_valid[0:0]
+     4/13: $6\char_idx[4:0]
+     5/13: $5\char_idx[4:0]
+     6/13: $4\char_valid[0:0]
+     7/13: $3\char_valid[0:0]
+     8/13: $4\char_idx[4:0]
+     9/13: $3\char_idx[4:0]
+    10/13: $2\char_idx[4:0]
+    11/13: $2\char_valid[0:0]
+    12/13: $1\char_valid[0:0]
+    13/13: $1\char_idx[4:0]
+Creating decoders for process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:43$43'.
+     1/15: $5\glyph_row[4:0]
+     2/15: $5\line_idx[2:0]
+     3/15: $5\text_row[0:0]
+     4/15: $4\glyph_row[4:0]
+     5/15: $4\line_idx[2:0]
+     6/15: $4\text_row[0:0]
+     7/15: $3\glyph_row[4:0]
+     8/15: $3\line_idx[2:0]
+     9/15: $3\text_row[0:0]
+    10/15: $2\glyph_row[4:0]
+    11/15: $2\line_idx[2:0]
+    12/15: $2\text_row[0:0]
+    13/15: $1\glyph_row[4:0]
+    14/15: $1\line_idx[2:0]
+    15/15: $1\text_row[0:0]
+Creating decoders for process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+     1/9: $9\gradient[23:0]
+     2/9: $8\gradient[23:0]
+     3/9: $7\gradient[23:0]
+     4/9: $6\gradient[23:0]
+     5/9: $5\gradient[23:0]
+     6/9: $4\gradient[23:0]
+     7/9: $3\gradient[23:0]
+     8/9: $2\gradient[23:0]
+     9/9: $1\gradient[23:0]
+Creating decoders for process `\yingxu_logo.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_logo.v:8$2'.
+     1/161: $161\bits[7:0]
+     2/161: $160\bits[7:0]
+     3/161: $159\bits[7:0]
+     4/161: $158\bits[7:0]
+     5/161: $157\bits[7:0]
+     6/161: $156\bits[7:0]
+     7/161: $155\bits[7:0]
+     8/161: $154\bits[7:0]
+     9/161: $153\bits[7:0]
+    10/161: $152\bits[7:0]
+    11/161: $151\bits[7:0]
+    12/161: $150\bits[7:0]
+    13/161: $149\bits[7:0]
+    14/161: $148\bits[7:0]
+    15/161: $147\bits[7:0]
+    16/161: $146\bits[7:0]
+    17/161: $145\bits[7:0]
+    18/161: $144\bits[7:0]
+    19/161: $143\bits[7:0]
+    20/161: $142\bits[7:0]
+    21/161: $141\bits[7:0]
+    22/161: $140\bits[7:0]
+    23/161: $139\bits[7:0]
+    24/161: $138\bits[7:0]
+    25/161: $137\bits[7:0]
+    26/161: $136\bits[7:0]
+    27/161: $135\bits[7:0]
+    28/161: $134\bits[7:0]
+    29/161: $133\bits[7:0]
+    30/161: $132\bits[7:0]
+    31/161: $131\bits[7:0]
+    32/161: $130\bits[7:0]
+    33/161: $129\bits[7:0]
+    34/161: $128\bits[7:0]
+    35/161: $127\bits[7:0]
+    36/161: $126\bits[7:0]
+    37/161: $125\bits[7:0]
+    38/161: $124\bits[7:0]
+    39/161: $123\bits[7:0]
+    40/161: $122\bits[7:0]
+    41/161: $121\bits[7:0]
+    42/161: $120\bits[7:0]
+    43/161: $119\bits[7:0]
+    44/161: $118\bits[7:0]
+    45/161: $117\bits[7:0]
+    46/161: $116\bits[7:0]
+    47/161: $115\bits[7:0]
+    48/161: $114\bits[7:0]
+    49/161: $113\bits[7:0]
+    50/161: $112\bits[7:0]
+    51/161: $111\bits[7:0]
+    52/161: $110\bits[7:0]
+    53/161: $109\bits[7:0]
+    54/161: $108\bits[7:0]
+    55/161: $107\bits[7:0]
+    56/161: $106\bits[7:0]
+    57/161: $105\bits[7:0]
+    58/161: $104\bits[7:0]
+    59/161: $103\bits[7:0]
+    60/161: $102\bits[7:0]
+    61/161: $101\bits[7:0]
+    62/161: $100\bits[7:0]
+    63/161: $99\bits[7:0]
+    64/161: $98\bits[7:0]
+    65/161: $97\bits[7:0]
+    66/161: $96\bits[7:0]
+    67/161: $95\bits[7:0]
+    68/161: $94\bits[7:0]
+    69/161: $93\bits[7:0]
+    70/161: $92\bits[7:0]
+    71/161: $91\bits[7:0]
+    72/161: $90\bits[7:0]
+    73/161: $89\bits[7:0]
+    74/161: $88\bits[7:0]
+    75/161: $87\bits[7:0]
+    76/161: $86\bits[7:0]
+    77/161: $85\bits[7:0]
+    78/161: $84\bits[7:0]
+    79/161: $83\bits[7:0]
+    80/161: $82\bits[7:0]
+    81/161: $81\bits[7:0]
+    82/161: $80\bits[7:0]
+    83/161: $79\bits[7:0]
+    84/161: $78\bits[7:0]
+    85/161: $77\bits[7:0]
+    86/161: $76\bits[7:0]
+    87/161: $75\bits[7:0]
+    88/161: $74\bits[7:0]
+    89/161: $73\bits[7:0]
+    90/161: $72\bits[7:0]
+    91/161: $71\bits[7:0]
+    92/161: $70\bits[7:0]
+    93/161: $69\bits[7:0]
+    94/161: $68\bits[7:0]
+    95/161: $67\bits[7:0]
+    96/161: $66\bits[7:0]
+    97/161: $65\bits[7:0]
+    98/161: $64\bits[7:0]
+    99/161: $63\bits[7:0]
+   100/161: $62\bits[7:0]
+   101/161: $61\bits[7:0]
+   102/161: $60\bits[7:0]
+   103/161: $59\bits[7:0]
+   104/161: $58\bits[7:0]
+   105/161: $57\bits[7:0]
+   106/161: $56\bits[7:0]
+   107/161: $55\bits[7:0]
+   108/161: $54\bits[7:0]
+   109/161: $53\bits[7:0]
+   110/161: $52\bits[7:0]
+   111/161: $51\bits[7:0]
+   112/161: $50\bits[7:0]
+   113/161: $49\bits[7:0]
+   114/161: $48\bits[7:0]
+   115/161: $47\bits[7:0]
+   116/161: $46\bits[7:0]
+   117/161: $45\bits[7:0]
+   118/161: $44\bits[7:0]
+   119/161: $43\bits[7:0]
+   120/161: $42\bits[7:0]
+   121/161: $41\bits[7:0]
+   122/161: $40\bits[7:0]
+   123/161: $39\bits[7:0]
+   124/161: $38\bits[7:0]
+   125/161: $37\bits[7:0]
+   126/161: $36\bits[7:0]
+   127/161: $35\bits[7:0]
+   128/161: $34\bits[7:0]
+   129/161: $33\bits[7:0]
+   130/161: $32\bits[7:0]
+   131/161: $31\bits[7:0]
+   132/161: $30\bits[7:0]
+   133/161: $29\bits[7:0]
+   134/161: $28\bits[7:0]
+   135/161: $27\bits[7:0]
+   136/161: $26\bits[7:0]
+   137/161: $25\bits[7:0]
+   138/161: $24\bits[7:0]
+   139/161: $23\bits[7:0]
+   140/161: $22\bits[7:0]
+   141/161: $21\bits[7:0]
+   142/161: $20\bits[7:0]
+   143/161: $19\bits[7:0]
+   144/161: $18\bits[7:0]
+   145/161: $17\bits[7:0]
+   146/161: $16\bits[7:0]
+   147/161: $15\bits[7:0]
+   148/161: $14\bits[7:0]
+   149/161: $13\bits[7:0]
+   150/161: $12\bits[7:0]
+   151/161: $11\bits[7:0]
+   152/161: $10\bits[7:0]
+   153/161: $9\bits[7:0]
+   154/161: $8\bits[7:0]
+   155/161: $7\bits[7:0]
+   156/161: $6\bits[7:0]
+   157/161: $5\bits[7:0]
+   158/161: $4\bits[7:0]
+   159/161: $3\bits[7:0]
+   160/161: $2\bits[7:0]
+   161/161: $1\bits[7:0]
+Creating decoders for process `\yingxu_cn_font.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1'.
+     1/18: $18\bits[31:0]
+     2/18: $17\bits[31:0]
+     3/18: $16\bits[31:0]
+     4/18: $15\bits[31:0]
+     5/18: $14\bits[31:0]
+     6/18: $13\bits[31:0]
+     7/18: $12\bits[31:0]
+     8/18: $11\bits[31:0]
+     9/18: $10\bits[31:0]
+    10/18: $9\bits[31:0]
+    11/18: $8\bits[31:0]
+    12/18: $7\bits[31:0]
+    13/18: $6\bits[31:0]
+    14/18: $5\bits[31:0]
+    15/18: $4\bits[31:0]
+    16/18: $3\bits[31:0]
+    17/18: $2\bits[31:0]
+    18/18: $1\bits[31:0]
+
+5.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+No latch inferred for signal `\yingxu_menu_ui.\char_idx' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:56$71'.
+No latch inferred for signal `\yingxu_menu_ui.\char_valid' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:56$71'.
+No latch inferred for signal `\yingxu_menu_ui.\text_row' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:43$43'.
+No latch inferred for signal `\yingxu_menu_ui.\line_idx' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:43$43'.
+No latch inferred for signal `\yingxu_menu_ui.\glyph_row' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:43$43'.
+No latch inferred for signal `\yingxu_menu_ui.\gradient' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+No latch inferred for signal `\yingxu_logo.\bits' from process `\yingxu_logo.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_logo.v:8$2'.
+No latch inferred for signal `\yingxu_cn_font.\bits' from process `\yingxu_cn_font.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1'.
+
+5.9. Executing PROC_DFF pass (convert process syncs to FFs).
+
+5.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+5.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 8 empty switches in `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:56$71'.
+Removing empty process `yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:56$71'.
+Found and cleaned up 5 empty switches in `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:43$43'.
+Removing empty process `yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:43$43'.
+Found and cleaned up 9 empty switches in `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+Removing empty process `yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+Found and cleaned up 161 empty switches in `\yingxu_logo.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_logo.v:8$2'.
+Removing empty process `yingxu_logo.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_logo.v:8$2'.
+Found and cleaned up 18 empty switches in `\yingxu_cn_font.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1'.
+Removing empty process `yingxu_cn_font.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1'.
+Cleaned up 201 empty switches.
+
+5.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_menu_ui.
+<suppressed ~4 debug messages>
+Optimizing module yingxu_logo.
+<suppressed ~2 debug messages>
+Optimizing module yingxu_cn_font.
+<suppressed ~2 debug messages>
+
+6. Executing OPT pass (performing simple optimizations).
+
+6.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_menu_ui.
+Optimizing module yingxu_logo.
+Optimizing module yingxu_cn_font.
+
+6.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_menu_ui'.
+<suppressed ~21 debug messages>
+Finding identical cells in module `\yingxu_logo'.
+<suppressed ~480 debug messages>
+Finding identical cells in module `\yingxu_cn_font'.
+<suppressed ~51 debug messages>
+Removed a total of 184 cells.
+
+6.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_menu_ui..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 1/2 on $mux $procmux$1189.
+    dead port 1/2 on $mux $procmux$1186.
+    dead port 1/2 on $mux $procmux$1180.
+    dead port 1/2 on $mux $procmux$1177.
+    dead port 1/2 on $mux $procmux$1174.
+    dead port 1/2 on $mux $procmux$1171.
+    dead port 1/2 on $mux $procmux$1165.
+    dead port 1/2 on $mux $procmux$1162.
+    dead port 1/2 on $mux $procmux$1159.
+    dead port 1/2 on $mux $procmux$1156.
+    dead port 1/2 on $mux $procmux$1153.
+    dead port 1/2 on $mux $procmux$1147.
+    dead port 1/2 on $mux $procmux$1144.
+    dead port 1/2 on $mux $procmux$1141.
+    dead port 1/2 on $mux $procmux$1138.
+    dead port 1/2 on $mux $procmux$1135.
+    dead port 1/2 on $mux $procmux$1132.
+    dead port 1/2 on $mux $procmux$1126.
+    dead port 1/2 on $mux $procmux$1123.
+    dead port 1/2 on $mux $procmux$1120.
+    dead port 1/2 on $mux $procmux$1117.
+    dead port 1/2 on $mux $procmux$1114.
+    dead port 1/2 on $mux $procmux$1111.
+    dead port 1/2 on $mux $procmux$1108.
+    dead port 1/2 on $mux $procmux$1102.
+    dead port 1/2 on $mux $procmux$1099.
+    dead port 1/2 on $mux $procmux$1096.
+    dead port 1/2 on $mux $procmux$1093.
+    dead port 1/2 on $mux $procmux$1090.
+    dead port 1/2 on $mux $procmux$1087.
+    dead port 1/2 on $mux $procmux$1084.
+    dead port 1/2 on $mux $procmux$1081.
+    dead port 1/2 on $mux $procmux$1066.
+    dead port 1/2 on $mux $procmux$1060.
+    dead port 1/2 on $mux $procmux$1054.
+    dead port 1/2 on $mux $procmux$1048.
+    dead port 1/2 on $mux $procmux$1045.
+    dead port 1/2 on $mux $procmux$1039.
+    dead port 1/2 on $mux $procmux$1036.
+    dead port 1/2 on $mux $procmux$1030.
+    dead port 1/2 on $mux $procmux$1027.
+    dead port 1/2 on $mux $procmux$1021.
+    dead port 1/2 on $mux $procmux$1018.
+    dead port 1/2 on $mux $procmux$1015.
+    dead port 1/2 on $mux $procmux$1009.
+    dead port 1/2 on $mux $procmux$1006.
+    dead port 1/2 on $mux $procmux$1003.
+    dead port 1/2 on $mux $procmux$997.
+    dead port 1/2 on $mux $procmux$994.
+    dead port 1/2 on $mux $procmux$991.
+    dead port 1/2 on $mux $procmux$985.
+    dead port 1/2 on $mux $procmux$982.
+    dead port 1/2 on $mux $procmux$979.
+    dead port 1/2 on $mux $procmux$976.
+    dead port 1/2 on $mux $procmux$970.
+    dead port 1/2 on $mux $procmux$967.
+    dead port 1/2 on $mux $procmux$964.
+    dead port 1/2 on $mux $procmux$961.
+    dead port 1/2 on $mux $procmux$955.
+    dead port 1/2 on $mux $procmux$952.
+    dead port 1/2 on $mux $procmux$949.
+    dead port 1/2 on $mux $procmux$946.
+    dead port 2/2 on $mux $procmux$934.
+    dead port 2/2 on $mux $procmux$928.
+    dead port 2/2 on $mux $procmux$922.
+    dead port 2/2 on $mux $procmux$920.
+    dead port 2/2 on $mux $procmux$910.
+    dead port 1/2 on $mux $procmux$908.
+    dead port 2/2 on $mux $procmux$901.
+    dead port 1/2 on $mux $procmux$899.
+    dead port 2/2 on $mux $procmux$892.
+    dead port 1/2 on $mux $procmux$890.
+    dead port 2/2 on $mux $procmux$887.
+    dead port 2/2 on $mux $procmux$880.
+    dead port 1/2 on $mux $procmux$878.
+    dead port 2/2 on $mux $procmux$875.
+    dead port 2/2 on $mux $procmux$868.
+    dead port 1/2 on $mux $procmux$866.
+    dead port 2/2 on $mux $procmux$863.
+    dead port 2/2 on $mux $procmux$861.
+    dead port 2/2 on $mux $procmux$852.
+    dead port 1/2 on $mux $procmux$850.
+    dead port 2/2 on $mux $procmux$847.
+    dead port 1/2 on $mux $procmux$845.
+    dead port 2/2 on $mux $procmux$837.
+    dead port 1/2 on $mux $procmux$835.
+    dead port 2/2 on $mux $procmux$832.
+    dead port 1/2 on $mux $procmux$830.
+    dead port 2/2 on $mux $procmux$822.
+    dead port 1/2 on $mux $procmux$820.
+    dead port 2/2 on $mux $procmux$817.
+    dead port 1/2 on $mux $procmux$815.
+    dead port 2/2 on $mux $procmux$812.
+    dead port 1/2 on $mux $procmux$1207.
+    dead port 1/2 on $mux $procmux$1201.
+    dead port 1/2 on $mux $procmux$1198.
+    dead port 1/2 on $mux $procmux$1192.
+Running muxtree optimizer on module \yingxu_logo..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 2/2 on $mux $procmux$14570.
+    dead port 2/2 on $mux $procmux$14407.
+    dead port 2/2 on $mux $procmux$14245.
+    dead port 2/2 on $mux $procmux$14084.
+    dead port 2/2 on $mux $procmux$13924.
+    dead port 2/2 on $mux $procmux$13765.
+    dead port 2/2 on $mux $procmux$13607.
+    dead port 2/2 on $mux $procmux$13450.
+    dead port 2/2 on $mux $procmux$13294.
+    dead port 2/2 on $mux $procmux$13139.
+    dead port 2/2 on $mux $procmux$12985.
+    dead port 2/2 on $mux $procmux$12832.
+    dead port 2/2 on $mux $procmux$12680.
+    dead port 2/2 on $mux $procmux$12529.
+    dead port 2/2 on $mux $procmux$12379.
+    dead port 2/2 on $mux $procmux$12230.
+    dead port 2/2 on $mux $procmux$12082.
+    dead port 2/2 on $mux $procmux$11935.
+    dead port 2/2 on $mux $procmux$11789.
+    dead port 2/2 on $mux $procmux$11644.
+    dead port 2/2 on $mux $procmux$11500.
+    dead port 2/2 on $mux $procmux$11357.
+    dead port 2/2 on $mux $procmux$11215.
+    dead port 2/2 on $mux $procmux$11074.
+    dead port 2/2 on $mux $procmux$10934.
+    dead port 2/2 on $mux $procmux$10795.
+    dead port 2/2 on $mux $procmux$10657.
+    dead port 2/2 on $mux $procmux$10520.
+    dead port 2/2 on $mux $procmux$10384.
+    dead port 2/2 on $mux $procmux$10249.
+    dead port 2/2 on $mux $procmux$10115.
+    dead port 2/2 on $mux $procmux$9982.
+    dead port 2/2 on $mux $procmux$9850.
+    dead port 2/2 on $mux $procmux$9719.
+    dead port 2/2 on $mux $procmux$9589.
+    dead port 2/2 on $mux $procmux$9460.
+    dead port 2/2 on $mux $procmux$9332.
+    dead port 2/2 on $mux $procmux$9205.
+    dead port 2/2 on $mux $procmux$9079.
+    dead port 2/2 on $mux $procmux$8954.
+    dead port 2/2 on $mux $procmux$8830.
+    dead port 2/2 on $mux $procmux$8707.
+    dead port 2/2 on $mux $procmux$8585.
+    dead port 2/2 on $mux $procmux$8464.
+    dead port 2/2 on $mux $procmux$8344.
+    dead port 2/2 on $mux $procmux$8225.
+    dead port 2/2 on $mux $procmux$8107.
+    dead port 2/2 on $mux $procmux$7990.
+    dead port 2/2 on $mux $procmux$7874.
+    dead port 2/2 on $mux $procmux$7759.
+    dead port 2/2 on $mux $procmux$7645.
+    dead port 2/2 on $mux $procmux$7532.
+    dead port 2/2 on $mux $procmux$7420.
+    dead port 2/2 on $mux $procmux$7309.
+    dead port 2/2 on $mux $procmux$7199.
+    dead port 2/2 on $mux $procmux$7090.
+    dead port 2/2 on $mux $procmux$6982.
+    dead port 2/2 on $mux $procmux$6875.
+    dead port 2/2 on $mux $procmux$6769.
+    dead port 2/2 on $mux $procmux$6664.
+    dead port 2/2 on $mux $procmux$6560.
+    dead port 2/2 on $mux $procmux$6457.
+    dead port 2/2 on $mux $procmux$6355.
+    dead port 2/2 on $mux $procmux$6254.
+    dead port 2/2 on $mux $procmux$6154.
+    dead port 2/2 on $mux $procmux$6055.
+    dead port 2/2 on $mux $procmux$5957.
+    dead port 2/2 on $mux $procmux$5860.
+    dead port 2/2 on $mux $procmux$5764.
+    dead port 2/2 on $mux $procmux$5669.
+    dead port 2/2 on $mux $procmux$5575.
+    dead port 2/2 on $mux $procmux$5482.
+    dead port 2/2 on $mux $procmux$5390.
+    dead port 2/2 on $mux $procmux$5299.
+    dead port 2/2 on $mux $procmux$5209.
+    dead port 2/2 on $mux $procmux$5120.
+    dead port 2/2 on $mux $procmux$5032.
+    dead port 2/2 on $mux $procmux$4945.
+    dead port 2/2 on $mux $procmux$4859.
+    dead port 2/2 on $mux $procmux$4774.
+    dead port 2/2 on $mux $procmux$4690.
+    dead port 2/2 on $mux $procmux$4607.
+    dead port 2/2 on $mux $procmux$4525.
+    dead port 2/2 on $mux $procmux$4444.
+    dead port 2/2 on $mux $procmux$4364.
+    dead port 2/2 on $mux $procmux$4285.
+    dead port 2/2 on $mux $procmux$4207.
+    dead port 2/2 on $mux $procmux$4130.
+    dead port 2/2 on $mux $procmux$4054.
+    dead port 2/2 on $mux $procmux$3979.
+    dead port 2/2 on $mux $procmux$3905.
+    dead port 2/2 on $mux $procmux$3832.
+    dead port 2/2 on $mux $procmux$3760.
+    dead port 2/2 on $mux $procmux$3689.
+    dead port 2/2 on $mux $procmux$3619.
+    dead port 2/2 on $mux $procmux$3550.
+    dead port 2/2 on $mux $procmux$3482.
+    dead port 2/2 on $mux $procmux$3415.
+    dead port 2/2 on $mux $procmux$3349.
+    dead port 2/2 on $mux $procmux$3284.
+    dead port 2/2 on $mux $procmux$3220.
+    dead port 2/2 on $mux $procmux$3157.
+    dead port 2/2 on $mux $procmux$3095.
+    dead port 2/2 on $mux $procmux$3034.
+    dead port 2/2 on $mux $procmux$2974.
+    dead port 2/2 on $mux $procmux$2915.
+    dead port 2/2 on $mux $procmux$2857.
+    dead port 2/2 on $mux $procmux$2800.
+    dead port 2/2 on $mux $procmux$2744.
+    dead port 2/2 on $mux $procmux$2689.
+    dead port 2/2 on $mux $procmux$2635.
+    dead port 2/2 on $mux $procmux$2582.
+    dead port 2/2 on $mux $procmux$2530.
+    dead port 2/2 on $mux $procmux$2479.
+    dead port 2/2 on $mux $procmux$2429.
+    dead port 2/2 on $mux $procmux$2380.
+    dead port 2/2 on $mux $procmux$2332.
+    dead port 2/2 on $mux $procmux$2285.
+    dead port 2/2 on $mux $procmux$2239.
+    dead port 2/2 on $mux $procmux$2194.
+    dead port 2/2 on $mux $procmux$2150.
+    dead port 2/2 on $mux $procmux$2107.
+    dead port 2/2 on $mux $procmux$2065.
+    dead port 2/2 on $mux $procmux$2024.
+    dead port 2/2 on $mux $procmux$1984.
+    dead port 2/2 on $mux $procmux$1945.
+    dead port 2/2 on $mux $procmux$1907.
+    dead port 2/2 on $mux $procmux$1870.
+    dead port 2/2 on $mux $procmux$1834.
+    dead port 2/2 on $mux $procmux$1799.
+    dead port 2/2 on $mux $procmux$1765.
+    dead port 2/2 on $mux $procmux$1732.
+    dead port 2/2 on $mux $procmux$1700.
+    dead port 2/2 on $mux $procmux$1669.
+    dead port 2/2 on $mux $procmux$1639.
+    dead port 2/2 on $mux $procmux$1610.
+    dead port 2/2 on $mux $procmux$1582.
+    dead port 2/2 on $mux $procmux$1555.
+    dead port 2/2 on $mux $procmux$1529.
+    dead port 2/2 on $mux $procmux$1504.
+    dead port 2/2 on $mux $procmux$1480.
+    dead port 2/2 on $mux $procmux$1457.
+    dead port 2/2 on $mux $procmux$1435.
+    dead port 2/2 on $mux $procmux$1414.
+    dead port 2/2 on $mux $procmux$1394.
+    dead port 2/2 on $mux $procmux$1375.
+    dead port 2/2 on $mux $procmux$1357.
+    dead port 2/2 on $mux $procmux$1340.
+    dead port 2/2 on $mux $procmux$1324.
+    dead port 2/2 on $mux $procmux$1309.
+    dead port 2/2 on $mux $procmux$1295.
+    dead port 2/2 on $mux $procmux$1282.
+    dead port 2/2 on $mux $procmux$1270.
+    dead port 2/2 on $mux $procmux$1259.
+    dead port 2/2 on $mux $procmux$1249.
+    dead port 2/2 on $mux $procmux$1240.
+    dead port 2/2 on $mux $procmux$1232.
+    dead port 2/2 on $mux $procmux$1225.
+    dead port 2/2 on $mux $procmux$1219.
+    dead port 2/2 on $mux $procmux$1214.
+Running muxtree optimizer on module \yingxu_cn_font..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 2/2 on $mux $procmux$14936.
+    dead port 2/2 on $mux $procmux$14916.
+    dead port 2/2 on $mux $procmux$14897.
+    dead port 2/2 on $mux $procmux$14879.
+    dead port 2/2 on $mux $procmux$14862.
+    dead port 2/2 on $mux $procmux$14846.
+    dead port 2/2 on $mux $procmux$14831.
+    dead port 2/2 on $mux $procmux$14817.
+    dead port 2/2 on $mux $procmux$14804.
+    dead port 2/2 on $mux $procmux$14792.
+    dead port 2/2 on $mux $procmux$14781.
+    dead port 2/2 on $mux $procmux$14771.
+    dead port 2/2 on $mux $procmux$14762.
+    dead port 2/2 on $mux $procmux$14754.
+    dead port 2/2 on $mux $procmux$14747.
+    dead port 2/2 on $mux $procmux$14741.
+    dead port 2/2 on $mux $procmux$14736.
+Removed 274 multiplexer ports.
+<suppressed ~8 debug messages>
+
+6.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_menu_ui.
+  Optimizing cells in module \yingxu_logo.
+  Optimizing cells in module \yingxu_cn_font.
+Performed a total of 0 changes.
+
+6.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_menu_ui'.
+Finding identical cells in module `\yingxu_logo'.
+Finding identical cells in module `\yingxu_cn_font'.
+Removed a total of 0 cells.
+
+6.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+6.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_menu_ui..
+Finding unused cells or wires in module \yingxu_logo..
+Finding unused cells or wires in module \yingxu_cn_font..
+Removed 0 unused cells and 832 unused wires.
+<suppressed ~3 debug messages>
+
+6.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_cn_font.
+Optimizing module yingxu_logo.
+Optimizing module yingxu_menu_ui.
+
+6.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+6.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_cn_font..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Running muxtree optimizer on module \yingxu_logo..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Running muxtree optimizer on module \yingxu_menu_ui..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~8 debug messages>
+
+6.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_cn_font.
+  Optimizing cells in module \yingxu_logo.
+  Optimizing cells in module \yingxu_menu_ui.
+Performed a total of 0 changes.
+
+6.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_cn_font'.
+Finding identical cells in module `\yingxu_logo'.
+Finding identical cells in module `\yingxu_menu_ui'.
+Removed a total of 0 cells.
+
+6.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+6.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_cn_font..
+Finding unused cells or wires in module \yingxu_logo..
+Finding unused cells or wires in module \yingxu_menu_ui..
+
+6.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_cn_font.
+Optimizing module yingxu_logo.
+Optimizing module yingxu_menu_ui.
+
+6.16. Finished OPT passes. (There is nothing left to do.)
+
+7. Executing CHECK pass (checking for obvious problems).
+Checking module yingxu_cn_font...
+Checking module yingxu_logo...
+Checking module yingxu_menu_ui...
+Found and reported 0 problems.
+
+8. Printing statistics.
+
+=== yingxu_cn_font ===
+
+   Number of wires:                 37
+   Number of wire bits:            603
+   Number of public wires:           3
+   Number of public wire bits:      42
+   Number of ports:                  3
+   Number of port bits:             42
+   Number of memories:              17
+   Number of memory bits:        17408
+   Number of processes:              0
+   Number of cells:                 52
+     $eq                            16
+     $logic_not                      1
+     $meminit                       17
+     $memrd_v2                      17
+     $pmux                           1
+
+=== yingxu_logo ===
+
+   Number of wires:                323
+   Number of wire bits:           1461
+   Number of public wires:           3
+   Number of public wire bits:      21
+   Number of ports:                  3
+   Number of port bits:             21
+   Number of memories:             160
+   Number of memory bits:        40960
+   Number of processes:              0
+   Number of cells:                481
+     $eq                           159
+     $logic_not                      1
+     $meminit                      160
+     $memrd_v2                     160
+     $pmux                           1
+
+=== yingxu_menu_ui ===
+
+   Number of wires:                140
+   Number of wire bits:            807
+   Number of public wires:          28
+   Number of public wire bits:     209
+   Number of ports:                  9
+   Number of port bits:             54
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                131
+     $add                            1
+     $eq                             5
+     $ge                            12
+     $le                             4
+     $logic_and                     25
+     $logic_not                      4
+     $lt                            19
+     $mux                           44
+     $pmux                           3
+     $shiftx                         2
+     $sub                           10
+     yingxu_cn_font                  1
+     yingxu_logo                     1
+
+=== design hierarchy ===
+
+   yingxu_menu_ui                    1
+     yingxu_cn_font                  1
+     yingxu_logo                     1
+
+   Number of wires:                500
+   Number of wire bits:           2871
+   Number of public wires:          34
+   Number of public wire bits:     272
+   Number of ports:                 15
+   Number of port bits:            117
+   Number of memories:             177
+   Number of memory bits:        58368
+   Number of processes:              0
+   Number of cells:                662
+     $add                            1
+     $eq                           180
+     $ge                            12
+     $le                             4
+     $logic_and                     25
+     $logic_not                      6
+     $lt                            19
+     $meminit                      177
+     $memrd_v2                     177
+     $mux                           44
+     $pmux                           5
+     $shiftx                         2
+     $sub                           10
+

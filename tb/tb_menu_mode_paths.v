@@ -12,6 +12,7 @@ module tb_menu_mode_paths;
         .ir(1'b1),.eth_rxc(1'b0),.eth_rxd(4'd0),.eth_rxdv(1'b0),
         .camera_vsync(1'b0),.camera_href(1'b0),.camera_pclk(1'b0),.camera_data(8'd0));
     integer path,glitch,k,cases=0,events=0,base_events,video_requests=0;
+    integer breakout_writes=0,invader_writes=0,game_x;
     reg protect_override=0;
     always @(negedge clk)if(rst_n)begin
         if(dut.menu_real_change)begin
@@ -23,6 +24,14 @@ module tb_menu_mode_paths;
                           dut.design_top_wrapper.I_bmp_start))$fatal(1,"menu triggered BMP path");
     end
     always @(posedge clk)if(rst_n && dut.video_sd_start)video_requests=video_requests+1;
+    always @(posedge dut.design_top_wrapper.S_pixel_clk)begin
+        if(!rst_n)begin breakout_writes=0;invader_writes=0;end
+        else if(dut.design_top_wrapper.tbl_we && dut.design_top_wrapper.tbl_en &&
+                !dut.design_top_wrapper.clr_active)begin
+            if(dut.design_top_wrapper.sel_breakout)breakout_writes=breakout_writes+1;
+            if(dut.design_top_wrapper.sel_hw)invader_writes=invader_writes+1;
+        end
+    end
     task reset_menu;
         begin
             protect_override=0;
@@ -90,11 +99,35 @@ module tb_menu_mode_paths;
             repeat(1000016)@(negedge clk);
             case(path)
                 0:if(dut.img_idx!=1 || dut.game_mode || dut.menu_pattern!=8'hff)$fatal(1,"photo path");
-                1:if(dut.menu_pattern!=8'h7f || !dut.game_mode || dut.game_sel2!=0 || dut.cart_active)$fatal(1,"hardware breakout");
-                2:if(dut.menu_pattern!=8'h5f || !dut.game_mode || dut.game_sel2!=1 || dut.cart_active)$fatal(1,"hardware plane");
+                1:if(dut.menu_pattern!=8'h7f || !dut.game_mode || dut.game_sel2!=0 || dut.cart_active ||
+                     !dut.design_top_wrapper.U_hw_breakout.enable || breakout_writes<2 ||
+                     dut.design_top_wrapper.brick_mask==0)$fatal(1,"hardware breakout not drawing");
+                2:if(dut.menu_pattern!=8'h5f || !dut.game_mode || dut.game_sel2!=1 || dut.cart_active ||
+                     !dut.design_top_wrapper.U_hw_inv.enable || invader_writes<2 ||
+                     dut.design_top_wrapper.U_hw_breakout.enable)$fatal(1,"hardware plane not drawing");
                 3:if(dut.menu_pattern!=8'h77 || !dut.video_requested || !dut.video_owned || dut.video_failed || video_requests==0)$fatal(1,"video ownership");
-                4:if(dut.menu_pattern!=8'h6f || !dut.music_on_w || dut.cart_active)$fatal(1,"music path");
+                4:if(dut.menu_pattern!=8'h6f || !dut.music_on_w || dut.cart_active ||
+                     dut.design_top_wrapper.U_hw_breakout.enable)$fatal(1,"music path started game");
             endcase
+            if(path==1 || path==2)begin
+                // Actual pins and real frame ticks: the selected engine must
+                // move its paddle/player both ways, beyond merely decoding mode.
+                if(path==1)game_x=dut.design_top_wrapper.U_hw_breakout.paddle_x;
+                else game_x=dut.design_top_wrapper.U_hw_inv.px;
+                key1=0;repeat(1000016)@(negedge clk);key1=1;
+                if(path==1)begin
+                    if(dut.design_top_wrapper.U_hw_breakout.paddle_x<=game_x)$fatal(1,"breakout right key");
+                    game_x=dut.design_top_wrapper.U_hw_breakout.paddle_x;
+                end else begin
+                    if(dut.design_top_wrapper.U_hw_inv.px<=game_x)$fatal(1,"invaders right key");
+                    game_x=dut.design_top_wrapper.U_hw_inv.px;
+                end
+                key0=0;repeat(1000016)@(negedge clk);key0=1;
+                if(path==1 && dut.design_top_wrapper.U_hw_breakout.paddle_x>=game_x)$fatal(1,"breakout left key");
+                if(path==2 && dut.design_top_wrapper.U_hw_inv.px>=game_x)$fatal(1,"invaders left key");
+                repeat(16)@(negedge clk);
+                $display("D8_GAMEPLAY PASS path=%0d sprite writes and real-key left/right movement",path);$fflush();
+            end
             short_return();
             if(events!=base_events)$fatal(1,"virtual mode/return produced DIP exit");
             cases=cases+1;$display("D7_PATH PASS path=%0d glitch=%0d mode persists, SW7+key0 return",path,glitch);$fflush();

@@ -1,0 +1,20 @@
+D6_BOOT PASS >20ms startup preset ignored, 25000000-cycle terminal, initial baseline has no event
+D7_PATH PASS path=0 glitch=0 mode persists, SW7+key0 return
+D8_GAMEPLAY PASS path=1 sprite writes and real-key left/right movement
+D7_PATH PASS path=1 glitch=0 mode persists, SW7+key0 return
+D8_GAMEPLAY PASS path=2 sprite writes and real-key left/right movement
+D7_PATH PASS path=2 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=3 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=4 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=0 glitch=1 mode persists, SW7+key0 return
+D8_GAMEPLAY PASS path=1 sprite writes and real-key left/right movement
+D7_PATH PASS path=1 glitch=1 mode persists, SW7+key0 return
+D8_GAMEPLAY PASS path=2 sprite writes and real-key left/right movement
+D7_PATH PASS path=2 glitch=1 mode persists, SW7+key0 return
+D7_PATH PASS path=3 glitch=1 mode persists, SW7+key0 return
+D7_PATH PASS path=4 glitch=1 mode persists, SW7+key0 return
+D7_CONTROL_ACCEPTANCE PASS paths=10 pages/wrap/about, no menu BMP, D6 short exit, hold fallback, boot window, raw DIP glitches/bounce/maintenance
+- tb/tb_menu_mode_paths.v:161: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 940ms; walltime 182.200 s; speed 5.162 ms/s
+- Verilator: cpu 182.115 s on 1 threads; alloced 44 MB

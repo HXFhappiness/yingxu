@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 `default_nettype none
-// D7: coordinate-locked background and glyphs; no SD/SDRAM inputs or state.
+// D7/D8: coordinate-locked background, logo and glyphs; no SD/SDRAM state.
 // Combinational output has the same coordinate phase as sprite bg_rgb.
 // Selection is drawn separately by the existing slot-15 sprite.
 module yingxu_menu_ui(
@@ -14,7 +14,29 @@ module yingxu_menu_ui(
                  pixel_y>=11'd240 && pixel_y<=11'd700;
     wire interior = pixel_x>=11'd826 && pixel_x<=11'd1184 &&
                     pixel_y>=11'd246 && pixel_y<=11'd694;
-    wire [23:0] background = panel ? (interior ? 24'hC8B45A : 24'h000000) : 24'h0A1030;
+    // Ten uniform diagonal bands (200 coordinates each, final band 199).
+    // Constants/comparisons only: no multiplier, divider or framebuffer.
+    wire [11:0] diagonal={1'b0,pixel_x}+{1'b0,pixel_y};
+    reg [23:0] gradient;
+    always @* begin
+        if(diagonal<200)gradient=24'h0A1030;
+        else if(diagonal<400)gradient=24'h0B1838;
+        else if(diagonal<600)gradient=24'h0F2040;
+        else if(diagonal<800)gradient=24'h14284C;
+        else if(diagonal<1000)gradient=24'h1A3055;
+        else if(diagonal<1200)gradient=24'h31415E;
+        else if(diagonal<1400)gradient=24'h4A5570;
+        else if(diagonal<1600)gradient=24'h6B7280;
+        else if(diagonal<1800)gradient=24'h8A9099;
+        else gradient=24'hB0B4B8;
+    end
+    wire logo_zone=pixel_x>=40 && pixel_x<200 && pixel_y>=28 && pixel_y<188;
+    wire [10:0] logo_dx=pixel_x-11'd40,logo_dy=pixel_y-11'd28;
+    wire [7:0] logo_bits;
+    yingxu_logo logo(.row(logo_dy[7:0]),.byte_idx(logo_dx[7:3]),.bits(logo_bits));
+    wire logo_ink=logo_zone && logo_bits[3'd7-logo_dx[2:0]];
+    wire [23:0] background = panel ? (interior ? 24'hC8B45A : 24'h000000) :
+                            logo_ink ? 24'hFFFFFF:gradient;
     reg text_row;
     reg [2:0] line_idx;
     reg [4:0] glyph_row;

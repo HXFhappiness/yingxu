@@ -459,6 +459,7 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
 
     wire        sel_cart = I_game_mode & (I_game_sel == 2'd2);
     wire        sel_hw   = I_game_mode & (I_game_sel == 2'd1);
+    wire        sel_breakout = I_game_mode && (I_game_sel==2'd0) && !I_music_en;
     wire        frame_tick = (S_pixel_x == 11'd0) && (S_pixel_y == 10'd720);
 
     // G5: hardware state-machine invaders, restored as the "hardware half" of
@@ -509,11 +510,31 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
         .lost       (hw_lost    )
     );
 
+    // D8: restore the existing hardware Breakout engine for game_sel 0.
+    reg sel_breakout_q;
+    always @(posedge S_pixel_clk or posedge S_rst_pix)begin
+        if(S_rst_pix)sel_breakout_q<=0;else sel_breakout_q<=sel_breakout;
+    end
+    wire b_spr_we,b_spr_en,b_game_over;
+    wire [3:0] b_spr_slot;
+    wire [10:0] b_spr_x;wire [9:0] b_spr_y;
+    wire [6:0] b_spr_w;wire [5:0] b_spr_h;wire [23:0] b_spr_c;
+    wire [59:0] b_brick_mask;
+    wire b_ev_hit,b_ev_paddle,b_ev_lose,b_ev_win;
+    yingxu_breakout U_hw_breakout(
+        .clk(S_pixel_clk),.rst(S_rst_pix),.frame_tick(frame_tick),
+        .enable(sel_breakout),.restart(sel_breakout && !sel_breakout_q),
+        .key_left(~I_key0_n),.key_right(~I_key1_n),
+        .spr_we(b_spr_we),.spr_slot(b_spr_slot),.spr_en(b_spr_en),
+        .spr_x(b_spr_x),.spr_y(b_spr_y),.spr_w(b_spr_w),.spr_h(b_spr_h),.spr_c(b_spr_c),
+        .brick_mask(b_brick_mask),.game_over(b_game_over),
+        .o_ev_hit(b_ev_hit),.o_ev_paddle(b_ev_paddle),.o_ev_lose(b_ev_lose),.o_ev_win(b_ev_win));
+
     wire        c_ev_hit, c_ev_paddle, c_ev_lose, c_ev_win;   // 鍗″甫瀛愮郴缁熶簨浠?
-    wire ev_hit    = sel_hw ? hw_ev_hit  : c_ev_hit;
-    wire ev_paddle = sel_hw ? 1'b0       : c_ev_paddle;
-    wire ev_lose   = sel_hw ? hw_ev_lose : c_ev_lose;
-    wire ev_win    = sel_hw ? hw_ev_win  : c_ev_win;
+    wire ev_hit    = sel_breakout ? b_ev_hit : sel_hw ? hw_ev_hit  : c_ev_hit;
+    wire ev_paddle = sel_breakout ? b_ev_paddle : sel_hw ? 1'b0       : c_ev_paddle;
+    wire ev_lose   = sel_breakout ? b_ev_lose : sel_hw ? hw_ev_lose : c_ev_lose;
+    wire ev_win    = sel_breakout ? b_ev_win : sel_hw ? hw_ev_win  : c_ev_win;
 
     yingxu_psg #(.CLK_HZ(73_333_333), .SAMPLE_HZ(48_000)) U_psg (
         .clk         (S_pixel_clk),
@@ -602,6 +623,7 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
     reg        clr_active;
     reg [13:0] clr_hold;      // keep sweeping for a while after a switch
     reg        mode_d;
+    reg        breakout_mode_d;
     reg [1:0]   gsel_d;
     reg [10:0] spr_x; reg [9:0] spr_y; reg [6:0] spr_w; reg [5:0] spr_h;
     reg [23:0] spr_c;
@@ -623,15 +645,18 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
             clr_active <= 1'b0;
             clr_hold   <= 14'd0;
             mode_d     <= 1'b0;
+            breakout_mode_d <= 1'b0;
             gsel_d     <= 2'd0;
         end
         else begin
             mode_d <= I_game_mode;
+            breakout_mode_d <= sel_breakout;
             gsel_d <= I_game_sel;
             // One sweep of 16 slots is not always enough (the other game may still
             // push a slot in the same frame), so sweep continuously for ~3000
             // pixel clocks after any mode or game change.
-            if ((mode_d && !I_game_mode) || (I_game_mode && (gsel_d != I_game_sel))) begin
+            if ((mode_d && !I_game_mode) || (I_game_mode && (gsel_d != I_game_sel)) ||
+                (breakout_mode_d && !sel_breakout)) begin
                 clr_hold   <= 14'd3000;
                 clr_cnt    <= 5'd0;
                 clr_active <= 1'b1;
@@ -700,16 +725,16 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
     wire [6:0]  menu_spr_w    = 7'd12;
     wire [5:0]  menu_spr_h    = 6'd56;
     wire [23:0] menu_spr_c    = 24'h00A651;
-wire        src_we   = sel_menu ? menu_spr_we : sel_hw ? hw_spr_we   : c_spr_we;
-    wire [3:0]  src_slot = sel_menu ? menu_spr_slot : sel_hw ? hw_spr_slot : c_spr_slot;
-    wire        src_en   = sel_menu ? menu_spr_en   : sel_hw ? hw_spr_en   : c_spr_en;
-    wire [10:0] src_x    = sel_menu ? menu_spr_x    : sel_hw ? hw_spr_x    : c_spr_x;
-    wire [9:0]  src_y    = sel_menu ? menu_spr_y    : sel_hw ? hw_spr_y    : c_spr_y;
-    wire [6:0]  src_w    = sel_menu ? menu_spr_w    : sel_hw ? hw_spr_w    : c_spr_w;
-    wire [5:0]  src_h    = sel_menu ? menu_spr_h    : sel_hw ? hw_spr_h    : c_spr_h;
-    wire [23:0] src_c    = sel_menu ? menu_spr_c    : sel_hw ? hw_spr_c    : c_spr_c;
+wire        src_we   = sel_menu ? menu_spr_we : sel_breakout ? b_spr_we : sel_hw ? hw_spr_we   : c_spr_we;
+    wire [3:0]  src_slot = sel_menu ? menu_spr_slot : sel_breakout ? b_spr_slot : sel_hw ? hw_spr_slot : c_spr_slot;
+    wire        src_en   = sel_menu ? menu_spr_en   : sel_breakout ? b_spr_en : sel_hw ? hw_spr_en   : c_spr_en;
+    wire [10:0] src_x    = sel_menu ? menu_spr_x    : sel_breakout ? b_spr_x : sel_hw ? hw_spr_x    : c_spr_x;
+    wire [9:0]  src_y    = sel_menu ? menu_spr_y    : sel_breakout ? b_spr_y : sel_hw ? hw_spr_y    : c_spr_y;
+    wire [6:0]  src_w    = sel_menu ? menu_spr_w    : sel_breakout ? b_spr_w : sel_hw ? hw_spr_w    : c_spr_w;
+    wire [5:0]  src_h    = sel_menu ? menu_spr_h    : sel_breakout ? b_spr_h : sel_hw ? hw_spr_h    : c_spr_h;
+    wire [23:0] src_c    = sel_menu ? menu_spr_c    : sel_breakout ? b_spr_c : sel_hw ? hw_spr_c    : c_spr_c;
 
-    wire        tbl_we   = clr_active | ((sel_cart | sel_hw | sel_menu) & src_we);
+    wire        tbl_we   = clr_active | ((sel_cart | sel_hw | sel_breakout | sel_menu) & src_we);
     wire [3:0]  tbl_slot = clr_active ? clr_cnt[3:0] : src_slot;
     wire        tbl_en   = clr_active ? 1'b0 : src_en;
     wire [10:0] tbl_x    = src_x;
@@ -717,7 +742,7 @@ wire        src_we   = sel_menu ? menu_spr_we : sel_hw ? hw_spr_we   : c_spr_we;
     wire [6:0]  tbl_w    = src_w;
     wire [5:0]  tbl_h    = src_h;
     wire [23:0] tbl_c    = src_c;
-    wire [59:0] brick_mask = sel_cart ? c_brick_mask : 60'd0;
+    wire [59:0] brick_mask = sel_breakout ? b_brick_mask : sel_cart ? c_brick_mask : 60'd0;
     // -------------------------------------------------------------------------
     // Scrolling tile background. Only active in game mode; photo mode feeds a
     // transparent layer so the picture is untouched.

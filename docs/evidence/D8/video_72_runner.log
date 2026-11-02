@@ -1,0 +1,4 @@
+top_build.log: exit=0 seconds=6.17
+top_sw77_72_bad0.log: exit=0 seconds=1027.01
+TELEMCHK: PASS wire UART D-lines=14 decoded/display/drop/SD fields visible
+FIRSTREAD_UARTCHK: PASS first LBA=3000000 count=1 magic=59585631 on real UART pad

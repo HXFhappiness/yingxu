@@ -1,0 +1,3 @@
+PASS 32 pipeline/loader/arbiters/SD/photo/controller/top/breakout production files byte-identical to d0d12ca
+PASS supplied logo byte-identical to 766653f and font to 4634b5c
+PASS four menu/game modules each registered exactly once

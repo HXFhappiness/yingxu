@@ -95,6 +95,14 @@
                     <Attr Name="CompileOrder" Val="10"/>
                 </FileInfo>
             </File>
+            <File Path="src/user_source/hdl_source/yingxu_logo.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="102"/>
+                </FileInfo>
+            </File>
             <File Path="src/user_source/hdl_source/yingxu_cn_font.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
