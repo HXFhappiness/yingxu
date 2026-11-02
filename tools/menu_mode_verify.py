@@ -18,7 +18,7 @@ def main():
         start=text.index('    // Only a stable physical DIP move')
         b=text.index('    wire menu_real_change =',start)
         b=text.index('\n',b)+1
-        header='module menu_dip_filter(clk,rst_n,menu_override,sw,menu_real_change,sw_real_q,sw_real_valid);\ninput clk,rst_n,menu_override;input [7:0]sw;output menu_real_change;output [7:0]sw_real_q;output sw_real_valid;reg[7:0]sw_real_q;reg sw_real_valid;\n'
+        header='module menu_dip_filter(clk,rst_n,menu_override,sw,menu_real_change,sw_real_q,sw_real_valid);\ninput clk,rst_n,menu_override;input [7:0]sw;output menu_real_change;output [7:0]sw_real_q;output sw_real_valid;reg[7:0]sw_real_q;reg sw_real_valid;reg[26:0]sw_boot_cnt;wire menu_return=0;\n'
         (O/'dip_filter.v').write_text(header+text[start:b]+'endmodule\n')
         y=shutil.which('yosys') or '/workspace/.yingxu-env/yosys/usr/bin/yosys'
         with (O/'dip_filter_check.log').open('w')as f:
@@ -32,10 +32,19 @@ def main():
         historical=O/'hardware_test_baseline.v';historical.write_text(text)
         sources=[str(historical)if f=='hardware_test_P0_UART_V5_CRC32.v'else f for f in sources]
     sources += [str(p.relative_to(R)) for p in sorted((R/'src/user_source/hdl_source/media/mjpeg').glob('*.v'))]
-    sources=list(dict.fromkeys(sources))+['tb/models/d3_sdram_models.v','tb/models/d3_board_models.v','tb/tb_menu_mode_paths.v']
+    sources=list(dict.fromkeys(sources))+['tb/models/d3_sdram_models.v','tb/models/d3_board_models.v']
+    if a.baseline_ref:
+        legacy=O/'legacy_paths.v';legacy.write_text(subprocess.check_output(['git','show','0f92aac:tb/tb_menu_mode_paths.v'],cwd=R,text=True));sources.append(str(legacy))
+    else:sources.append('tb/tb_menu_mode_paths.v')
     v=shutil.which('verilator') or '/workspace/.yingxu-env/verilator/usr/bin/verilator'
     env=os.environ.copy()
     if '.yingxu-env' in v:env['VERILATOR_ROOT']='/workspace/.yingxu-env/verilator/usr/share/verilator'
+    if not a.baseline_ref:
+        boot=O/'vboot'
+        for cmd,log in [([v,'--binary','--timing','-j','4','-Wno-fatal','--top-module','tb_menu_boot_filter','--Mdir',boot,O/'dip_filter.v',R/'tb/tb_menu_boot_filter.v'],'boot_build.log'),([boot/'Vtb_menu_boot_filter'],'boot.log')]:
+            with (O/log).open('w')as f:rc=subprocess.call([str(x)for x in cmd],cwd=R,env=env,stdout=f,stderr=subprocess.STDOUT)
+            if rc:raise SystemExit((O/log).read_text()[-6000:])
+        print((O/'boot.log').read_text(),end='',flush=True)
     for cmd,log in [([v,'--binary','--timing','-j','4','-Wno-fatal','--top-module','tb_menu_mode_paths','--Mdir',O/'vpaths',*sources],'build.log'),([O/'vpaths/Vtb_menu_mode_paths',f'+file={O}/control.yxv'],'paths.log')]:
         with (O/log).open('w')as f:rc=subprocess.call([str(x)for x in cmd],cwd=R,env=env,stdout=f,stderr=subprocess.STDOUT)
         if rc:raise SystemExit((O/log).read_text()[-6000:])

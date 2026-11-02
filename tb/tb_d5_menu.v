@@ -1,8 +1,11 @@
 `timescale 1ns/1ps
 
+bind yingxu_sdram_control_4port d3_sdram_memory model(
+    .clk(CLK),.read(Read),.write(Write),.oe(oe),.addr(mADDR),
+    .in_req(IN_REQ),.out_valid(OUT_VALID),.mask(mj_owner?mj_mask:4'd0),.data(mDATAIN),.dq(DQ));
 module tb_d5_menu;
     reg clk=0;always #10 clk=~clk;
-    reg rst_n=0,key0=1,key1=1;reg [7:0] sw=8'h77;
+    reg rst_n=0,key0=1,key1=1;reg [7:0] sw=8'hff;
     hardware_test #(.SIM_FAST_BOOT(1)) dut(
         .clk(clk),.rst_n(rst_n),.sw(sw),.key_0(key0),.key_1(key1),
         .sd_miso(1'b1),.uart_rx(1'b1),.I2S_DI(1'b0),.I2S_RCLK(1'b0),.I2S_BCLK(1'b0),
@@ -39,6 +42,7 @@ module tb_d5_menu;
             // Accelerate only the elapsed-time counter, exercise terminal edge.
             dut.menu_hold_cnt=27'd99_999_999;
             repeat(5)@(negedge clk);key0=1;
+            wait(!dut.video_owned);
             repeat(15)@(negedge clk);
             if(!dut.menu_ui || dut.img_idx!=0 || dut.menu_sel!=0)$fatal(1,"hold return");
         end
@@ -47,6 +51,7 @@ module tb_d5_menu;
         #200;rst_n=1;repeat(20)@(negedge clk);
         if(!dut.menu_ui || dut.menu_sel!=0 || dut.lba_rom[0]!=76032 ||
            dut.lba_rom[1]!=32672 || dut.lba_rom[8]!=70560)$fatal(1,"boot/menu image table");
+        dut.sw_boot_cnt=27'd24_999_998;
         wait(dut.sw_real_valid);
         wait(!dut.design_top_wrapper.S_rst_pix);
         wait(!dut.design_top_wrapper.boot_wipe && !dut.design_top_wrapper.clr_active);
@@ -60,8 +65,8 @@ module tb_d5_menu;
         press(0);
         if(dut.menu_ui || dut.img_idx!=1 || dut.game_mode || !dut.menu_override || clears==0)$fatal(1,"photo confirm");
         back_to_menu();
-        press(1);press(0);
-        if(!dut.cart_active || !dut.game_mode || dut.menu_ui)$fatal(1,"game confirm ctx=%b sel=%d pat=%h override=%b game=%b cart=%b vs=%b",dut.menu_ui,dut.menu_sel,dut.menu_pattern,dut.menu_override,dut.game_mode,dut.cart_active,dut.video_requested);
+        press(1);press(0);press(0);
+        if(dut.cart_active || !dut.game_mode || dut.game_sel2!=0 || dut.menu_ui)$fatal(1,"game confirm ctx=%b sel=%d pat=%h override=%b game=%b cart=%b vs=%b",dut.menu_ui,dut.menu_sel,dut.menu_pattern,dut.menu_override,dut.game_mode,dut.cart_active,dut.video_requested);
         back_to_menu();
         press(1);press(1);press(0);
         if(!dut.video_requested || dut.menu_ui)$fatal(1,"video confirm");
@@ -80,7 +85,7 @@ module tb_d5_menu;
         repeat(5)@(negedge clk);
         if(!dut.menu_ui || dut.img_idx!=0)$fatal(1,"video fault return");
         release dut.video_failed;
-        $display("D5_MENUCHK: PASS boot LBA, five rows/wrap, wipe repair, photo/cart/video/music, about, hold return, DIP escape, video failure");
+        $display("D5_MENUCHK: PASS boot LBA, five rows/wrap, wipe repair, photo/hardware-breakout/video/music, about, hold return, DIP escape, video failure");
         $finish;
     end
     initial begin #100000000;$fatal(1,"menu timeout");end

@@ -94,18 +94,19 @@ module hardware_test #(
     // One bit per image: which indicator segments are valid.
     localparam [7:0] SEG_MASK = (IMG_COUNT >= 8) ? 8'hFF : (8'hFF >> (8 - IMG_COUNT));
 
-    // D5: menu interaction layer (docs/D5_MENU_TASK.md). menu_override=1
-    // replaces the DIP decode with menu_pattern (virtual switches). Boot
-    // enters the menu; key1 cycles the selection, key0 confirms; a real DIP
-    // change or a 2 s key0 hold in a mode returns to the menu.
+    // D6/D7 menu: hardware pages, virtual switches, qualified physical DIP
+    // escape, SW7+key0 return and a 2 s compatibility fallback.
     reg        menu_override;
     reg [7:0]  menu_pattern;
     reg [2:0]  menu_sel;
+    reg        menu_page;
+    reg [26:0] sw_boot_cnt; // D6: ignore physical switch settling for 0.5 s
     reg [7:0]  sw_real_q;
     reg        sw_real_valid;
     wire [7:0] sw_eff = menu_override ? menu_pattern : sw;
     localparam [7:0] MENU_PAT_PHOTO = 8'hFF;   // SW7 OFF: photo / menu
-    localparam [7:0] MENU_PAT_GAME  = 8'h1F;   // SW7/SW5/SW6 active-low: invaders cart
+    localparam [7:0] MENU_PAT_GAME  = 8'h7F;   // D7: hardware breakout
+    localparam [7:0] MENU_PAT_PLANE = 8'h5F;   // D7 virtual code; menu-only decode below
     localparam [7:0] MENU_PAT_VIDEO = 8'h77;   // SW7 ON + SW3 ON: video
     localparam [7:0] MENU_PAT_MUSIC = 8'h6F;   // SW7 ON + SW4 ON: music
 
@@ -178,7 +179,10 @@ wire music_sw4 = ~sw4_s[1];                      // SW4 ON = 音乐
 reg  [1:0] sw6_sync;   // G6: moved up (game_sel2/music_on_w both use it)
 wire music_on_w = music_sw4 & game_mode;
 // G6: 音乐使能统一用这一根：SW4 ON + 游戏模式 + SW5/SW6 均 OFF（纯音乐，不抢 SD）
-wire [1:0] game_sel2 = ~sw5_s[1]   ? 2'd2 :
+// D7 specifies 5F for the hardware plane game. Physical 5F remains the
+// legacy cartridge preset; only the menu virtual code maps to game 1.
+wire [1:0] game_sel2 = (menu_override && menu_pattern==MENU_PAT_PLANE) ? 2'd1 :
+                           ~sw5_s[1]   ? 2'd2 :
                            ~sw6_sync[1] ? 2'd1 : 2'd0;
     wire       cart_active = game_mode && (game_sel2 == 2'd2);
 wire [27:0] wav_base_w;
@@ -284,13 +288,14 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .I_bmp_sd_data  (sd_bmp_sd_data),
         .I_bmp_sd_valid (sd_bmp_sd_valid),
         .O_bmp_sd_ready (sd_bmp_sd_ready),
-        .I_bmp_start    (video_handoff || video_owned ? 1'b0 : (sd_bmp_start_pulse | video_photo_reload)),
+        .I_bmp_start    (video_handoff || video_owned || menu_ui ? 1'b0 : sd_bmp_start_pulse),
         .I_sd_fail      (sd_fail),
         .I_img_index    (img_index),
         .I_game_mode    (game_mode),
         .I_music_en     (music_on_w & ~cart_busy_w),
-        .I_menu_ctx     (menu_ui),
-        .I_menu_sel     (menu_sel),
+        .I_menu_ctx     (menu_visible),
+        .I_menu_sel     (menu_fallback ? 3'd0:menu_sel),
+        .I_menu_page    (menu_fallback ? 1'b0:menu_page),
         .O_wav_base     (wav_base_w),
         .O_wav_restart  (wav_restart_w),
         .O_wav_sstate   (wav_dbg_sstate_w),
@@ -445,7 +450,22 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             else menu_hold_cnt <= menu_hold_cnt + 27'd1;
         end else menu_hold_cnt <= 27'd0;
     end
+    // D6: an edge, not a held key; the shared lock prevents re-confirming
+    // the returned main menu. The 2 s hold remains a compatibility fallback.
+    reg key0_pp;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n)key0_pp<=1'b1;else key0_pp<=key_0;
+    end
+    wire key0_exit=(sw[7]==1'b0) && key0_pp && !key_0;
     wire menu_ui = menu_override && (menu_pattern == MENU_PAT_PHOTO) && (img_idx == 4'd0);
+    // Maintenance faults keep MISE/I1 latched until the operator returns.
+    // Their fallback picture is hardware too, with no background SD read.
+    wire menu_fallback = !menu_override && video_failed;
+    wire menu_visible = menu_ui || menu_fallback;
+    wire menu_return = ((!menu_ui || menu_page) && key0_exit && key_lock==0) ||
+                       (menu_override && !menu_ui && menu_hold_2s) ||
+                       (menu_override && !video_failed_q && video_failed) ||
+                       (!menu_override && menu_hold_2s);
     // Only a stable physical DIP move may leave the virtual-switch menu.
     // sw_eff/menu_pattern changes are deliberately outside this detector.
     (* async_reg="true" *) reg [7:0] menu_sw_meta,menu_sw_sync;
@@ -457,9 +477,11 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         if(!rst_n)begin
             menu_sw_meta<=8'hFF;menu_sw_sync<=8'hFF;menu_sw_candidate<=8'hFF;
             sw_real_q<=8'hFF;sw_real_valid<=0;menu_sw_count<=0;menu_sw_changed<=0;
+            sw_boot_cnt<=0;
         end else begin
             menu_sw_meta<=sw;menu_sw_sync<=menu_sw_meta;menu_sw_changed<=0;
-            if(!menu_override)begin
+            if(sw_boot_cnt!=27'd25_000_000)sw_boot_cnt<=sw_boot_cnt+27'd1;
+            if(sw_boot_cnt!=27'd25_000_000 || !menu_override || menu_return)begin
                 // Re-entering the menu establishes a fresh physical baseline;
                 // a DIP move made in direct mode must not eject the menu later.
                 menu_sw_candidate<=menu_sw_sync;sw_real_q<=menu_sw_sync;
@@ -474,7 +496,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             end else menu_sw_count<=0;
         end
     end
-    wire menu_real_change = menu_override && menu_sw_changed;
+    wire menu_real_change = menu_override && menu_sw_changed && !menu_return;
 
     // ------------------------------------------------------------------
     // Key handling: edge detect + short lockout (the validated baseline).
@@ -518,6 +540,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             menu_override <= 1'b1;
             menu_pattern <= MENU_PAT_PHOTO;
             menu_sel <= 3'd0;
+            menu_page <= 1'b0;
             img_idx     <= 4'd0;
             img_restart <= 1'b0;
             key0_p      <= 1'b1;
@@ -539,13 +562,11 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
 
             // SW6: reload the current image (must also re-arm the loader).
             if (menu_real_change) begin
-                menu_override <= 1'b0; img_idx <= 4'd0;
+                menu_override <= 1'b0; menu_page<=1'b0; img_idx <= 4'd1;
             end
-            else if ((menu_override && !menu_ui && menu_hold_2s) ||
-                     (menu_override && !video_failed_q && video_failed) ||
-                     (!menu_override && menu_hold_2s)) begin
+            else if (menu_return) begin
                 menu_override <= 1'b1; menu_pattern <= MENU_PAT_PHOTO;
-                menu_sel <= 3'd0; img_idx <= 4'd0; img_restart <= 1'b1;
+                menu_sel <= 3'd0; menu_page<=1'b0; img_idx <= 4'd0;
                 key_lock <= 24'hFFFFFF;
             end
             else if (!game_mode && !video_requested && !video_owned && !menu_ui && key_lock == 24'd0 && (sw6_sync[1] ^ sw6_p)) begin
@@ -554,12 +575,12 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             end
             else if (!game_mode && !video_requested && !video_owned && !menu_ui && key_lock == 24'd0 && key1_p && !key_1) begin
                 key_lock    <= 24'hFFFFFF;
-                img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
+                img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd1 : (img_idx + 4'd1);
                 img_restart <= 1'b1;
             end
             else if (!game_mode && !video_requested && !video_owned && !menu_ui && key_lock == 24'd0 && key0_p && !key_0) begin
                 key_lock    <= 24'hFFFFFF;
-                img_idx     <= (img_idx == 4'd0) ? (IMG_COUNT - 1) : (img_idx - 4'd1);
+                img_idx     <= (img_idx <= 4'd1) ? (IMG_COUNT - 1) : (img_idx - 4'd1);
                 img_restart <= 1'b1;
             end
             // Auto carousel: advance when the timer expires and nothing else is
@@ -567,7 +588,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             else if (!game_mode && !video_requested && !video_owned && !menu_ui && key_lock == 24'd0 && !sd_dbg_busy &&
                      carousel_cnt == CAROUSEL_MAX) begin
                 key_lock    <= 24'hFFFFFF;
-                img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd0 : (img_idx + 4'd1);
+                img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd1 : (img_idx + 4'd1);
                 img_restart <= 1'b1;
             end
             // D5 menu: key1 cycles the selection, key0 confirms. The photo
@@ -575,13 +596,17 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             else if (menu_override && menu_ui &&
                      key_lock == 24'd0 && key1_p && !key_1) begin
                 key_lock <= 24'hFFFFFF;
-                menu_sel <= (menu_sel == 3'd4) ? 3'd0 : menu_sel + 3'd1;
+                if(menu_page)menu_sel <= (menu_sel==3'd1) ? 3'd0 : 3'd1;
+                else menu_sel <= (menu_sel == 3'd4) ? 3'd0 : menu_sel + 3'd1;
             end
             else if (menu_override && menu_ui &&
                      key_lock == 24'd0 && key0_p && !key_0) begin
                 key_lock <= 24'hFFFFFF;
-                case (menu_sel)
-                    3'd1: menu_pattern <= MENU_PAT_GAME;
+                if(menu_page)begin
+                    if(menu_sel==0)menu_pattern<=MENU_PAT_GAME;
+                    else menu_pattern<=MENU_PAT_PLANE;
+                end else case (menu_sel)
+                    3'd1: begin menu_page<=1'b1;menu_sel<=3'd0;end
                     3'd2: menu_pattern <= MENU_PAT_VIDEO;
                     3'd3: menu_pattern <= MENU_PAT_MUSIC;
                     3'd0: begin img_idx <= 4'd1; img_restart <= 1'b1; end
@@ -653,9 +678,9 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     wire tr_step = (tr_ms == 20'd49_999) && (tr_div == 6'd24);   // 25 ms per fade step
 
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n || video_requested || video_owned) begin
-            // Only power-on needs the sentinel. During video, keep a valid
-            // menu index for the photo-reload pulse on failure/exit.
+        if (!rst_n || video_requested || video_owned || menu_ui || menu_return || game_mode) begin
+            // Index 0 is the hardware menu, never a BMP. Cancel any photo
+            // transition on return, and re-arm real photos (indices 1..8).
             if(!rst_n) load_idx <= 4'd15;
             else       load_idx <= 4'd0;
             tr_state     <= TR_IDLE;
@@ -694,7 +719,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
                     // 2 s power-on reset + 40 ms flush. Firing at ~400 ms (fade
                     // time) drops the request inside the probe's reset and the
                     // FSM never retries because img_idx then equals load_idx.
-                    if (!game_mode && sd_dbg_init_done && (img_idx != load_idx)) begin
+                    if (!game_mode && !menu_ui && sd_dbg_init_done && (img_idx != 0) && (img_idx != load_idx)) begin
                         load_idx <= img_idx;
                         tr_state <= TR_OUT;
                     end
@@ -948,7 +973,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .trigger_sw                (1'b0),   // SW6 is handled in the top now
         .start_sector              (video_owned ? video_sd_lba : cart_busy_w ? cart_lba_sel :
                              music_on_w ? wav_base_w : img_lba),
-        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? 1'b0 : (load_start | video_photo_reload | cart_restart_w | cart_swap | wav_restart_w)),
+        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? 1'b0 : (load_start | cart_restart_w | cart_swap | wav_restart_w)),
         .out_stream_data           (sd_bmp_sd_data),
         .out_stream_valid          (sd_bmp_sd_valid),
         .out_stream_ready          (sd_bmp_sd_ready),
@@ -1053,7 +1078,7 @@ wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? (video_d
         .i_ca    (cart_active),
         .i_sw    (sw),
         .i_ls    ((video_requested || video_owned || video_failed) ? {sd_rst,video_sd_reset,sd_dbg_init_done}:cart_lstate_w),
-        .i_wc    ((video_requested || video_owned || video_failed) ? (video_diag_valid ? video_fail_index:video_first_sectors[9:0]):menu_ui ? {6'd0,menu_override,menu_sel}:cart_wcnt_w),
+        .i_wc    ((video_requested || video_owned || video_failed) ? (video_diag_valid ? video_fail_index:video_first_sectors[9:0]):menu_ui ? {5'd0,menu_page,menu_override,menu_sel}:cart_wcnt_w),
         .i_cbu   (cart_busy_w),
         .i_sprc  (t_sprc),
         .i_cfl   ((video_requested || video_owned || video_failed) ? {video_owned,sd_dbg_init_done,sd_dbg_busy,video_handoff}:cart_flags_w),

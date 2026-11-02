@@ -25,6 +25,7 @@ module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
     input  wire                             I_game_mode                            ,
     input  wire                             I_menu_ctx                            ,
     input  wire         [ 2: 0]             I_menu_sel                            ,
+    input  wire                             I_menu_page                           ,
     input  wire                             I_music_en                             ,
     output wire [27:0]                      O_wav_base                             ,
     output wire                             O_wav_restart                          ,
@@ -584,7 +585,13 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
 
     // Game mode blanks the background: the last photo must not stay behind the
     // playfield.
-    wire [23:0] S_base_rgb = I_game_mode ? 24'h000000 :
+    wire [23:0] menu_rgb;
+    yingxu_menu_ui menu_renderer(
+        .clk(S_pixel_clk),.rst(S_rst_pix),.pixel_x(S_pixel_x),
+        .pixel_y({1'b0,S_pixel_y}),.pixel_active(S_pixel_active),
+        .menu_visible(menu_ctx_qq),.page(menu_page_qq),.sel(menu_sel_qq),
+        .menu_rgb(menu_rgb));
+    wire [23:0] S_base_rgb = menu_ctx_qq ? menu_rgb : I_game_mode ? 24'h000000 :
                              I_sd_fail ? 24'hC000C0 :
                              bar_on    ? (bar_hit ? 24'hFFC000 : 24'h502020) :
                                          S_player_rgb;
@@ -652,6 +659,7 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
     // D5: slot 15 selection bar. Keep the coordinate ROM as an explicit case
     // rather than a chained conditional in the clocked process (TD reader).
     reg menu_ctx_q, menu_ctx_qq;reg [2:0] menu_sel_q, menu_sel_qq;
+    reg menu_page_q,menu_page_qq;
     reg bar_we_q;reg [9:0] bar_y_q;reg [22:0] bar_refresh;
     reg bar_wipe_q, bar_ctx_prev, bar_enabled_q;
     reg [2:0] bar_sel_prev;
@@ -662,11 +670,13 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
                      bar_refresh_due || bar_wipe_q);
     always @(posedge S_pixel_clk or posedge S_rst_pix) begin
         if (S_rst_pix) begin menu_ctx_q<=0;menu_ctx_qq<=0;menu_sel_q<=0;menu_sel_qq<=0;
+            menu_page_q<=0;menu_page_qq<=0;
             bar_we_q<=0;bar_y_q<=0;bar_refresh<=0;bar_wipe_q<=0;
             bar_ctx_prev<=0;bar_sel_prev<=0;bar_enabled_q<=0;end
         else begin
             menu_ctx_q<=I_menu_ctx;menu_ctx_qq<=menu_ctx_q;
             menu_sel_q<=I_menu_sel;menu_sel_qq<=menu_sel_q;
+            menu_page_q<=I_menu_page;menu_page_qq<=menu_page_q;
             bar_refresh<=bar_refresh+1'b1;
             bar_wipe_q<=clr_active;
             bar_ctx_prev<=menu_ctx_qq;bar_sel_prev<=menu_sel_qq;

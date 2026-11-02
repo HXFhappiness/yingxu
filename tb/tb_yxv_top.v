@@ -119,6 +119,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
         nframes=le32(12);pcm_bytes=le32(20);pcm_off=(le32(32+(nframes-1)*8)+le32(36+(nframes-1)*8)+511)/512*512;
         gfd=$fopen(goldname,"rb");if(!gfd)$fatal(1,"top gold open");
         #200;rst_n=1;
+        @(negedge clk);dut.sw_boot_cnt=27'd24_999_998;
         // D5 boots into the menu. Exercise the physical DIP escape before
         // the existing D4 direct-mode playback/fault regressions.
         wait(dut.sw_real_valid);
@@ -149,7 +150,9 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
         end
         if(negative || noinit)begin
             wait(dut.video_failed && !dut.video_owned);repeat(20)@(posedge clk);
-            if(reloads!=1 || !dut.video_failed || dut.game_mode || !dut.sd_dbg_busy)$fatal(1,"fallback did not reload photo reloads=%0d busy=%b",reloads,dut.sd_dbg_busy);
+            if(reloads!=1 || !dut.video_failed || dut.game_mode)$fatal(1,"fallback ownership/diagnostic state");
+            if(!dut.menu_visible || !`WRAPPER.menu_ctx_qq || dut.load_start || `WRAPPER.I_bmp_start)
+                $fatal(1,"D7 fallback did not use hardware menu");
             if(dut.img_lba!=28'd76032)$fatal(1,"fallback menu LBA invalid load_idx=%0d LBA=%0d",dut.load_idx,dut.img_lba);
             if(noinit && `VIDEO.error_code!=8'h9F)$fatal(1,"no-init acquisition watchdog wrong error");
             if(noinit)begin
@@ -159,9 +162,9 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
                     $fatal(1,"header diagnostic not retained");
             end
             #250000000;
-            if(!dut.video_failed || dut.video_owned)$fatal(1,"fault snapshot cleared while photo runs");
+            if(!dut.video_failed || dut.video_owned)$fatal(1,"fault snapshot cleared while hardware menu runs");
             $display("DIAGWIRECHK: MISE=%h SP=%h ACC=%h WC=%h DATA_DISABLED=%h",dut.t_mise,dut.t_sprc,dut.video_fail_count,dut.video_fail_index,dut.video_fail_word);
-            $display("FALLBACKCHK: PASS bad-header=%0d no-init=%0d finite reject owned=0 failed=1 photo-reloads=1 next-LBA=%0d",negative,noinit,dut.img_lba);$finish;
+            $display("FALLBACKCHK: PASS bad-header=%0d no-init=%0d finite reject owned=0 failed=1 release-events=1 hardware-menu=1 unused-LBA=%0d",negative,noinit,dut.img_lba);$finish;
         end
         wait(pops>=frames_goal*2000+1);
         if(gold_frames<frames_goal || swaps<frames_goal || pixels<frames_goal*307200 || avs<1000000 || max_av>=2000 || dut.video_dropped!=0)
