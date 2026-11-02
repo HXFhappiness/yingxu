@@ -77,6 +77,7 @@ module tb_d5_menu;
         repeat(4)press(1);press(0);
         if(!dut.menu_ui || dut.menu_sel!=4)$fatal(1,"about placeholder");
         // DIP change must escape even while the key lock is active.
+        wait(dut.sw_real_valid);
         @(negedge clk);sw=8'h6f;repeat(1000016)@(negedge clk);
         if(dut.menu_override || !dut.music_on_w)$fatal(1,"physical DIP escape");
         back_to_menu();
@@ -88,6 +89,6 @@ module tb_d5_menu;
         $display("D5_MENUCHK: PASS boot LBA, five rows/wrap, wipe repair, photo/hardware-breakout/video/music, about, hold return, DIP escape, video failure");
         $finish;
     end
-    initial begin #100000000;$fatal(1,"menu timeout");end
+    initial begin #200000000;$fatal(1,"menu timeout");end
 endmodule
 

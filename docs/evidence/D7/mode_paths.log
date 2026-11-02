@@ -1,0 +1,16 @@
+D6_BOOT PASS >20ms startup preset ignored, 25000000-cycle terminal, initial baseline has no event
+D7_PATH PASS path=0 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=1 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=2 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=3 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=4 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=0 glitch=1 mode persists, SW7+key0 return
+D7_PATH PASS path=1 glitch=1 mode persists, SW7+key0 return
+D7_PATH PASS path=2 glitch=1 mode persists, SW7+key0 return
+D7_PATH PASS path=3 glitch=1 mode persists, SW7+key0 return
+D7_PATH PASS path=4 glitch=1 mode persists, SW7+key0 return
+D7_CONTROL_ACCEPTANCE PASS paths=10 pages/wrap/about, no menu BMP, D6 short exit, hold fallback, boot window, raw DIP glitches/bounce/maintenance
+- tb/tb_menu_mode_paths.v:128: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 780ms; walltime 127.057 s; speed 6.357 ms/s
+- Verilator: cpu 122.710 s on 1 threads; alloced 44 MB

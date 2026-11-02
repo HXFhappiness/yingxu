@@ -1,0 +1,33 @@
+{
+  "implementation_commit": "64595a7",
+  "base": "0f92aac",
+  "taskbook": "a1645d1",
+  "td_executed": false,
+  "bitstream_generated": false,
+  "registered_td_inputs": 65,
+  "source_count": 126,
+  "pixel_scenarios": 7,
+  "pixel_comparisons": 6451200,
+  "mode_path_cases": 10,
+  "full_boot_cycles": 25000000,
+  "photo_flush_candidate_landed": false,
+  "test_input_sha256": {
+    "tools/d7_menu_verify.py": "211cbbd722c95e36180b753b0102114e39345c0bfcbdb9e6696e6bf8501ac61e",
+    "tools/menu_mode_verify.py": "d9014e9d594a52b2a128f8f6241dacd63bbef2b91d746e5f0cff07b0f646d758",
+    "tools/d5_menu_verify.py": "43f1b5d5daf9a22d691ade3ab12f862f462f81aaa1ae04e49746f671cfcedd99",
+    "tools/prepare_unified_td.py": "11beabaa00328e101103e68f2425fb7021735879bfb7ecbf466607335b1e6825",
+    "tb/tb_d7_menu_pixels.v": "6a77d7dd71af370aebaf37bd068b27853970e4a866374e09047b854ad3f63431",
+    "tb/tb_menu_mode_paths.v": "008d229480efcac1c10a8508bf1421c46a259b28c3b76ccc5eb1cfce03631f0a",
+    "tb/tb_menu_boot_filter.v": "7af379b8f94088069f1ff07bc52dbea7b02177aa9abfea0bdba6726559c6d08c",
+    "tb/tb_d5_menu.v": "a83fd9ca02bc17e2bba24461232ac13cad4ce50bc982ec26dccf31a979f14024",
+    "tb/tb_yxv_top.v": "cc5ae2cd73f09c0479ef0ded61d1af188e4839ae6a7298b68d870f4b5fc9cc5f"
+  },
+  "test_commands": [
+    "python3 tools/d7_menu_verify.py",
+    "python3 tools/menu_mode_verify.py",
+    "python3 tools/d5_menu_verify.py",
+    "python3 tools/yxv_d3_verify.py --frames 2",
+    "python3 tools/yxv_d3_verify.py --bad 1",
+    "python3 tools/prepare_unified_td.py"
+  ]
+}

@@ -1,0 +1,364 @@
+
+-- Running command `read_verilog /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v; hierarchy -check -top yingxu_menu_ui; proc; opt; check -assert; stat' --
+
+1. Executing Verilog-2005 frontend: /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v
+Parsing Verilog input from `/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v' to AST representation.
+Generating RTLIL representation for module `\yingxu_cn_font'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: /workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v
+Parsing Verilog input from `/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v' to AST representation.
+Generating RTLIL representation for module `\yingxu_menu_ui'.
+Successfully finished Verilog frontend.
+
+3. Executing HIERARCHY pass (managing design hierarchy).
+
+3.1. Analyzing design hierarchy..
+Top module:  \yingxu_menu_ui
+Used module:     \yingxu_cn_font
+
+3.2. Analyzing design hierarchy..
+Top module:  \yingxu_menu_ui
+Used module:     \yingxu_cn_font
+Removed 0 unused modules.
+
+4. Executing PROC pass (convert processes to netlists).
+
+4.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+4.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 8 switch rules as full_case in process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:34$46 in module yingxu_menu_ui.
+Marked 5 switch rules as full_case in process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18 in module yingxu_menu_ui.
+Removed 17 dead cases from process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1 in module yingxu_cn_font.
+Marked 18 switch rules as full_case in process $proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1 in module yingxu_cn_font.
+Removed a total of 17 dead cases.
+
+4.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 0 redundant assignments.
+Promoted 6 assignments to connections.
+
+4.4. Executing PROC_INIT pass (extract init attributes).
+
+4.5. Executing PROC_ARST pass (detect async resets in processes).
+
+4.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 17 switches.
+<suppressed ~14 debug messages>
+
+4.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:34$46'.
+     1/13: $8\char_idx[4:0]
+     2/13: $7\char_idx[4:0]
+     3/13: $5\char_valid[0:0]
+     4/13: $6\char_idx[4:0]
+     5/13: $5\char_idx[4:0]
+     6/13: $4\char_valid[0:0]
+     7/13: $3\char_valid[0:0]
+     8/13: $4\char_idx[4:0]
+     9/13: $3\char_idx[4:0]
+    10/13: $2\char_idx[4:0]
+    11/13: $2\char_valid[0:0]
+    12/13: $1\char_valid[0:0]
+    13/13: $1\char_idx[4:0]
+Creating decoders for process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+     1/15: $5\glyph_row[4:0]
+     2/15: $5\line_idx[2:0]
+     3/15: $5\text_row[0:0]
+     4/15: $4\glyph_row[4:0]
+     5/15: $4\line_idx[2:0]
+     6/15: $4\text_row[0:0]
+     7/15: $3\glyph_row[4:0]
+     8/15: $3\line_idx[2:0]
+     9/15: $3\text_row[0:0]
+    10/15: $2\glyph_row[4:0]
+    11/15: $2\line_idx[2:0]
+    12/15: $2\text_row[0:0]
+    13/15: $1\glyph_row[4:0]
+    14/15: $1\line_idx[2:0]
+    15/15: $1\text_row[0:0]
+Creating decoders for process `\yingxu_cn_font.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1'.
+     1/18: $18\bits[31:0]
+     2/18: $17\bits[31:0]
+     3/18: $16\bits[31:0]
+     4/18: $15\bits[31:0]
+     5/18: $14\bits[31:0]
+     6/18: $13\bits[31:0]
+     7/18: $12\bits[31:0]
+     8/18: $11\bits[31:0]
+     9/18: $10\bits[31:0]
+    10/18: $9\bits[31:0]
+    11/18: $8\bits[31:0]
+    12/18: $7\bits[31:0]
+    13/18: $6\bits[31:0]
+    14/18: $5\bits[31:0]
+    15/18: $4\bits[31:0]
+    16/18: $3\bits[31:0]
+    17/18: $2\bits[31:0]
+    18/18: $1\bits[31:0]
+
+4.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+No latch inferred for signal `\yingxu_menu_ui.\char_idx' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:34$46'.
+No latch inferred for signal `\yingxu_menu_ui.\char_valid' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:34$46'.
+No latch inferred for signal `\yingxu_menu_ui.\text_row' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+No latch inferred for signal `\yingxu_menu_ui.\line_idx' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+No latch inferred for signal `\yingxu_menu_ui.\glyph_row' from process `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+No latch inferred for signal `\yingxu_cn_font.\bits' from process `\yingxu_cn_font.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1'.
+
+4.9. Executing PROC_DFF pass (convert process syncs to FFs).
+
+4.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+4.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 8 empty switches in `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:34$46'.
+Removing empty process `yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:34$46'.
+Found and cleaned up 5 empty switches in `\yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+Removing empty process `yingxu_menu_ui.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_menu_ui.v:21$18'.
+Found and cleaned up 18 empty switches in `\yingxu_cn_font.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1'.
+Removing empty process `yingxu_cn_font.$proc$/workspace/yingxu-fpga/src/user_source/hdl_source/yingxu_cn_font.v:8$1'.
+Cleaned up 31 empty switches.
+
+4.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_menu_ui.
+<suppressed ~4 debug messages>
+Optimizing module yingxu_cn_font.
+<suppressed ~2 debug messages>
+
+5. Executing OPT pass (performing simple optimizations).
+
+5.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_menu_ui.
+Optimizing module yingxu_cn_font.
+
+5.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_menu_ui'.
+<suppressed ~21 debug messages>
+Finding identical cells in module `\yingxu_cn_font'.
+<suppressed ~51 debug messages>
+Removed a total of 24 cells.
+
+5.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_menu_ui..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 1/2 on $mux $procmux$389.
+    dead port 1/2 on $mux $procmux$383.
+    dead port 1/2 on $mux $procmux$380.
+    dead port 1/2 on $mux $procmux$374.
+    dead port 1/2 on $mux $procmux$371.
+    dead port 1/2 on $mux $procmux$365.
+    dead port 1/2 on $mux $procmux$362.
+    dead port 1/2 on $mux $procmux$356.
+    dead port 1/2 on $mux $procmux$353.
+    dead port 1/2 on $mux $procmux$350.
+    dead port 1/2 on $mux $procmux$344.
+    dead port 1/2 on $mux $procmux$341.
+    dead port 1/2 on $mux $procmux$338.
+    dead port 1/2 on $mux $procmux$332.
+    dead port 1/2 on $mux $procmux$329.
+    dead port 1/2 on $mux $procmux$326.
+    dead port 1/2 on $mux $procmux$320.
+    dead port 1/2 on $mux $procmux$317.
+    dead port 1/2 on $mux $procmux$314.
+    dead port 1/2 on $mux $procmux$311.
+    dead port 1/2 on $mux $procmux$305.
+    dead port 1/2 on $mux $procmux$302.
+    dead port 1/2 on $mux $procmux$299.
+    dead port 1/2 on $mux $procmux$296.
+    dead port 1/2 on $mux $procmux$290.
+    dead port 1/2 on $mux $procmux$287.
+    dead port 1/2 on $mux $procmux$284.
+    dead port 1/2 on $mux $procmux$281.
+    dead port 2/2 on $mux $procmux$269.
+    dead port 2/2 on $mux $procmux$263.
+    dead port 2/2 on $mux $procmux$257.
+    dead port 2/2 on $mux $procmux$255.
+    dead port 2/2 on $mux $procmux$245.
+    dead port 1/2 on $mux $procmux$243.
+    dead port 2/2 on $mux $procmux$236.
+    dead port 1/2 on $mux $procmux$234.
+    dead port 2/2 on $mux $procmux$227.
+    dead port 1/2 on $mux $procmux$225.
+    dead port 2/2 on $mux $procmux$222.
+    dead port 2/2 on $mux $procmux$215.
+    dead port 1/2 on $mux $procmux$213.
+    dead port 2/2 on $mux $procmux$210.
+    dead port 2/2 on $mux $procmux$203.
+    dead port 1/2 on $mux $procmux$201.
+    dead port 2/2 on $mux $procmux$198.
+    dead port 2/2 on $mux $procmux$196.
+    dead port 2/2 on $mux $procmux$187.
+    dead port 1/2 on $mux $procmux$185.
+    dead port 2/2 on $mux $procmux$182.
+    dead port 1/2 on $mux $procmux$180.
+    dead port 2/2 on $mux $procmux$172.
+    dead port 1/2 on $mux $procmux$170.
+    dead port 2/2 on $mux $procmux$167.
+    dead port 1/2 on $mux $procmux$165.
+    dead port 2/2 on $mux $procmux$157.
+    dead port 1/2 on $mux $procmux$155.
+    dead port 2/2 on $mux $procmux$152.
+    dead port 1/2 on $mux $procmux$150.
+    dead port 2/2 on $mux $procmux$147.
+    dead port 1/2 on $mux $procmux$401.
+    dead port 1/2 on $mux $procmux$395.
+Running muxtree optimizer on module \yingxu_cn_font..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 2/2 on $mux $procmux$614.
+    dead port 2/2 on $mux $procmux$594.
+    dead port 2/2 on $mux $procmux$575.
+    dead port 2/2 on $mux $procmux$557.
+    dead port 2/2 on $mux $procmux$540.
+    dead port 2/2 on $mux $procmux$524.
+    dead port 2/2 on $mux $procmux$509.
+    dead port 2/2 on $mux $procmux$495.
+    dead port 2/2 on $mux $procmux$482.
+    dead port 2/2 on $mux $procmux$470.
+    dead port 2/2 on $mux $procmux$459.
+    dead port 2/2 on $mux $procmux$449.
+    dead port 2/2 on $mux $procmux$440.
+    dead port 2/2 on $mux $procmux$432.
+    dead port 2/2 on $mux $procmux$425.
+    dead port 2/2 on $mux $procmux$419.
+    dead port 2/2 on $mux $procmux$414.
+Removed 78 multiplexer ports.
+<suppressed ~7 debug messages>
+
+5.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_menu_ui.
+  Optimizing cells in module \yingxu_cn_font.
+Performed a total of 0 changes.
+
+5.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_menu_ui'.
+Finding identical cells in module `\yingxu_cn_font'.
+Removed a total of 0 cells.
+
+5.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+5.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_menu_ui..
+Finding unused cells or wires in module \yingxu_cn_font..
+Removed 0 unused cells and 252 unused wires.
+<suppressed ~2 debug messages>
+
+5.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_cn_font.
+Optimizing module yingxu_menu_ui.
+
+5.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+5.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \yingxu_cn_font..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Running muxtree optimizer on module \yingxu_menu_ui..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~7 debug messages>
+
+5.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \yingxu_cn_font.
+  Optimizing cells in module \yingxu_menu_ui.
+Performed a total of 0 changes.
+
+5.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\yingxu_cn_font'.
+Finding identical cells in module `\yingxu_menu_ui'.
+Removed a total of 0 cells.
+
+5.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+5.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \yingxu_cn_font..
+Finding unused cells or wires in module \yingxu_menu_ui..
+
+5.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module yingxu_cn_font.
+Optimizing module yingxu_menu_ui.
+
+5.16. Finished OPT passes. (There is nothing left to do.)
+
+6. Executing CHECK pass (checking for obvious problems).
+Checking module yingxu_cn_font...
+Checking module yingxu_menu_ui...
+Found and reported 0 problems.
+
+7. Printing statistics.
+
+=== yingxu_cn_font ===
+
+   Number of wires:                 37
+   Number of wire bits:            603
+   Number of public wires:           3
+   Number of public wire bits:      42
+   Number of ports:                  3
+   Number of port bits:             42
+   Number of memories:              17
+   Number of memory bits:        17408
+   Number of processes:              0
+   Number of cells:                 52
+     $eq                            16
+     $logic_not                      1
+     $meminit                       17
+     $memrd_v2                      17
+     $pmux                           1
+
+=== yingxu_menu_ui ===
+
+   Number of wires:                107
+   Number of wire bits:            504
+   Number of public wires:          21
+   Number of public wire bits:     141
+   Number of ports:                  9
+   Number of port bits:             54
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 98
+     $eq                             5
+     $ge                            10
+     $le                             4
+     $logic_and                     21
+     $logic_not                      4
+     $lt                             8
+     $mux                           34
+     $pmux                           3
+     $shiftx                         1
+     $sub                            7
+     yingxu_cn_font                  1
+
+=== design hierarchy ===
+
+   yingxu_menu_ui                    1
+     yingxu_cn_font                  1
+
+   Number of wires:                144
+   Number of wire bits:           1107
+   Number of public wires:          24
+   Number of public wire bits:     183
+   Number of ports:                 12
+   Number of port bits:             96
+   Number of memories:              17
+   Number of memory bits:        17408
+   Number of processes:              0
+   Number of cells:                149
+     $eq                            21
+     $ge                            10
+     $le                             4
+     $logic_and                     21
+     $logic_not                      5
+     $lt                             8
+     $meminit                       17
+     $memrd_v2                      17
+     $mux                           34
+     $pmux                           4
+     $shiftx                         1
+     $sub                            7
+

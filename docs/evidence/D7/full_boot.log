@@ -1,0 +1,5 @@
+D6_FULL_BOOT PASS 25000000 real cycles inhibited; long startup presets ignored; 20ms baseline/move; one event
+- /workspace/yingxu-fpga/tb/tb_menu_boot_filter.v:26: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 540ms; walltime 7.169 s; speed 75.432 ms/s
+- Verilator: cpu 7.159 s on 1 threads; alloced 32 MB

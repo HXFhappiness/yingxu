@@ -1,0 +1,16 @@
+TOP_FRAMECHK tag=0 cycles=2458696 pixels=307200/307200 zero-diff t=322881345000000
+TOP_FRAMECHK tag=1 cycles=2500106 pixels=307200/307200 zero-diff t=359180905000000
+TOP_START audio after preload t=359209435000000
+TOP_FRAMECHK tag=2 cycles=2497110 pixels=307200/307200 zero-diff t=409725875000000
+PLAYCHK: PASS samples=4001/4001 duration_ns=83333334 frames=3 swaps=3 drops=0/2 ratio_x1M=0
+AVCHK: PASS max_abs_samples=1656/2000 ratio_x10000=8280 checks=6113200
+TOP_PIXCHK: PASS words=460800 decoded zero-diff scanout pixels=1874458 RGB565-high-half-first
+TOP_PCMCHK: PASS samples=4001 L/R zero-diff including EOF loop 48k actual-clock
+RATECHK: PASS 48k error_ppm=0 limit=100 HDMI_samples=4000 zero-diff
+SDBUDGETCHK: PASS bytes=102400 measured_Bps=1228799 limit_Bps=1300000 PCM-from-SDRAM
+TOP_FRAMECHK tag=3 cycles=2492179 pixels=307200/307200 zero-diff t=460301555000000
+MODECHK: PASS switch-out quiescent photo-reload=1
+- tb/tb_yxv_top.v:185: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 460ms; walltime 134.237 s; speed 3.431 ms/s
+- Verilator: cpu 134.179 s on 1 threads; alloced 47 MB

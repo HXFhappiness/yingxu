@@ -1,0 +1,6 @@
+DIAGWIRECHK: MISE=3992 SP=01ce ACC=200 WC=000 DATA_DISABLED=00000000
+FALLBACKCHK: PASS bad-header=1 no-init=0 finite reject owned=0 failed=1 release-events=1 hardware-menu=1 unused-LBA=76032
+- tb/tb_yxv_top.v:167: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 290ms; walltime 87.004 s; speed 3.338 ms/s
+- Verilator: cpu 86.987 s on 1 threads; alloced 47 MB
