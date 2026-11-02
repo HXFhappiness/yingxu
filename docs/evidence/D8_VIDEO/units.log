@@ -1,0 +1,28 @@
+PHYBOUNDCHK: PASS last 8MB word read; unaligned/zero/9-word rejected without transaction
+PHYPORTCHK: PASS transactions=16 1..8word write/read zero-diff stalls owner real-controller done; display_words=128
+- tb/tb_mjpeg_physical.v:70: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 248us; walltime 0.013 s; speed 18.568 ms/s
+- Verilator: cpu 0.013 s on 1 threads; alloced 41 MB
+SUPPLYCHK: PASS frames=36 PCM=288000 bytes zero-diff all packed table entries JPEG through wrap zero-diff commands=40
+HEADERCHK: PASS bad magic code=92 finite reject drained-SD
+- tb/tb_yxv_loader.v:67: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 33ms; walltime 1.201 s; speed 27.333 ms/s
+- Verilator: cpu 1.201 s on 1 threads; alloced 57 MB
+SUPPLYCHK: PASS frames=512 PCM=4096000 bytes zero-diff all packed table entries JPEG through wrap zero-diff commands=517
+HEADERCHK: PASS bad magic code=92 finite reject drained-SD
+- tb/tb_yxv_loader.v:67: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 91ms; walltime 3.344 s; speed 27.073 ms/s
+- Verilator: cpu 3.344 s on 1 threads; alloced 57 MB
+SCANOUTCHK: PASS centered640x480 high-half-first both banks pixels=306240/305602 vblank swaps=2 stretched flush no-underflow
+- tb/tb_yxv_scanout.v:34: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 47ms; walltime 1.198 s; speed 39.426 ms/s
+- Verilator: cpu 1.198 s on 1 threads; alloced 32 MB
+PCMCHK: PASS pops=512 source_samples=128 loops=4 zero-diff L/R including EOF virtual-header reuse-WAV 48k
+- tb/tb_yxv_pcm.v:37: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 11ms; walltime 0.801 s; speed 13.339 ms/s
+- Verilator: cpu 0.801 s on 1 threads; alloced 33 MB

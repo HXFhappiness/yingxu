@@ -15,13 +15,17 @@ module yingxu_sdram_burst_port(
     output wire [31:0] phy_wdata,output wire [3:0] phy_mask,input wire phy_in_req,phy_out_valid,
     input wire [31:0] phy_rdata,input wire phy_done
 );
-    localparam IDLE=0,COLLECT=1,WAIT=2,TRANSFER=3,DRAIN=4;
+    // ACCEPT is a receiver acknowledgement: the payload is already registered.
+    // Retain 0..4 so the existing I1 physical-state codes stay compatible.
+    localparam IDLE=0,COLLECT=1,WAIT=2,TRANSFER=3,DRAIN=4,ACCEPT=5;
     reg [2:0] state;reg wr,bad;
     reg [20:0] address;reg [3:0] length,position;
     reg [31:0] buffer[0:7];
     assign debug_write={state,position}; // existing functional registers only
     assign idle=state==IDLE;
-    assign cmd_ready=idle && enable;
+    // D8: never let the two upstream arbiters commit on an idle permission
+    // alone. Hold their valid until this receiver has captured the command.
+    assign cmd_ready=(state==ACCEPT) && !rst;
     assign wready=state==COLLECT;
     assign rvalid=state==DRAIN;
     assign rdata=buffer[position[2:0]];
@@ -35,13 +39,21 @@ module yingxu_sdram_burst_port(
         else begin
             done<=0;error<=0;
             case(state)
-                IDLE: if(cmd_valid && cmd_ready) begin
-                    wr<=cmd_write;address<={cmd_addr[20:3],3'd0};length<=cmd_words;position<=0;bad<=0;
+                IDLE: if(cmd_valid && enable) begin
+                    wr<=cmd_write;address<={cmd_addr[20:3],3'd0};length<=cmd_words;position<=0;
                     // A 21-bit, 8-word-aligned start is <=0x1ffff8.
                     // With 1..8 words the end is <=0x200000 by construction;
                     // a second 22-bit end-address adder/comparator is redundant.
-                    if(cmd_addr[2:0]!=0 || cmd_words==0 || cmd_words>8) begin done<=1;error<=1;end
-                    else state<=cmd_write ? COLLECT:WAIT;
+                    bad<=(cmd_addr[2:0]!=0 || cmd_words==0 || cmd_words>8);
+                    state<=ACCEPT;
+                end
+                ACCEPT: begin
+                    // A full-cycle acknowledgement follows the payload latch.
+                    // Use the latched fields, including if valid disappears on
+                    // the acknowledgement edge. No SDRAM grant precedes ACK.
+                    if(bad)begin done<=1;error<=1;state<=IDLE;end
+                    else if(wr)state<=COLLECT;
+                    else state<=WAIT;
                 end
                 COLLECT: if(wvalid && wready) begin
                     buffer[position[2:0]]<=wdata;position<=position+1'b1;

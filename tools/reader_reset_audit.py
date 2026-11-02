@@ -25,6 +25,7 @@ def main():
     after=(R/'out/mjpeg_d4f/preload_486_block7.log').read_text()
     tick=lambda s:re.search(r'fault=(\d+)',s).group(1)
     assert tick(before)==tick(after),'Replay extended the original watchdog'
-    print('REPLAY_BOUNDCHK: PASS persistent loss still faults at the same watchdog tick; at most one replay',flush=True)
+    assert 'COMMAND_WAITCHK: PASS' in before and 'COMMAND_WAITCHK: PASS' in after
+    print('CAPTURE_BOUNDCHK: PASS persistent missing valid stays before acceptance; same watchdog tick with recovery option on/off; no replay',flush=True)
     subprocess.run([sys.executable,'tools/yxv_preload_verify.py','--fast-card','--block','8'],cwd=R,check=True)
 if __name__=='__main__':main()

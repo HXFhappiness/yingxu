@@ -6,7 +6,7 @@ from mjpeg_ref.container import build_container
 from mjpeg_ref.vectors import make_jpeg
 R=Path(__file__).resolve().parents[1];O=R/'out/mjpeg_d4f';M=R/'src/user_source/hdl_source/media/mjpeg';S=R/'src/user_source/hdl_source/media/sd';H=R/'src/user_source/hdl_source'
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--frames',type=int,default=486);p.add_argument('--block',type=int,default=0);p.add_argument('--no-build',action='store_true');p.add_argument('--no-recovery',action='store_true');p.add_argument('--fast-card',action='store_true',help='Accelerate transaction card model only; no pin-rate claim');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--frames',type=int,default=486);p.add_argument('--block',type=int,default=0,choices=range(11),help='0 normal; 1..6 data/grant/done stalls; 7 permanent missing command; 8 initial valid delay; 9 valid omitted on ACK; 10 delay every PCM command');p.add_argument('--no-build',action='store_true');p.add_argument('--no-recovery',action='store_true');p.add_argument('--fast-card',action='store_true',help='Accelerate transaction card model only; no pin-rate claim');a=p.parse_args()
     O.mkdir(parents=True,exist_ok=True)
     pcm=bytes(((i*37)^(i>>8)^(i>>16)^0xa7)&255 for i in range(a.frames*8000))
     fixture,_=build_container([make_jpeg()]*a.frames,pcm);f=O/f'pcm{a.frames}.yxv';f.write_bytes(fixture)

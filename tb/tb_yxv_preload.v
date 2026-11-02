@@ -14,10 +14,18 @@ module tb_yxv_preload #(parameter integer RECOVERY=1);
     wire block_grant=block==3 && dut.loader.purpose==2;
     wire block_done=block==4 && first_pcm_command;
     time fault_time=0,reset_time=0,init_drop_time=0;
-    integer init_commands=0,replays=0;reg initialized=0,dropped_once=0;
+    integer init_commands=0,replays=0,missing_cycles=0;reg initialized=0,dropped_once=0;
+    wire positive=block==0 || block==8 || block==9 || block==10;
     always @(posedge clk)begin
-        if(rst)dropped_once<=0;
-        else if(block==8 && cv && cr && dut.loader.purpose==2)dropped_once<=1;
+        if(rst)begin dropped_once<=0;missing_cycles<=0;end
+        else begin
+            if((block==8 || block==10) && cv && dut.loader.purpose==2 && missing_cycles<3)begin
+                missing_cycles<=missing_cycles+1;
+                if(missing_cycles==2)dropped_once<=1;
+            end
+            if(block==9 && cv && cr && dut.loader.purpose==2)dropped_once<=1;
+            if(block==10 && mdone)missing_cycles<=0;
+        end
         if(!rst && dut.replay_write)replays=replays+1;
     end
     always @(posedge clk)if(!rst && dut.fault && fault_time==0)fault_time=$time;
@@ -30,7 +38,9 @@ module tb_yxv_preload #(parameter integer RECOVERY=1);
             if(init_drop_time==0)init_drop_time=$time;
         end
     end
-    wire phy_wr;wire [6:0] write_debug;wire block_command=(block==7 || (block==8 && !dropped_once)) && dut.loader.purpose==2;
+    wire phy_wr;wire [6:0] write_debug;wire block_command=dut.loader.purpose==2 && (block==7 ||
+        (block==8 && !dropped_once) || (block==10 && missing_cycles<3) ||
+        (block==9 && !dropped_once && phy.mj_port.port_adapter.state==5));
     function integer le32(input integer p);le32={source[p+3],source[p+2],source[p+1],source[p]};endfunction
     yingxu_sd_integration_probe #(.DYNAMIC_COUNT(1),.SECTOR_COUNT(1)) probe(
         .clk(sys),.rst(rst || sdreset),.trigger_sw(1'b0),.legacy_inhibit(1'b0),.dynamic_enable(owned),.dynamic_count(sectors),
@@ -73,16 +83,18 @@ module tb_yxv_preload #(parameter integer RECOVERY=1);
             if(bursts==1)first_latency=age;
             if(age>max_latency)max_latency=age;
         end
-        if((!block || block==8) && dut.loader.mstate==2 && dut.loader.sent<8 &&
+        if(cr && idle)$fatal(1,"ready advertised before physical command capture");
+        if(cv && cr && phy.mj_port.port_adapter.state!=5)$fatal(1,"command acknowledged outside captured ACCEPT");
+        if(positive && dut.loader.mstate==2 && dut.loader.sent<8 &&
            phy.mj_port.port_adapter.state!=1 && !dut.replay_write)
             $fatal(1,"accepted loader write lost physical COLLECT at sent=%0d",dut.loader.sent);
-        if((!block || block==8) && dut.fault)$fatal(1,"positive preload fault phase=%h code=%h sent=%d phy=%d/%d ST=%d",dut.lp,dut.fault_code,dut.loader.sent,phy.mj_port.port_adapter.state,phy.mj_port.port_adapter.position,phy.ST);
+        if(positive && dut.fault)$fatal(1,"positive preload fault phase=%h code=%h sent=%d phy=%d/%d ST=%d",dut.lp,dut.fault_code,dut.loader.sent,phy.mj_port.port_adapter.state,phy.mj_port.port_adapter.position,phy.ST);
     end
     initial begin
         #10000000;
         $display("PRELOAD_PROGRESS block=%0d owned=%b init=%b busy=%b start=%b requests=%d phase=%h count=%0d sdvalid=%b ready=%b diag=%h model=%d FIFO=%d/%d",
             block,owned,sdinit,sdbusy,sdstart,requests,dut.lp,dut.loader.count,sdvalid,sdready,diagnosis,probe.U_SD_STREAM.U_SD_CTRL.state,dut.sd_bytes.wp,dut.sd_bytes.rp);$fflush();
-        if(block && block!=8)$fatal(1,"negative must finish in 10ms");
+        if(!positive)$fatal(1,"negative must finish in 10ms");
     end
     reg [31:0] expected_word;
     initial begin
@@ -91,7 +103,7 @@ module tb_yxv_preload #(parameter integer RECOVERY=1);
         frames=le32(12);payload=le32(20);pcm_sectors=(payload+511)/512;
         pcm_off=(le32(32+(frames-1)*8)+le32(36+(frames-1)*8)+511)/512*512;
         repeat(8)@(negedge sys);rst=0;
-        if(block && block!=8)begin
+        if(!positive)begin
             if(block==5 || block==6)begin
                 wait(first_pcm_command);@(negedge clk);
                 force phy.mj_port.port_adapter.phy_done=1'b0;
@@ -100,10 +112,10 @@ module tb_yxv_preload #(parameter integer RECOVERY=1);
             wait(diagnosis!=0);repeat(50)@(negedge sys);
             $display("PCM_STALL_REPRO block=%0d MISE=%h SP=%h ACC=%h sent=%0d phy_state=%0d position=%0d ST=%0d reset=%b F=%h",
                 block,diagnosis,detail,count,dut.loader.sent,phy.mj_port.port_adapter.state,phy.mj_port.port_adapter.position,phy.ST,sdreset,{owned,sdinit,sdbusy,1'b0});
-            if(diagnosis!=16'h949f || detail!=16'h0001 || count!=32 || requests!=3 || !sdreset || !owned || sdinit || !sdbusy)$fatal(1,"board signature not reproduced");
+            if(diagnosis!=(block==7 ? 16'h929f:16'h949f) || detail!=16'h0001 || count!=32 || requests!=3 || !sdreset || !owned || sdinit || !sdbusy)$fatal(1,"board signature not reproduced");
             if(dut.loader.sent!=(block==1 || block==7 ? 0:block==2 ? 4:8))$fatal(1,"bad write-beat witness");
-            if(replays!=(block==7 && RECOVERY ? 1:0))$fatal(1,"unexpected command replay count=%0d",replays);
-            if(!word[23])$fatal(1,"write-wait extension marker absent");
+            if(replays!=0)$fatal(1,"unexpected command replay count=%0d",replays);
+            if(block!=7 && !word[23])$fatal(1,"write-wait extension marker absent");
             if((word & 32'h7ff) !== (block==1 ? 32'h010 : block==2 ? 32'h214 : block==3 ? 32'h420 : block==4 ? 32'h408 : block==5 ? 32'h430 : block==6 ? 32'h438 : 32'h000))
                 $fatal(1,"compact write snapshot mismatch block=%0d I1=%h",block,word);
             if(init_commands!=1 || fault_time==0 || reset_time<=fault_time || init_drop_time<reset_time)
@@ -114,7 +126,8 @@ module tb_yxv_preload #(parameter integer RECOVERY=1);
             repeat(30)@(negedge sys);
             if(word !== {8'd0,dut.frozen_write})$fatal(1,"write snapshot changed after fault");
             $display("WRITE_DIAGCHK: PASS block=%0d I1=%h sent=%0d state=%0d position=%0d inner=%b outer=%b RP/LR/CV/CR/WV/WR=%b",block,word,word[10:7],word[6:4],word[3:0],word[22:20],word[19:17],word[16:11]);
-            $display("PCM_WAITCHK: PASS identical board signature for distinct SDRAM waits; not uniquely an SD fault");$finish;
+            if(block==7)$display("COMMAND_WAITCHK: PASS persistent missing valid stays before command acceptance; no ghost owner or replay");
+            else $display("PCM_WAITCHK: PASS distinct real SDRAM waits still produce the original bounded write timeout");$finish;
         end
         wait(dut.loader_ready);@(negedge clk);
         if(requests!=3 || !sdinit || sdbusy || failed || dut.fault || dut.loader.count!=pcm_sectors*512 || bursts!=pcm_sectors*16 || beats!=pcm_sectors*128)
@@ -124,9 +137,9 @@ module tb_yxv_preload #(parameter integer RECOVERY=1);
             expected_word={source[j+3],source[j+2],source[j+1],source[j]};
             if(memory.memory[21'h100000+i]!==expected_word)$fatal(1,"PCM word diff %0d got=%h expected=%h",i,memory.memory[21'h100000+i],expected_word);
         end
-        if(block==8 && (replays!=1 || init_commands!=1 || fault_time!=0 || sdreset))
+        if(block && (replays!=0 || init_commands!=1 || fault_time!=0 || sdreset))
             $fatal(1,"command replay recovery failed replays=%0d init=%0d fault=%0t",replays,init_commands,fault_time);
-        if(block==8)$display("WRITE_REPLAYCHK: PASS one lost command recovered once; buffer/addr unchanged, full PCM zero-diff, no SD reset or repeated initialization");
+        if(block)$display("CAPTURE_ACKCHK: PASS block=%0d delayed/masked command valid, full PCM zero-diff, replays=0, no SD reset or repeated initialization",block);
         if(first_latency<8 || max_latency>1000 || display_words<128)$fatal(1,"vacuous/bounded write service");
         $display("PCM_FULLCHK: PASS frames=%0d sectors=%0d payload=%0d padded=%0d bursts=%0d/%0d words=%0d/%0d zero-diff init_done=1 failed=0",frames,pcm_sectors,payload,pcm_sectors*512,bursts,pcm_sectors*16,beats,pcm_sectors*128);
         $display("WRITE_RATIOCHK: PASS first_latency=%0d max_latency=%0d/1000 cycles display_words=%0d",first_latency,max_latency,display_words);$finish;
