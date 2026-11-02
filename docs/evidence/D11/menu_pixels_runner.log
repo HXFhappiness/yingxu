@@ -1,0 +1,13 @@
+D8_PIXELS PASS page=0 sel=0 raster, glyphs/logo, gradient, invariant background/panel, sprite composition
+D8_PIXELS PASS page=0 sel=1 raster, glyphs/logo, gradient, invariant background/panel, sprite composition
+D8_PIXELS PASS page=0 sel=2 raster, glyphs/logo, gradient, invariant background/panel, sprite composition
+D8_PIXELS PASS page=0 sel=3 raster, glyphs/logo, gradient, invariant background/panel, sprite composition
+D8_PIXELS PASS page=0 sel=4 raster, glyphs/logo, gradient, invariant background/panel, sprite composition
+D8_PIXELS PASS page=1 sel=0 raster, glyphs/logo, gradient, invariant background/panel, sprite composition
+D8_PIXELS PASS page=1 sel=1 raster, glyphs/logo, gradient, invariant background/panel, sprite composition
+D8_PIXEL_ACCEPTANCE PASS active_pixels=6451200 scenarios=7
+- /workspace/yingxu-fpga/tb/tb_d7_menu_pixels.v:118: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 99ms; walltime 7.870 s; speed 15.305 ms/s
+- Verilator: cpu 6.436 s on 1 threads; alloced 40 MB
+Yosys read/proc/opt/check: PASS

@@ -1,0 +1,48 @@
+User-provided TD area data and requested priorities; no TD run in this cloud.
+
+D10 板测/构建结果：视频根因确认，但 LUT 爆了 —— 需要你按优先级裁掉冗余逻辑。
+
+【重大好消息：你的 CLK 修复是对的，而且被面积报告证实了】
+
+对比面积（syn gate.area）：
+- D8 (be1f0bc)：总计 11,972 LUT，其中 `U_VIDEO:yingxu_yxv_pipeline` 只有 1,049 LUT
+- D10 (4a26c65)：总计 18,250 LUT，其中 `U_VIDEO:yingxu_yxv_pipeline` 变成 4,009 LUT，
+  并且第一次出现 `decoder:yingxu_mjpeg_decoder` 2,794 和 `u_core:yingxu_jpeg_core` 2,373
+
+说明：**CLK 绑定修复让 MJPEG 解码器第一次真正被综合出来**（之前和接收端一样是死的、被优化掉）。
+这印证了你的诊断完全正确 —— 视频从来没跑起来，是因为解码器根本没被实例化进网表。
+
+【但是：LUT 利用率 94.58%（18,537 / 19,600），phy 无法布局布线】
+
+今天 phy 引擎的失败模式是"启动即崩、无 run.log"，在 77% 占用的设计上重跑一次就能过；
+94.58% 时连续 4 次（含完整重建）全部失败。所以需要把利用率降到 **85% 以下**（约 16,600 LUT）。
+需要释放约 2,000 LUT。
+
+【请按这个优先级裁减（都可仿真验证）】
+
+1. **删掉硬件版 invaders 和 breakout**（释放约 1,106 LUT）
+   - `U_hw_inv:yingxu_invaders` 740 LUT
+   - `U_hw_breakout:yingxu_breakout` 366 LUT
+   - 理由：菜单里两个游戏现在都走 YX-8 卡带（打砖块 LBA 1001000 / 飞机大战 LBA 1000000），
+     硬件版已经不再需要。删掉后 `sel_hw`/`ev_*` 相关通路一并简化，sprite 输出接 0。
+   - 注意：`game_sel==1` 分支要保留（避免残留引用），但内部不再例化 invaders。
+
+2. **遥测模块瘦身**（`U_TELEM:yx8_uart_telem` 1,298 LUT，释放约 900-1,000）
+   - 保留 A/B/C/D 帧的基本字段（我们的调试全靠它），但把 README 里已不用的
+     历史字段（比如 G6diag 那一堆 wav_dbg_*、照片索引、cart 内部状态之外的东西）裁掉。
+   - 目标：降到 300-400 LUT 以内。
+   - 如果很难裁，至少把 `i_p0/i_p1/i_p2/i_p3` 这类多位拼装字段减到 2 个。
+
+3. 若还超 85%，再考虑 `U_tile:yingxu_tile_layer` (525 LUT) 是否可去掉。
+
+【请顺便确认】
+
+菜单侧面积很小（`yingxu_menu_ui` 204 LUT、`yingxu_logo` 7 LUT），说明视觉部分不是瓶颈，不用动。
+但我已经把 logo/字体 ROM 改成存储器数组形式（D10c, f638fb6），TD 仍然没推断成 BRAM
+（BRAM 计数没变），所以那两个只有 7 LUT / 没出现在报告里 —— 请确认菜单文字和 logo 在你的
+`yingxu_menu_ui` 里是否真的被使用了（如果被优化掉了，板子上就看不到文字和 logo）。
+
+【板测待办（等 LUT 降下来再测）】
+- 视频是否出画面（这是核心，CLK 修复是重大进展）
+- 打砖块/飞机大战走 YX-8 卡带能否玩
+- SW7+key0 退出后能否回子菜单原选项

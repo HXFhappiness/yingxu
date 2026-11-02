@@ -1,0 +1,38 @@
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               2772
+     AL_MAP_ADDER                 1305
+     AL_MAP_LUT2                   107
+     AL_MAP_LUT3                   216
+     AL_MAP_LUT4                   682
+     AL_MAP_LUT5                   316
+     AL_MAP_LUT6                    39
+     AL_MAP_SEQ                    107
+
+2.27. Executing CHECK pass (checking for obvious problems).
+Checking module yx8_uart_telem...
+Found and reported 0 problems.
+
+3. Printing statistics.
+
+=== yx8_uart_telem ===
+
+   Number of wires:               1466
+   Number of wire bits:           6494
+   Number of public wires:         111
+   Number of public wire bits:     844
+   Number of ports:                 51
+   Number of port bits:            311
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               2772
+     AL_MAP_ADDER                 1305
+     AL_MAP_LUT2                   107
+     AL_MAP_LUT3                   216
+     AL_MAP_LUT4                   682
+     AL_MAP_LUT5                   316
+     AL_MAP_LUT6                    39
+     AL_MAP_SEQ                    107
+
+4. Executing JSON backend.

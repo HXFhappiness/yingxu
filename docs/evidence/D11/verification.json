@@ -1,0 +1,93 @@
+{
+  "baseline_commit": "4a26c65",
+  "delivery_branch": "feat/unified-menu-photo-video",
+  "registered_project_inputs": 64,
+  "production_inputs_hashed": 127,
+  "hardware_invaders_and_breakout_instances_removed": true,
+  "hardware_game_source_files_unregistered": true,
+  "tile_retained": true,
+  "UART_native_proxy_LUT_before_after": [
+    1360,
+    355
+  ],
+  "UART_proxy_BRAM_before_after": [
+    0,
+    1
+  ],
+  "UART_all_512_positions_format_equivalence": true,
+  "UART_real_clock_wire_bit_equivalence_reports": 2,
+  "UART_real_clock_bytes": 694,
+  "music_G6_wide_diagnostic_overlay_removed": true,
+  "music_status_LED_retained": true,
+  "video_and_cart_field_values_retained": true,
+  "menu_full_pixel_checks": 6451200,
+  "menu_post_synthesis_pixel_checks": 323,
+  "glyphs_verified": 17,
+  "logo_rows_verified": 160,
+  "menu_mode_cases": 10,
+  "post_return_compositor_pixels": 921600,
+  "boot_window_cycles": 25000000,
+  "video_target_frames": 2,
+  "video_loop_frames": 3,
+  "video_decoded_words_zero_diff": 460800,
+  "video_scanout_pixels_zero_diff": 1986976,
+  "video_PCM_samples_zero_diff": 4001,
+  "TD_executed": false,
+  "TD_below_85_percent_verified": false,
+  "calibrated_projection_LUT": 16472,
+  "calibrated_projection_percent": 84.04081632653062,
+  "projection_includes_G6_extra_savings": false,
+  "bitstream_generated": false,
+  "board_tested": false,
+  "D10c_f638fb6_source_available": false,
+  "scope": "functional PLL/FIFO/SD transaction/SDRAM models. No 72-frame or full PCM preload rerun; codec, reader, physical controller and WAV source bytes unchanged from D10.",
+  "logs": {
+    "out/d11/area_runner.log": "area_runner.log",
+    "out/d11/area/baseline.log": "uart_area_baseline.log.gz",
+    "out/d11/area/compact.log": "uart_area_compact.log.gz",
+    "out/d11/area/resource_estimate.json": "resource_estimate.json",
+    "out/d11/uart_runner.log": "uart_runner.log",
+    "out/d11/uart/format_equiv.log": "uart_format_equiv.log.gz",
+    "out/d11/uart/wire.log": "uart_wire_equiv.log",
+    "out/d11/uart/wire_reports.txt": "uart_wire_reports.txt",
+    "out/d11/menu_mapped_runner.log": "menu_mapped_runner.log",
+    "out/d11/menu_mapped/mapped_pixels.log": "menu_mapped_pixels.log.gz",
+    "out/d11/menu_mapped/verification.json": "menu_mapped_probes.json",
+    "out/d11/menu_pixels_runner.log": "menu_pixels_runner.log",
+    "out/d8_menu/pixels.log": "menu_6451200_pixels.log",
+    "out/d11/menu_runner.log": "menu_paths.log",
+    "out/unified_menu/boot.log": "boot_25000000_cycles.log",
+    "out/d11/direct_runner.log": "reserved_modes_and_cart.log",
+    "out/d11/menu_bar_runner.log": "menu_bar_runner.log",
+    "out/d5_menu/reader.log": "menu_bar_read_check.log",
+    "out/d11/clock_binding_runner.log": "clock_binding_runner.log",
+    "out/d10/clock_binding/top_compile.log": "iverilog_project_elaboration.log",
+    "out/d11/video_short_runner.log": "video_short_runner.log",
+    "out/mjpeg_d3/top_sw77_2_bad0.log": "video_short.log",
+    "out/d11/bad_header_runner.log": "bad_header_runner.log",
+    "out/mjpeg_d3/top_sw77_72_bad1.log": "bad_header.log",
+    "out/mjpeg_d3/top_sw77_72_bad1.uart.txt": "bad_header.uart.txt"
+  },
+  "compressed_raw_logs": {
+    "menu_mapped_pixels.log": {
+      "archive": "menu_mapped_pixels.log.gz",
+      "uncompressed_sha256": "5265bcbc6621a45774e921fd93b06d12f4b8779e4b376ff497fa099cf5ad3e33",
+      "uncompressed_bytes": 3183666
+    },
+    "uart_format_equiv.log": {
+      "archive": "uart_format_equiv.log.gz",
+      "uncompressed_sha256": "38ada4086e16e6b724318e62f23d8f69a6c8e3744a7a410556161ca48eb2a645",
+      "uncompressed_bytes": 586690
+    },
+    "uart_area_baseline.log": {
+      "archive": "uart_area_baseline.log.gz",
+      "uncompressed_sha256": "1ac60aca36545234f7f8315bede05fb58b18db331ed641171a5d5b3306401322",
+      "uncompressed_bytes": 475600
+    },
+    "uart_area_compact.log": {
+      "archive": "uart_area_compact.log.gz",
+      "uncompressed_sha256": "c5d57b1b58019ffe6d1b9eae9c3656aa264472ef9a049b33e8f72dcde6a3b1c7",
+      "uncompressed_bytes": 441087
+    }
+  }
+}

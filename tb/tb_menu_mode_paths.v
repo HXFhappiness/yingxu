@@ -93,17 +93,19 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
         if(!BOOT_MENU)begin
             sw=8'h7f;repeat(8)@(negedge clk);rst_n=1;
             repeat(1000016)@(negedge clk);
-            if(dut.menu_override || !dut.design_top_wrapper.U_hw_breakout.enable || breakout_writes<2)
-                $fatal(1,"maintenance hardware Breakout unavailable");
+            if(dut.menu_override || !dut.design_top_wrapper.sel_breakout ||
+               dut.design_top_wrapper.src_we || dut.design_top_wrapper.brick_mask!=0)
+                $fatal(1,"reserved game_sel 0 produced sprites");
             dut.sw_boot_cnt=27'd25_000_000;
             sw=8'h3f;repeat(1000016)@(negedge clk);
-            if(!dut.design_top_wrapper.U_hw_inv.enable || invader_writes<2)$fatal(1,"maintenance Invaders unavailable");
+            if(!dut.design_top_wrapper.sel_hw || dut.design_top_wrapper.src_we ||
+               dut.design_top_wrapper.brick_mask!=0)$fatal(1,"reserved game_sel 1 produced sprites");
             sw=8'h1f;repeat(1000016)@(negedge clk);
             if(!dut.cart_active || dut.cart_wcnt_w!=604)$fatal(1,"maintenance cartridge unavailable");
             short_return(0,0);
             sw=8'h77;repeat(1000016)@(negedge clk);
             if(!dut.menu_ui || !dut.menu_override)$fatal(1,"DIP stole menu after direct return");
-            $display("D9_DIRECT PASS BOOT_MENU=0 hardware presets and YX-8 retained; explicit return transfers exclusive ownership");$finish;
+            $display("D11_DIRECT PASS BOOT_MENU=0 reserved hardware decodes have no sprites, YX-8 retained; explicit return transfers exclusive ownership");$finish;
         end
         // A >20ms stable physical preset DURING startup must not escape.
         repeat(8)@(negedge clk);rst_n=1;
@@ -153,7 +155,7 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
                      dut.cart_lba_sel!=1000000)$fatal(1,"YX-8 INVADERS not loaded/drawing");
                 3:if(dut.menu_pattern!=8'h77 || !dut.video_requested || !dut.video_owned || dut.video_failed || video_requests==0)$fatal(1,"video ownership");
                 4:if(dut.menu_pattern!=8'h6f || !dut.music_on_w || dut.cart_active ||
-                     dut.design_top_wrapper.U_hw_breakout.enable)$fatal(1,"music path started game");
+                     dut.design_top_wrapper.src_we)$fatal(1,"music path started game");
             endcase
             if(path==1 || path==2)begin
                 // Both titles execute on the YX-8 CPU. Slot 0 is the paddle/player.

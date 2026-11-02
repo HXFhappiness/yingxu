@@ -1,0 +1,57 @@
+{
+  "TD_measured": false,
+  "baseline_commit": "4a26c65",
+  "method": "same Yosys native Anlogic mapping, all telemetry inputs retained; LUT5/6 are raw cells in the first metric and charged 2/4 in the second",
+  "telemetry": [
+    {
+      "label": "baseline",
+      "LUT_cells": 1360,
+      "conservative_LUT4_carry_charge": 3098,
+      "BRAM": 0,
+      "cells": {
+        "AL_MAP_ADDER": 1305,
+        "AL_MAP_LUT2": 107,
+        "AL_MAP_LUT3": 216,
+        "AL_MAP_LUT4": 682,
+        "AL_MAP_LUT5": 316,
+        "AL_MAP_LUT6": 39,
+        "AL_MAP_SEQ": 107
+      },
+      "source_sha256": "6200936184e152b5b2906e56bb8a46dddec2911d2e83a83afd04f3e85e0a3d92"
+    },
+    {
+      "label": "compact",
+      "LUT_cells": 355,
+      "conservative_LUT4_carry_charge": 611,
+      "BRAM": 1,
+      "cells": {
+        "AL_MAP_ADDER": 115,
+        "AL_MAP_LUT2": 22,
+        "AL_MAP_LUT3": 55,
+        "AL_MAP_LUT4": 185,
+        "AL_MAP_LUT5": 69,
+        "AL_MAP_LUT6": 24,
+        "AL_MAP_SEQ": 107,
+        "EG_PHY_BRAM": 1
+      },
+      "source_sha256": "0609ef7d8fe66f9ef24c9dbc6354f11deaa5cd18d6b61f6e67f1067f9507db47"
+    }
+  ],
+  "mapped_ROM_initialization_fields": 36,
+  "user_reported_TD": {
+    "D10_syn_LUT": 18250,
+    "D10_phy_LUT": 18537,
+    "capacity": 19600,
+    "old_uart": 1298,
+    "hardware_invaders": 740,
+    "hardware_breakout": 366
+  },
+  "calibrated_projection_only": {
+    "uart_LUT": 339,
+    "physical_total_LUT": 16472,
+    "percent": 84.04081632653062,
+    "excludes_additional_top_music_diagnostic_savings": true
+  },
+  "actual_TD_below_85_percent_verified": false,
+  "tile_layer_removed": false
+}

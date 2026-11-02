@@ -189,14 +189,6 @@ wire        wav_restart_w;
 wire [1:0]  wav_dbg_sstate_w;   // G6diag
 wire [10:0] wav_dbg_occ_w;      // G6diag
 wire        wav_dbg_wdog_w;     // G6diag
-wire [15:0] wav_dbg_pops_w;     // G6diag
-wire [15:0] wav_dbg_wcnt_w;     // G6diag
-wire [10:0] wav_dbg_rptr_w;     // G6diag
-wire [10:0] wav_dbg_wptr_w;     // G6diag
-wire [15:0] wav_dbg_lastl_w;    // G6diag
-wire [15:0] wav_dbg_outp_w;     // G6diag
-wire [15:0] wav_dbg_byte_w;     // G6diag
-wire [15:0] wav_dbg_rate_w;     // G6diag
 
     wire       cart_busy_w, cart_hb_w, cart_seen_w;
     wire [2:0] cart_lstate_w;
@@ -301,14 +293,14 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .O_wav_sstate   (wav_dbg_sstate_w),
         .O_wav_occ      (wav_dbg_occ_w),
         .O_wav_wdog     (wav_dbg_wdog_w),
-        .O_wav_pops     (wav_dbg_pops_w),
-        .O_wav_wdog_cnt (wav_dbg_wcnt_w),
-        .O_wav_rptr     (wav_dbg_rptr_w),
-        .O_wav_wptr     (wav_dbg_wptr_w),
-        .O_wav_lastl    (wav_dbg_lastl_w),
-        .O_wav_outp_cnt (wav_dbg_outp_w),
-        .O_wav_byte_cnt (wav_dbg_byte_w),
-        .O_wav_rate     (wav_dbg_rate_w),
+        .O_wav_pops     (),
+        .O_wav_wdog_cnt (),
+        .O_wav_rptr     (),
+        .O_wav_wptr     (),
+        .O_wav_lastl    (),
+        .O_wav_outp_cnt (),
+        .O_wav_byte_cnt (),
+        .O_wav_rate     (),
         .I_game_sel     (game_sel2),
         .I_cart_swap    (1'b0),
         // A queued cartridge restart may still be waiting for an old photo
@@ -1081,16 +1073,16 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     // TEMP DIAGNOSTIC TELEMETRY (2026-10-26 SD bring-up): REMOVED 2026-10-26 鈥�
     // SD init + full multi-sector read verified on board (build6/7, seeds 29/36).
     // RE-ADDED 2026-10-26: cart-mode loader stall diagnosis. Remove after G4 closes.
-// G6diag: music mode -> telemetry carries wav internals instead of cart debug
-wire [9:0]  t_pc  = (video_requested || video_owned || video_failed) ? (video_displayed[9:0]-10'd1) : music_on_w ? wav_dbg_rptr_w[9:0] : cart_pc_w;
-wire [15:0] t_dwc = (video_requested || video_owned || video_failed) ? video_dropped[15:0] : music_on_w ? wav_dbg_pops_w    : cart_dwc_w;
-wire [23:0] t_p0  = (video_requested || video_owned || video_failed) ? video_status : music_on_w ? {wav_dbg_sstate_w, wav_dbg_occ_w, wav_dbg_wptr_w}
-                                : cart_prog0_w;
-wire [15:0] t_rc  = (video_requested || video_owned || video_failed) ? video_displayed[15:0] : music_on_w ? wav_dbg_wcnt_w    : cart_retire_w;
-wire [23:0] t_p18 = (video_requested || video_owned || video_failed) ? (video_diag_valid ? video_fail_word[23:0]:video_samples[23:0]) : music_on_w ? {8'd0, wav_dbg_lastl_w} : cart_p18_w;
-wire [15:0] t_mise = (video_requested || video_owned || video_failed) ? (video_diag_valid ? video_diagnosis:video_decoded[15:0]) : music_on_w ? wav_dbg_outp_w : cart_rst_cnt;
-wire [15:0] t_sce  = (video_requested || video_owned || video_failed) ? video_sd_occupancy : music_on_w ? wav_dbg_byte_w : gate_cnt;
-wire [15:0] t_sprc = (video_requested || video_owned || video_failed) ? (video_diag_valid ? video_detail:16'd48000) : music_on_w ? wav_dbg_rate_w : spr_cnt_w;
+// D11: preserve video and YX-8 diagnostics; retire the old music FIFO overlay.
+wire telem_video = video_requested || video_owned || video_failed;
+wire [9:0] t_pc = telem_video ? video_displayed[9:0]-10'd1:cart_pc_w;
+wire [15:0] t_dwc = telem_video ? video_dropped[15:0]:cart_dwc_w;
+wire [23:0] t_p0 = telem_video ? video_status:cart_prog0_w;
+wire [15:0] t_rc = telem_video ? video_displayed[15:0]:cart_retire_w;
+wire [23:0] t_p18 = telem_video ? (video_diag_valid ? video_fail_word[23:0]:video_samples[23:0]):cart_p18_w;
+wire [15:0] t_mise = telem_video ? (video_diag_valid ? video_diagnosis:video_decoded[15:0]):cart_rst_cnt;
+wire [15:0] t_sce = telem_video ? video_sd_occupancy:gate_cnt;
+wire [15:0] t_sprc = telem_video ? (video_diag_valid ? video_detail:16'd48000):spr_cnt_w;
 
     yx8_uart_telem U_TELEM (
         .i_clk   (clk),

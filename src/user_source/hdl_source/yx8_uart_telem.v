@@ -2,7 +2,8 @@
 `default_nettype none
 
 // yx8_uart_telem - compact fixed-template status line over UART 115200 8N1.
-// One report = 3 lines, sent every 0.2 s. Pure diagnostics, temporary.
+// Four A/B/C/D lines, 115200 8N1; 0.2 s gap between complete reports.
+// D11: constant format ROM, one shared hexadecimal encoder; original wire format.
 module yx8_uart_telem (
     input  wire        i_clk,
     input  wire        i_rst_n,
@@ -108,357 +109,120 @@ module yx8_uart_telem (
         hx = (n < 4'd10) ? (8'd48 + {4'd0,n}) : (8'd65 + {4'd0,n} - 8'd10);
     endfunction
 
-    function [7:0] char_at; input [8:0] p;
-        case (p)
-            9'd0: char_at = 8'd65;
-            9'd1: char_at = 8'd32;
-            9'd2: char_at = 8'd83;
-            9'd3: char_at = 8'd69;
-            9'd4: char_at = 8'd69;
-            9'd5: char_at = 8'd78;
-            9'd6: char_at = 8'd61;
-            9'd7: char_at = hx(pad_seen[3 -: 4]);
-            9'd8: char_at = 8'd32;
-            9'd9: char_at = 8'd66;
-            9'd10: char_at = 8'd85;
-            9'd11: char_at = 8'd83;
-            9'd12: char_at = 8'd89;
-            9'd13: char_at = 8'd61;
-            9'd14: char_at = hx(pad_busy[3 -: 4]);
-            9'd15: char_at = 8'd32;
-            9'd16: char_at = 8'd69;
-            9'd17: char_at = 8'd82;
-            9'd18: char_at = 8'd82;
-            9'd19: char_at = 8'd61;
-            9'd20: char_at = hx(pad_err[3 -: 4]);
-            9'd21: char_at = 8'd32;
-            9'd22: char_at = 8'd68;
-            9'd23: char_at = 8'd78;
-            9'd24: char_at = 8'd69;
-            9'd25: char_at = 8'd61;
-            9'd26: char_at = hx(pad_dne[3 -: 4]);
-            9'd27: char_at = 8'd32;
-            9'd28: char_at = 8'd80;
-            9'd29: char_at = 8'd79;
-            9'd30: char_at = 8'd82;
-            9'd31: char_at = 8'd61;
-            9'd32: char_at = hx(pad_por[3 -: 4]);
-            9'd33: char_at = 8'd32;
-            9'd34: char_at = 8'd70;
-            9'd35: char_at = 8'd76;
-            9'd36: char_at = 8'd85;
-            9'd37: char_at = 8'd61;
-            9'd38: char_at = hx(pad_flu[3 -: 4]);
-            9'd39: char_at = 8'd32;
-            9'd40: char_at = 8'd75;
-            9'd41: char_at = 8'd73;
-            9'd42: char_at = 8'd76;
-            9'd43: char_at = 8'd61;
-            9'd44: char_at = hx(pad_kil[3 -: 4]);
-            9'd45: char_at = 8'd32;
-            9'd46: char_at = 8'd82;
-            9'd47: char_at = 8'd69;
-            9'd48: char_at = 8'd84;
-            9'd49: char_at = 8'd61;
-            9'd50: char_at = hx(pad_ret[3 -: 4]);
-            9'd51: char_at = 8'd32;
-            9'd52: char_at = 8'd87;
-            9'd53: char_at = 8'd70;
-            9'd54: char_at = 8'd84;
-            9'd55: char_at = 8'd61;
-            9'd56: char_at = hx(pad_wft[3 -: 4]);
-            9'd57: char_at = 8'd32;
-            9'd58: char_at = 8'd71;
-            9'd59: char_at = 8'd77;
-            9'd60: char_at = 8'd61;
-            9'd61: char_at = hx(pad_gm[3 -: 4]);
-            9'd62: char_at = 8'd32;
-            9'd63: char_at = 8'd67;
-            9'd64: char_at = 8'd65;
-            9'd65: char_at = 8'd61;
-            9'd66: char_at = hx(pad_ca[3 -: 4]);
-            9'd67: char_at = 8'd10;
-            9'd68: char_at = 8'd66;
-            9'd69: char_at = 8'd32;
-            9'd70: char_at = 8'd67;
-            9'd71: char_at = 8'd84;
-            9'd72: char_at = 8'd82;
-            9'd73: char_at = 8'd76;
-            9'd74: char_at = 8'd61;
-            9'd75: char_at = hx(pad_ctrl[3 -: 4]);
-            9'd76: char_at = 8'd32;
-            9'd77: char_at = 8'd73;
-            9'd78: char_at = 8'd78;
-            9'd79: char_at = 8'd73;
-            9'd80: char_at = 8'd84;
-            9'd81: char_at = 8'd61;
-            9'd82: char_at = hx(pad_init[3 -: 4]);
-            9'd83: char_at = 8'd32;
-            9'd84: char_at = 8'd82;
-            9'd85: char_at = 8'd83;
-            9'd86: char_at = 8'd80;
-            9'd87: char_at = 8'd61;
-            9'd88: char_at = hx(pad_rsp[39 -: 4]);
-            9'd89: char_at = hx(pad_rsp[35 -: 4]);
-            9'd90: char_at = hx(pad_rsp[31 -: 4]);
-            9'd91: char_at = hx(pad_rsp[27 -: 4]);
-            9'd92: char_at = hx(pad_rsp[23 -: 4]);
-            9'd93: char_at = hx(pad_rsp[19 -: 4]);
-            9'd94: char_at = hx(pad_rsp[15 -: 4]);
-            9'd95: char_at = hx(pad_rsp[11 -: 4]);
-            9'd96: char_at = hx(pad_rsp[7 -: 4]);
-            9'd97: char_at = hx(pad_rsp[3 -: 4]);
-            9'd98: char_at = 8'd32;
-            9'd99: char_at = 8'd82;
-            9'd100: char_at = 8'd68;
-            9'd101: char_at = 8'd61;
-            9'd102: char_at = hx(pad_rd[3 -: 4]);
-            9'd103: char_at = 8'd32;
-            9'd104: char_at = 8'd82;
-            9'd105: char_at = 8'd68;
-            9'd106: char_at = 8'd84;
-            9'd107: char_at = 8'd61;
-            9'd108: char_at = hx(pad_rdt[7 -: 4]);
-            9'd109: char_at = hx(pad_rdt[3 -: 4]);
-            9'd110: char_at = 8'd32;
-            9'd111: char_at = 8'd68;
-            9'd112: char_at = 8'd73;
-            9'd113: char_at = 8'd86;
-            9'd114: char_at = 8'd61;
-            9'd115: char_at = hx(pad_div[7 -: 4]);
-            9'd116: char_at = hx(pad_div[3 -: 4]);
-            9'd117: char_at = 8'd32;
-            9'd118: char_at = 8'd83;
-            9'd119: char_at = 8'd80;
-            9'd120: char_at = 8'd73;
-            9'd121: char_at = 8'd75;
-            9'd122: char_at = 8'd61;
-            9'd123: char_at = hx(pad_spik[3 -: 4]);
-            9'd124: char_at = 8'd32;
-            9'd125: char_at = 8'd67;
-            9'd126: char_at = 8'd78;
-            9'd127: char_at = 8'd84;
-            9'd128: char_at = 8'd61;
-            9'd129: char_at = hx(pad_cnt[3 -: 4]);
-            9'd130: char_at = 8'd32;
-            9'd131: char_at = 8'd83;
-            9'd132: char_at = 8'd69;
-            9'd133: char_at = 8'd76;
-            9'd134: char_at = 8'd61;
-            9'd135: char_at = hx(pad_sel[3 -: 4]);
-            9'd136: char_at = 8'd32;
-            9'd137: char_at = 8'd65;
-            9'd138: char_at = 8'd68;
-            9'd139: char_at = 8'd83;
-            9'd140: char_at = 8'd61;
-            9'd141: char_at = hx(pad_ads[3 -: 4]);
-            9'd142: char_at = 8'd32;
-            9'd143: char_at = 8'd68;
-            9'd144: char_at = 8'd68;
-            9'd145: char_at = 8'd83;
-            9'd146: char_at = 8'd61;
-            9'd147: char_at = hx(pad_dds[3 -: 4]);
-            9'd148: char_at = 8'd32;
-            9'd149: char_at = 8'd67;
-            9'd150: char_at = 8'd83;
-            9'd151: char_at = 8'd78;
-            9'd152: char_at = 8'd61;
-            9'd153: char_at = hx(pad_csn[3 -: 4]);
-            9'd154: char_at = 8'd32;
-            9'd155: char_at = 8'd77;
-            9'd156: char_at = 8'd79;
-            9'd157: char_at = 8'd83;
-            9'd158: char_at = 8'd61;
-            9'd159: char_at = hx(pad_mos[3 -: 4]);
-            9'd160: char_at = 8'd32;
-            9'd161: char_at = 8'd83;
-            9'd162: char_at = 8'd67;
-            9'd163: char_at = 8'd75;
-            9'd164: char_at = 8'd61;
-            9'd165: char_at = hx(pad_sck[3 -: 4]);
-            9'd166: char_at = 8'd32;
-            9'd167: char_at = 8'd77;
-            9'd168: char_at = 8'd73;
-            9'd169: char_at = 8'd83;
-            9'd170: char_at = 8'd79;
-            9'd171: char_at = 8'd61;
-            9'd172: char_at = hx(pad_miso[3 -: 4]);
-            9'd173: char_at = 8'd10;
-            9'd174: char_at = 8'd67;
-            9'd175: char_at = 8'd32;
-            9'd176: char_at = 8'd83;
-            9'd177: char_at = 8'd83;
-            9'd178: char_at = 8'd84;
-            9'd179: char_at = 8'd61;
-            9'd180: char_at = hx(pad_sst[15 -: 4]);
-            9'd181: char_at = hx(pad_sst[11 -: 4]);
-            9'd182: char_at = hx(pad_sst[7 -: 4]);
-            9'd183: char_at = hx(pad_sst[3 -: 4]);
-            9'd184: char_at = 8'd32;
-            9'd185: char_at = 8'd83;
-            9'd186: char_at = 8'd78;
-            9'd187: char_at = 8'd88;
-            9'd188: char_at = 8'd61;
-            9'd189: char_at = hx(pad_snx[15 -: 4]);
-            9'd190: char_at = hx(pad_snx[11 -: 4]);
-            9'd191: char_at = hx(pad_snx[7 -: 4]);
-            9'd192: char_at = hx(pad_snx[3 -: 4]);
-            9'd193: char_at = 8'd32;
-            9'd194: char_at = 8'd83;
-            9'd195: char_at = 8'd68;
-            9'd196: char_at = 8'd78;
-            9'd197: char_at = 8'd61;
-            9'd198: char_at = hx(pad_sdn[15 -: 4]);
-            9'd199: char_at = hx(pad_sdn[11 -: 4]);
-            9'd200: char_at = hx(pad_sdn[7 -: 4]);
-            9'd201: char_at = hx(pad_sdn[3 -: 4]);
-            9'd202: char_at = 8'd32;
-            9'd203: char_at = 8'd65;
-            9'd204: char_at = 8'd67;
-            9'd205: char_at = 8'd67;
-            9'd206: char_at = 8'd61;
-            9'd207: char_at = hx(pad_acc[11 -: 4]);
-            9'd208: char_at = hx(pad_acc[7 -: 4]);
-            9'd209: char_at = hx(pad_acc[3 -: 4]);
-            9'd210: char_at = 8'd32;
-            9'd211: char_at = 8'd79;
-            9'd212: char_at = 8'd70;
-            9'd213: char_at = 8'd70;
-            9'd214: char_at = 8'd61;
-            9'd215: char_at = hx(pad_off[31 -: 4]);
-            9'd216: char_at = hx(pad_off[27 -: 4]);
-            9'd217: char_at = hx(pad_off[23 -: 4]);
-            9'd218: char_at = hx(pad_off[19 -: 4]);
-            9'd219: char_at = hx(pad_off[15 -: 4]);
-            9'd220: char_at = hx(pad_off[11 -: 4]);
-            9'd221: char_at = hx(pad_off[7 -: 4]);
-            9'd222: char_at = hx(pad_off[3 -: 4]);
-            9'd223: char_at = 8'd32;
-            9'd224: char_at = 8'd86;
-            9'd225: char_at = 8'd76;
-            9'd226: char_at = 8'd68;
-            9'd227: char_at = 8'd61;
-            9'd228: char_at = hx(pad_vld[3 -: 4]);
-            9'd229: char_at = 8'd32;
-            9'd230: char_at = 8'd87;
-            9'd231: char_at = 8'd50;
-            9'd232: char_at = 8'd70;
-            9'd233: char_at = 8'd61;
-            9'd234: char_at = hx(pad_w2f[3 -: 4]);
-            9'd235: char_at = 8'd32;
-            9'd236: char_at = 8'd82;
-            9'd237: char_at = 8'd50;
-            9'd238: char_at = 8'd69;
-            9'd239: char_at = 8'd61;
-            9'd240: char_at = hx(pad_r2e[3 -: 4]);
-            9'd241: char_at = 8'd32;
-            9'd242: char_at = 8'd72;
-            9'd243: char_at = 8'd66;
-            9'd244: char_at = 8'd61;
-            9'd245: char_at = hx(pad_hb[3 -: 4]);
-            9'd246: char_at = 8'd10;
-            9'd247: char_at = 8'd68;
-            9'd248: char_at = 8'd32;
-            9'd249: char_at = 8'd77;
-            9'd250: char_at = 8'd73;
-            9'd251: char_at = 8'd83;
-            9'd252: char_at = 8'd69;
-            9'd253: char_at = 8'd61;
-            9'd254: char_at = hx(pad_mise[15 -: 4]);
-            9'd255: char_at = hx(pad_mise[11 -: 4]);
-            9'd256: char_at = hx(pad_mise[7 -: 4]);
-            9'd257: char_at = hx(pad_mise[3 -: 4]);
-            9'd258: char_at = 8'd32;
-            9'd259: char_at = 8'd83;
-            9'd260: char_at = 8'd67;
-            9'd261: char_at = 8'd69;
-            9'd262: char_at = 8'd61;
-            9'd263: char_at = hx(pad_sce[15 -: 4]);
-            9'd264: char_at = hx(pad_sce[11 -: 4]);
-            9'd265: char_at = hx(pad_sce[7 -: 4]);
-            9'd266: char_at = hx(pad_sce[3 -: 4]);
-            9'd267: char_at = 8'd32;
-            9'd268: char_at = 8'd32;
-            9'd269: char_at = 8'd83;
-            9'd270: char_at = 8'd87;
-            9'd271: char_at = 8'd61;
-            9'd272: char_at = hx(pad_sw[7:4]);
-            9'd273: char_at = hx(pad_sw[3:0]);
-            9'd274: char_at = 8'd32;
-            9'd275: char_at = 8'd76;
-            9'd276: char_at = 8'd83;
-            9'd277: char_at = 8'd61;
-            9'd278: char_at = hx(pad_ls[3:0]);
-            9'd279: char_at = 8'd32;
-            9'd280: char_at = 8'd87;
-            9'd281: char_at = 8'd67;
-            9'd282: char_at = 8'd61;
-            9'd283: char_at = hx(pad_wc[9:8]);
-            9'd284: char_at = hx(pad_wc[7:4]);
-            9'd285: char_at = hx(pad_wc[3:0]);
-            9'd286: char_at = 8'd32;
-            9'd287: char_at = 8'd66;
-            9'd288: char_at = 8'd85;
-            9'd289: char_at = 8'd61;
-            9'd290: char_at = hx(pad_cbu[3:0]);
-            9'd291: char_at = 8'd32;
-            9'd292: char_at = 8'd83;
-            9'd293: char_at = 8'd80;
-            9'd294: char_at = 8'd61;
-            9'd295: char_at = hx(pad_sprc[15 -: 4]);
-            9'd296: char_at = hx(pad_sprc[11 -: 4]);
-            9'd297: char_at = hx(pad_sprc[7 -: 4]);
-            9'd298: char_at = hx(pad_sprc[3 -: 4]);
-            9'd299: char_at = 8'd32;
-            9'd300: char_at = 8'd70;
-            9'd301: char_at = 8'd61;
-            9'd302: char_at = hx(pad_cfl);
-            9'd303: char_at = 8'd32;
-            9'd304: char_at = 8'd80;
-            9'd305: char_at = 8'd67;
-            9'd306: char_at = 8'd61;
-            9'd307: char_at = hx({2'b0, pad_pc[9:8]});
-            9'd308: char_at = hx(pad_pc[7:4]);
-            9'd309: char_at = hx(pad_pc[3:0]);
-            9'd310: char_at = 8'd32;
-            9'd311: char_at = 8'd68;
-            9'd312: char_at = 8'd87;
-            9'd313: char_at = 8'd61;
-            9'd314: char_at = hx(pad_dwc[15 -: 4]);
-            9'd315: char_at = hx(pad_dwc[11 -: 4]);
-            9'd316: char_at = hx(pad_dwc[7 -: 4]);
-            9'd317: char_at = hx(pad_dwc[3 -: 4]);
-            9'd318: char_at = 8'd32;
-            9'd319: char_at = 8'd73;
-            9'd320: char_at = 8'd48;
-            9'd321: char_at = 8'd61;
-            9'd322: char_at = hx(pad_p0[23 -: 4]);
-            9'd323: char_at = hx(pad_p0[19 -: 4]);
-            9'd324: char_at = hx(pad_p0[15 -: 4]);
-            9'd325: char_at = hx(pad_p0[11 -: 4]);
-            9'd326: char_at = hx(pad_p0[7  -: 4]);
-            9'd327: char_at = hx(pad_p0[3  -: 4]);
-            9'd328: char_at = 8'd32;
-            9'd329: char_at = 8'd82;
-            9'd330: char_at = 8'd67;
-            9'd331: char_at = 8'd61;
-            9'd332: char_at = hx(pad_rc[15 -: 4]);
-            9'd333: char_at = hx(pad_rc[11 -: 4]);
-            9'd334: char_at = hx(pad_rc[7 -: 4]);
-            9'd335: char_at = hx(pad_rc[3 -: 4]);
-            9'd336: char_at = 8'd32;
-            9'd337: char_at = 8'd73;
-            9'd338: char_at = 8'd49;
-            9'd339: char_at = 8'd61;
-            9'd340: char_at = hx(pad_p18[23 -: 4]);
-            9'd341: char_at = hx(pad_p18[19 -: 4]);
-            9'd342: char_at = hx(pad_p18[15 -: 4]);
-            9'd343: char_at = hx(pad_p18[11 -: 4]);
-            9'd344: char_at = hx(pad_p18[7  -: 4]);
-            9'd345: char_at = hx(pad_p18[3  -: 4]);
-            9'd346: char_at = 8'd10;
-            default: char_at = 8'd32;
-        endcase
+    // All hexadecimal digits share one live-data nibble selector/encoder.
+    function [3:0] nibble_at; input [6:0] n;
+        reg [511:0] packed_digits;
+        begin
+            packed_digits={84'd0,
+                pad_p18[3  -: 4],
+                pad_p18[7  -: 4],
+                pad_p18[11 -: 4],
+                pad_p18[15 -: 4],
+                pad_p18[19 -: 4],
+                pad_p18[23 -: 4],
+                pad_rc[3 -: 4],
+                pad_rc[7 -: 4],
+                pad_rc[11 -: 4],
+                pad_rc[15 -: 4],
+                pad_p0[3  -: 4],
+                pad_p0[7  -: 4],
+                pad_p0[11 -: 4],
+                pad_p0[15 -: 4],
+                pad_p0[19 -: 4],
+                pad_p0[23 -: 4],
+                pad_dwc[3 -: 4],
+                pad_dwc[7 -: 4],
+                pad_dwc[11 -: 4],
+                pad_dwc[15 -: 4],
+                pad_pc[3:0],
+                pad_pc[7:4],
+                {2'b0, pad_pc[9:8]},
+                pad_cfl,
+                pad_sprc[3 -: 4],
+                pad_sprc[7 -: 4],
+                pad_sprc[11 -: 4],
+                pad_sprc[15 -: 4],
+                pad_cbu[3:0],
+                pad_wc[3:0],
+                pad_wc[7:4],
+                {2'b00,pad_wc[9:8]},
+                pad_ls[3:0],
+                pad_sw[3:0],
+                pad_sw[7:4],
+                pad_sce[3 -: 4],
+                pad_sce[7 -: 4],
+                pad_sce[11 -: 4],
+                pad_sce[15 -: 4],
+                pad_mise[3 -: 4],
+                pad_mise[7 -: 4],
+                pad_mise[11 -: 4],
+                pad_mise[15 -: 4],
+                pad_hb[3 -: 4],
+                pad_r2e[3 -: 4],
+                pad_w2f[3 -: 4],
+                pad_vld[3 -: 4],
+                pad_off[3 -: 4],
+                pad_off[7 -: 4],
+                pad_off[11 -: 4],
+                pad_off[15 -: 4],
+                pad_off[19 -: 4],
+                pad_off[23 -: 4],
+                pad_off[27 -: 4],
+                pad_off[31 -: 4],
+                pad_acc[3 -: 4],
+                pad_acc[7 -: 4],
+                pad_acc[11 -: 4],
+                pad_sdn[3 -: 4],
+                pad_sdn[7 -: 4],
+                pad_sdn[11 -: 4],
+                pad_sdn[15 -: 4],
+                pad_snx[3 -: 4],
+                pad_snx[7 -: 4],
+                pad_snx[11 -: 4],
+                pad_snx[15 -: 4],
+                pad_sst[3 -: 4],
+                pad_sst[7 -: 4],
+                pad_sst[11 -: 4],
+                pad_sst[15 -: 4],
+                pad_miso[3 -: 4],
+                pad_sck[3 -: 4],
+                pad_mos[3 -: 4],
+                pad_csn[3 -: 4],
+                pad_dds[3 -: 4],
+                pad_ads[3 -: 4],
+                pad_sel[3 -: 4],
+                pad_cnt[3 -: 4],
+                pad_spik[3 -: 4],
+                pad_div[3 -: 4],
+                pad_div[7 -: 4],
+                pad_rdt[3 -: 4],
+                pad_rdt[7 -: 4],
+                pad_rd[3 -: 4],
+                pad_rsp[3 -: 4],
+                pad_rsp[7 -: 4],
+                pad_rsp[11 -: 4],
+                pad_rsp[15 -: 4],
+                pad_rsp[19 -: 4],
+                pad_rsp[23 -: 4],
+                pad_rsp[27 -: 4],
+                pad_rsp[31 -: 4],
+                pad_rsp[35 -: 4],
+                pad_rsp[39 -: 4],
+                pad_init[3 -: 4],
+                pad_ctrl[3 -: 4],
+                pad_ca[3 -: 4],
+                pad_gm[3 -: 4],
+                pad_wft[3 -: 4],
+                pad_ret[3 -: 4],
+                pad_kil[3 -: 4],
+                pad_flu[3 -: 4],
+                pad_por[3 -: 4],
+                pad_dne[3 -: 4],
+                pad_err[3 -: 4],
+                pad_busy[3 -: 4],
+                pad_seen[3 -: 4]};
+            nibble_at=packed_digits[{n,2'b00}+:4];
+        end
     endfunction
 
     reg [24:0] tick;
@@ -466,6 +230,363 @@ module yx8_uart_telem (
     reg [3:0]  st;
     reg [2:0]  bitidx;
     reg [7:0]  shifter;
+
+    // One synchronous 512x8 constant ROM replaces the wide character mux.
+    // During each 4340-clock UART byte, prefetch the following format token.
+    // A token is either literal ASCII or {1, dense_nibble_index[6:0]}.
+    (* ram_style="block" *) reg [7:0] format_rom[0:511];
+    reg [7:0] format_token;integer format_init;
+    initial begin
+        for(format_init=0;format_init<512;format_init=format_init+1)format_rom[format_init]=8'd32;
+        format_rom[0]=8'd65;
+        format_rom[1]=8'd32;
+        format_rom[2]=8'd83;
+        format_rom[3]=8'd69;
+        format_rom[4]=8'd69;
+        format_rom[5]=8'd78;
+        format_rom[6]=8'd61;
+        format_rom[7]=8'h80;
+        format_rom[8]=8'd32;
+        format_rom[9]=8'd66;
+        format_rom[10]=8'd85;
+        format_rom[11]=8'd83;
+        format_rom[12]=8'd89;
+        format_rom[13]=8'd61;
+        format_rom[14]=8'h81;
+        format_rom[15]=8'd32;
+        format_rom[16]=8'd69;
+        format_rom[17]=8'd82;
+        format_rom[18]=8'd82;
+        format_rom[19]=8'd61;
+        format_rom[20]=8'h82;
+        format_rom[21]=8'd32;
+        format_rom[22]=8'd68;
+        format_rom[23]=8'd78;
+        format_rom[24]=8'd69;
+        format_rom[25]=8'd61;
+        format_rom[26]=8'h83;
+        format_rom[27]=8'd32;
+        format_rom[28]=8'd80;
+        format_rom[29]=8'd79;
+        format_rom[30]=8'd82;
+        format_rom[31]=8'd61;
+        format_rom[32]=8'h84;
+        format_rom[33]=8'd32;
+        format_rom[34]=8'd70;
+        format_rom[35]=8'd76;
+        format_rom[36]=8'd85;
+        format_rom[37]=8'd61;
+        format_rom[38]=8'h85;
+        format_rom[39]=8'd32;
+        format_rom[40]=8'd75;
+        format_rom[41]=8'd73;
+        format_rom[42]=8'd76;
+        format_rom[43]=8'd61;
+        format_rom[44]=8'h86;
+        format_rom[45]=8'd32;
+        format_rom[46]=8'd82;
+        format_rom[47]=8'd69;
+        format_rom[48]=8'd84;
+        format_rom[49]=8'd61;
+        format_rom[50]=8'h87;
+        format_rom[51]=8'd32;
+        format_rom[52]=8'd87;
+        format_rom[53]=8'd70;
+        format_rom[54]=8'd84;
+        format_rom[55]=8'd61;
+        format_rom[56]=8'h88;
+        format_rom[57]=8'd32;
+        format_rom[58]=8'd71;
+        format_rom[59]=8'd77;
+        format_rom[60]=8'd61;
+        format_rom[61]=8'h89;
+        format_rom[62]=8'd32;
+        format_rom[63]=8'd67;
+        format_rom[64]=8'd65;
+        format_rom[65]=8'd61;
+        format_rom[66]=8'h8A;
+        format_rom[67]=8'd10;
+        format_rom[68]=8'd66;
+        format_rom[69]=8'd32;
+        format_rom[70]=8'd67;
+        format_rom[71]=8'd84;
+        format_rom[72]=8'd82;
+        format_rom[73]=8'd76;
+        format_rom[74]=8'd61;
+        format_rom[75]=8'h8B;
+        format_rom[76]=8'd32;
+        format_rom[77]=8'd73;
+        format_rom[78]=8'd78;
+        format_rom[79]=8'd73;
+        format_rom[80]=8'd84;
+        format_rom[81]=8'd61;
+        format_rom[82]=8'h8C;
+        format_rom[83]=8'd32;
+        format_rom[84]=8'd82;
+        format_rom[85]=8'd83;
+        format_rom[86]=8'd80;
+        format_rom[87]=8'd61;
+        format_rom[88]=8'h8D;
+        format_rom[89]=8'h8E;
+        format_rom[90]=8'h8F;
+        format_rom[91]=8'h90;
+        format_rom[92]=8'h91;
+        format_rom[93]=8'h92;
+        format_rom[94]=8'h93;
+        format_rom[95]=8'h94;
+        format_rom[96]=8'h95;
+        format_rom[97]=8'h96;
+        format_rom[98]=8'd32;
+        format_rom[99]=8'd82;
+        format_rom[100]=8'd68;
+        format_rom[101]=8'd61;
+        format_rom[102]=8'h97;
+        format_rom[103]=8'd32;
+        format_rom[104]=8'd82;
+        format_rom[105]=8'd68;
+        format_rom[106]=8'd84;
+        format_rom[107]=8'd61;
+        format_rom[108]=8'h98;
+        format_rom[109]=8'h99;
+        format_rom[110]=8'd32;
+        format_rom[111]=8'd68;
+        format_rom[112]=8'd73;
+        format_rom[113]=8'd86;
+        format_rom[114]=8'd61;
+        format_rom[115]=8'h9A;
+        format_rom[116]=8'h9B;
+        format_rom[117]=8'd32;
+        format_rom[118]=8'd83;
+        format_rom[119]=8'd80;
+        format_rom[120]=8'd73;
+        format_rom[121]=8'd75;
+        format_rom[122]=8'd61;
+        format_rom[123]=8'h9C;
+        format_rom[124]=8'd32;
+        format_rom[125]=8'd67;
+        format_rom[126]=8'd78;
+        format_rom[127]=8'd84;
+        format_rom[128]=8'd61;
+        format_rom[129]=8'h9D;
+        format_rom[130]=8'd32;
+        format_rom[131]=8'd83;
+        format_rom[132]=8'd69;
+        format_rom[133]=8'd76;
+        format_rom[134]=8'd61;
+        format_rom[135]=8'h9E;
+        format_rom[136]=8'd32;
+        format_rom[137]=8'd65;
+        format_rom[138]=8'd68;
+        format_rom[139]=8'd83;
+        format_rom[140]=8'd61;
+        format_rom[141]=8'h9F;
+        format_rom[142]=8'd32;
+        format_rom[143]=8'd68;
+        format_rom[144]=8'd68;
+        format_rom[145]=8'd83;
+        format_rom[146]=8'd61;
+        format_rom[147]=8'hA0;
+        format_rom[148]=8'd32;
+        format_rom[149]=8'd67;
+        format_rom[150]=8'd83;
+        format_rom[151]=8'd78;
+        format_rom[152]=8'd61;
+        format_rom[153]=8'hA1;
+        format_rom[154]=8'd32;
+        format_rom[155]=8'd77;
+        format_rom[156]=8'd79;
+        format_rom[157]=8'd83;
+        format_rom[158]=8'd61;
+        format_rom[159]=8'hA2;
+        format_rom[160]=8'd32;
+        format_rom[161]=8'd83;
+        format_rom[162]=8'd67;
+        format_rom[163]=8'd75;
+        format_rom[164]=8'd61;
+        format_rom[165]=8'hA3;
+        format_rom[166]=8'd32;
+        format_rom[167]=8'd77;
+        format_rom[168]=8'd73;
+        format_rom[169]=8'd83;
+        format_rom[170]=8'd79;
+        format_rom[171]=8'd61;
+        format_rom[172]=8'hA4;
+        format_rom[173]=8'd10;
+        format_rom[174]=8'd67;
+        format_rom[175]=8'd32;
+        format_rom[176]=8'd83;
+        format_rom[177]=8'd83;
+        format_rom[178]=8'd84;
+        format_rom[179]=8'd61;
+        format_rom[180]=8'hA5;
+        format_rom[181]=8'hA6;
+        format_rom[182]=8'hA7;
+        format_rom[183]=8'hA8;
+        format_rom[184]=8'd32;
+        format_rom[185]=8'd83;
+        format_rom[186]=8'd78;
+        format_rom[187]=8'd88;
+        format_rom[188]=8'd61;
+        format_rom[189]=8'hA9;
+        format_rom[190]=8'hAA;
+        format_rom[191]=8'hAB;
+        format_rom[192]=8'hAC;
+        format_rom[193]=8'd32;
+        format_rom[194]=8'd83;
+        format_rom[195]=8'd68;
+        format_rom[196]=8'd78;
+        format_rom[197]=8'd61;
+        format_rom[198]=8'hAD;
+        format_rom[199]=8'hAE;
+        format_rom[200]=8'hAF;
+        format_rom[201]=8'hB0;
+        format_rom[202]=8'd32;
+        format_rom[203]=8'd65;
+        format_rom[204]=8'd67;
+        format_rom[205]=8'd67;
+        format_rom[206]=8'd61;
+        format_rom[207]=8'hB1;
+        format_rom[208]=8'hB2;
+        format_rom[209]=8'hB3;
+        format_rom[210]=8'd32;
+        format_rom[211]=8'd79;
+        format_rom[212]=8'd70;
+        format_rom[213]=8'd70;
+        format_rom[214]=8'd61;
+        format_rom[215]=8'hB4;
+        format_rom[216]=8'hB5;
+        format_rom[217]=8'hB6;
+        format_rom[218]=8'hB7;
+        format_rom[219]=8'hB8;
+        format_rom[220]=8'hB9;
+        format_rom[221]=8'hBA;
+        format_rom[222]=8'hBB;
+        format_rom[223]=8'd32;
+        format_rom[224]=8'd86;
+        format_rom[225]=8'd76;
+        format_rom[226]=8'd68;
+        format_rom[227]=8'd61;
+        format_rom[228]=8'hBC;
+        format_rom[229]=8'd32;
+        format_rom[230]=8'd87;
+        format_rom[231]=8'd50;
+        format_rom[232]=8'd70;
+        format_rom[233]=8'd61;
+        format_rom[234]=8'hBD;
+        format_rom[235]=8'd32;
+        format_rom[236]=8'd82;
+        format_rom[237]=8'd50;
+        format_rom[238]=8'd69;
+        format_rom[239]=8'd61;
+        format_rom[240]=8'hBE;
+        format_rom[241]=8'd32;
+        format_rom[242]=8'd72;
+        format_rom[243]=8'd66;
+        format_rom[244]=8'd61;
+        format_rom[245]=8'hBF;
+        format_rom[246]=8'd10;
+        format_rom[247]=8'd68;
+        format_rom[248]=8'd32;
+        format_rom[249]=8'd77;
+        format_rom[250]=8'd73;
+        format_rom[251]=8'd83;
+        format_rom[252]=8'd69;
+        format_rom[253]=8'd61;
+        format_rom[254]=8'hC0;
+        format_rom[255]=8'hC1;
+        format_rom[256]=8'hC2;
+        format_rom[257]=8'hC3;
+        format_rom[258]=8'd32;
+        format_rom[259]=8'd83;
+        format_rom[260]=8'd67;
+        format_rom[261]=8'd69;
+        format_rom[262]=8'd61;
+        format_rom[263]=8'hC4;
+        format_rom[264]=8'hC5;
+        format_rom[265]=8'hC6;
+        format_rom[266]=8'hC7;
+        format_rom[267]=8'd32;
+        format_rom[268]=8'd32;
+        format_rom[269]=8'd83;
+        format_rom[270]=8'd87;
+        format_rom[271]=8'd61;
+        format_rom[272]=8'hC8;
+        format_rom[273]=8'hC9;
+        format_rom[274]=8'd32;
+        format_rom[275]=8'd76;
+        format_rom[276]=8'd83;
+        format_rom[277]=8'd61;
+        format_rom[278]=8'hCA;
+        format_rom[279]=8'd32;
+        format_rom[280]=8'd87;
+        format_rom[281]=8'd67;
+        format_rom[282]=8'd61;
+        format_rom[283]=8'hCB;
+        format_rom[284]=8'hCC;
+        format_rom[285]=8'hCD;
+        format_rom[286]=8'd32;
+        format_rom[287]=8'd66;
+        format_rom[288]=8'd85;
+        format_rom[289]=8'd61;
+        format_rom[290]=8'hCE;
+        format_rom[291]=8'd32;
+        format_rom[292]=8'd83;
+        format_rom[293]=8'd80;
+        format_rom[294]=8'd61;
+        format_rom[295]=8'hCF;
+        format_rom[296]=8'hD0;
+        format_rom[297]=8'hD1;
+        format_rom[298]=8'hD2;
+        format_rom[299]=8'd32;
+        format_rom[300]=8'd70;
+        format_rom[301]=8'd61;
+        format_rom[302]=8'hD3;
+        format_rom[303]=8'd32;
+        format_rom[304]=8'd80;
+        format_rom[305]=8'd67;
+        format_rom[306]=8'd61;
+        format_rom[307]=8'hD4;
+        format_rom[308]=8'hD5;
+        format_rom[309]=8'hD6;
+        format_rom[310]=8'd32;
+        format_rom[311]=8'd68;
+        format_rom[312]=8'd87;
+        format_rom[313]=8'd61;
+        format_rom[314]=8'hD7;
+        format_rom[315]=8'hD8;
+        format_rom[316]=8'hD9;
+        format_rom[317]=8'hDA;
+        format_rom[318]=8'd32;
+        format_rom[319]=8'd73;
+        format_rom[320]=8'd48;
+        format_rom[321]=8'd61;
+        format_rom[322]=8'hDB;
+        format_rom[323]=8'hDC;
+        format_rom[324]=8'hDD;
+        format_rom[325]=8'hDE;
+        format_rom[326]=8'hDF;
+        format_rom[327]=8'hE0;
+        format_rom[328]=8'd32;
+        format_rom[329]=8'd82;
+        format_rom[330]=8'd67;
+        format_rom[331]=8'd61;
+        format_rom[332]=8'hE1;
+        format_rom[333]=8'hE2;
+        format_rom[334]=8'hE3;
+        format_rom[335]=8'hE4;
+        format_rom[336]=8'd32;
+        format_rom[337]=8'd73;
+        format_rom[338]=8'd49;
+        format_rom[339]=8'd61;
+        format_rom[340]=8'hE5;
+        format_rom[341]=8'hE6;
+        format_rom[342]=8'hE7;
+        format_rom[343]=8'hE8;
+        format_rom[344]=8'hE9;
+        format_rom[345]=8'hEA;
+        format_rom[346]=8'd10;
+    end
+    always @(posedge i_clk) format_token<=format_rom[pos+9'd1];
 
     assign o_tx = (st == 4'd1) ? 1'b0 :
                   (st == 4'd2) ? shifter[bitidx] : 1'b1;
@@ -478,7 +599,7 @@ module yx8_uart_telem (
             if (tick != 25'd0) tick <= tick - 25'd1;
             case (st)
                 4'd0: if (tick == 25'd0) begin
-                          pos <= 9'd0; shifter <= char_at(9'd0);
+                          pos <= 9'd0; shifter <= 8'd65; // first literal is A
                           baud <= 9'd0; st <= 4'd1;
                         end
                 4'd1: if (baud == BAUD_DIV - 9'd1) begin
@@ -495,7 +616,7 @@ module yx8_uart_telem (
                               st <= 4'd0; tick <= REPORT_CLKS;
                           end else begin
                               pos <= pos + 9'd1;
-                              shifter <= char_at(pos + 9'd1);
+                              shifter <= format_token[7] ? hx(nibble_at(format_token[6:0])):format_token;
                               st <= 4'd1;
                           end
                         end else baud <= baud + 9'd1;

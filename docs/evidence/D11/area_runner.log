@@ -1,0 +1,3 @@
+UART_AREA_PROXY baseline: 1360 LUT cells, 3098 conservative LUT4/carry charge, 0 BRAM
+UART_AREA_PROXY compact: 355 LUT cells, 611 conservative LUT4/carry charge, 1 BRAM
+CALIBRATED_ESTIMATE_ONLY total=16472/19600 (84.04%); TD not executed; actual <85% remains a local gate

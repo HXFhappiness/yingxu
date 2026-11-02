@@ -1,0 +1,6 @@
+D5_MENUCHK: PASS boot LBA, five rows/wrap, wipe repair, photo/YX-8-breakout/video/music, about, hold return, DIP ownership, video failure
+- tb/tb_d5_menu.v:94: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 60ms; walltime 14.963 s; speed 4.013 ms/s
+- Verilator: cpu 14.954 s on 1 threads; alloced 44 MB
+D5_READERCHK: PASS Yosys read/proc/check on production bar process; TD not executed

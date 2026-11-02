@@ -1,0 +1,6 @@
+CLOCK_SHADOW_REPRO PASS parent_edges=28 receiver_edges=0 receiver_clk=Z ACKs=0; unmodified baseline RTL, no clock force
+/workspace/yingxu-fpga/tb/tb_sdram_clock_binding.v:40: $finish called at 280000 (1ps)
+CLOCK_BINDING PASS parent_edges=18 receiver_edges=18 ACKs=1 data_words=8 state=WAIT sampled_VALID=1
+/workspace/yingxu-fpga/tb/tb_sdram_clock_binding.v:40: $finish called at 180000 (1ps)
+CLOCK_SCOPECHK PASS baseline creates an undriven generate-local CLK; fixed production RTL uses the PLL output
+IVERILOG_TOP_ELAB PASS actual board top; zero implicit-net warnings

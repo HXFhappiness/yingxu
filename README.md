@@ -5,8 +5,7 @@
 
 **English**: YingXu is a multi-function FPGA console built on an Anlogic EG4S20
 (Anlogic TD toolchain, fully domestic EDA). One HDMI output carries a photo
-browser, an SD-card music player, two cartridge games, and a hardware invaders
-game — all on top of a custom 8-bit CPU ("YX-8") with its own assembler and
+browser, an SD-card music player and two cartridge games running on a custom 8-bit CPU ("YX-8") with its own assembler and
 simulator. Cartridges are loaded from fixed SD-card sectors.
 
 ---
@@ -16,7 +15,7 @@ simulator. Cartridges are loaded from fixed SD-card sectors.
 | 类别 | 功能 |
 |---|---|
 | 多媒体平台 | SD 卡 BMP 照片浏览（K0/K1 翻页、5s 自动轮播、淡入淡出）；SD 卡音乐播放（YXMA 48kHz 立体声，与音效饱和混音） |
-| 游戏机 | 卡带《宇宙流浪者》(604 词汇编)、《打砖块》(492 词)；硬件版流浪者（纯 FSM，判定经 1200 帧仿真验证 0 误判）；四种 PSG 事件音效 |
+| 游戏机 | 卡带《宇宙流浪者》(604 词汇编)、《打砖块》(492 词)；四种 PSG 事件音效 |
 | 计算机 | 自研 YX-8 CPU（73MHz，16 位字/24 位指令）+ 汇编器 yxa + 周期精确模拟器 yxem（与 RTL 余弦仿真金标比对） |
 | 平台 | SD SPI 驱动（上电冲洗/重试看门狗）、SDRAM 四端口控制器、HDMI 1.4b 视频音频、UART 遥测 |
 
@@ -83,9 +82,10 @@ LBA 1,000,000（仓库镜像标题 INVADERS）。游戏中 SW7 OFF 时 key0 左�
 回菜单使用 SW7 ON + key0 短按，2 秒长按保留兜底；游戏退出回子菜单原选项，
 子菜单退出回主菜单“游戏”。导航锁定 100ms，主菜单中 SW7 ON 仍可 key0 确认。
 菜单接管后实体 DIP 不再抢占模式。视频板测跟进、I1 编码及本地构建入口见
-[最新交付说明](docs/D10_CLOCK_MENU_RETURN.md)。
+[最新交付说明](docs/D11_AREA_REDUCTION.md)。
 
-以下为冻结固件及 `BOOT_MENU=0` 维护构建的实体 DIP 直通表；统一菜单固件默认不使用它。
+以下是 `BOOT_MENU=0` 维护构建的照片/音乐/卡带实体直通表；统一菜单固件默认使用菜单。
+硬件版 invaders/breakout 已从统一工程移除，原 game_sel=0/1 仅保留译码和零精灵输出。
 
 | 模式 | SW7 | SW5 | SW6 | SW4 |
 |---|---|---|---|---|
@@ -93,7 +93,6 @@ LBA 1,000,000（仓库镜像标题 INVADERS）。游戏中 SW7 OFF 时 key0 左�
 | **音乐播放** | ON | OFF | OFF | **ON** |
 | 卡带·流浪者 | ON | ON | ON | - |
 | 卡带·打砖块 | ON | ON | OFF | - |
-| 硬件·流浪者 | ON | OFF | ON | - |
 
 换卡 / 换模式后**断电重上电**（热切换不可靠）。
 
@@ -115,10 +114,10 @@ python tools/cosim_diff.py out/gold_t1.txt out/rtl_t1.txt   # 期望 BADC0UNT=0
 
 ### 5. 板上诊断（不插仿真器）
 - LED0-3 在音乐模式下 = 使能 / FIFO 有数据 / 已进入播放态 / 断流看门狗
-- COM5 115200 遥测；音乐模式下 D 帧为播放器内部量（弹出计数、FIFO 占用、看门狗…）
+- 115200 遥测：D11 保留 A/B/C/D 格式及视频/YX-8/菜单诊断；旧 G6 音乐 FIFO 覆盖字段已退役，音乐状态 LED 保留。
   ```powershell
   powershell -File tools/music_telem.ps1 -Seconds 6
-  python tools/music_telem.py
+  python tools/telem.py
   ```
 
 ## 文档（调试实录——本仓库最值钱的部分）

@@ -1,0 +1,6 @@
+UART_FORMAT_PROOF PASS all 512 positions and arbitrary input/counter values
+UART_WIRE_EQUIV PASS reports=2 bytes=694 actual 50MHz/115200; every TX bit equal under changing inputs
+- /workspace/yingxu-fpga/out/d11/uart/tb_uart_compact.v:77: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 460ms; walltime 7.324 s; speed 62.894 ms/s
+- Verilator: cpu 7.318 s on 1 threads; alloced 33 MB

@@ -1,0 +1,48 @@
+src/5640/sdram_ctrl_4p/sdr_data_path.v:86: warning: Numeric constant truncated to 1 bits.
+src/user_source/hdl_source/I2S_receiver.v:3: warning: timescale for I2S_receiver inherited from another file.
+src/5640/sdram_ctrl_4p/sdram_ip.v:12: ...: The inherited timescale is here.
+src/user_source/hdl_source/audio_arc_calculate.v:4: warning: timescale for audio_arc_calculate inherited from another file.
+src/5640/sdram_ctrl_4p/sdram_ip.v:12: ...: The inherited timescale is here.
+src/user_source/hdl_source/yingxu_logo.v:3: warning: timescale for yingxu_logo inherited from another file.
+src/5640/sdram_ctrl_4p/sdram_ip.v:12: ...: The inherited timescale is here.
+src/user_source/hdl_source/yingxu_cn_font.v:3: warning: timescale for yingxu_cn_font inherited from another file.
+src/5640/sdram_ctrl_4p/sdram_ip.v:12: ...: The inherited timescale is here.
+src/user_source/hdl_source/design_top_wrapper.v:2: warning: timescale for design_top_wrapper inherited from another file.
+src/user_source/hdl_source/yingxu_menu_ui.v:1: ...: The inherited timescale is here.
+src/user_source/hdl_source/key_remove_shakes.v:12: warning: timescale for key_remove_shakes inherited from another file.
+src/user_source/hdl_source/yingxu_menu_ui.v:1: ...: The inherited timescale is here.
+src/user_source/hdl_source/yingxu_sdram_control_4port.v:14: warning: timescale for yingxu_sdram_control_4port inherited from another file.
+src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pcm_feed.v:1: ...: The inherited timescale is here.
+hardware_test_P0_UART_V5_CRC32.v:932: warning: Numeric constant truncated to 16 bits.
+warning: Some design elements have no explicit time unit and/or
+       : time precision. This may cause confusing timing results.
+       : Affected design elements are:
+       :   -- module command declared here: src/5640/sdram_ctrl_4p/command.v:1
+       :   -- module control_interface declared here: src/5640/sdram_ctrl_4p/control_interface.v:1
+       :   -- module sdr_data_path declared here: src/5640/sdram_ctrl_4p/sdr_data_path.v:1
+src/user_source/hdl_source/yingxu_sdram_control_4port.v:240: warning: Port declaration of CS_N inherits dimensions from var/net.
+src/user_source/hdl_source/yingxu_sdram_control_4port.v:240: warning: Scalar port ``CS_N'' has a vectored net declaration [1:0].
+src/user_source/hdl_source/design_top_wrapper.v:738: warning: Port 2 (rst) of yingxu_tile_layer expects 1 bits, got 2.
+src/user_source/hdl_source/design_top_wrapper.v:738:        : Pruning 1 high bits of the expression.
+src/user_source/hdl_source/yingxu_sprite_engine.v:237: warning: @* is sensitive to all 16 words in array 'spr_tab'.
+src/user_source/hdl_source/yx8_cpu.v:190: warning: @* is sensitive to all 64 words in array 'stack'.
+src/user_source/hdl_source/yx8_cart_soc.v:688: warning: @* is sensitive to all 8 words in array 'mask_b'.
+src/user_source/hdl_source/yx8_cart_soc.v:688: warning: @* is sensitive to all 8 words in array 'mask_b'.
+src/user_source/hdl_source/yx8_cart_soc.v:689: warning: @* is sensitive to all 8 words in array 'mask_b'.
+src/user_source/hdl_source/yx8_cart_soc.v:689: warning: @* is sensitive to all 8 words in array 'mask_b'.
+src/user_source/hdl_source/yx8_cart_soc.v:690: warning: @* is sensitive to all 8 words in array 'mask_b'.
+src/user_source/hdl_source/yx8_cart_soc.v:690: warning: @* is sensitive to all 8 words in array 'mask_b'.
+src/user_source/hdl_source/yx8_cart_soc.v:691: warning: @* is sensitive to all 8 words in array 'mask_b'.
+src/user_source/hdl_source/yx8_cart_soc.v:691: warning: @* is sensitive to all 8 words in array 'mask_b'.
+src/user_source/hdl_source/yingxu_sdram_control_4port.v:316: warning: Port 3 (CMD) of control_interface expects 3 bits, got 2.
+src/user_source/hdl_source/yingxu_sdram_control_4port.v:316:        : Padding 1 high bits of the port.
+src/user_source/hdl_source/yingxu_sdram_control_4port.v:316: warning: Instantiating module control_interface with dangling input port 6 (INIT_ACK) floating.
+src/user_source/hdl_source/yingxu_sdram_control_4port.v:361: warning: Port 4 (DM) of sdr_data_path expects 4 bits, got 2.
+src/user_source/hdl_source/yingxu_sdram_control_4port.v:361:        : Padding 2 high bits of the port.
+src/user_source/hdl_source/yingxu_sdram_framebuffer.v:154: warning: Port 42 (CS_N) of yingxu_sdram_control_4port expects 2 bits, got 1.
+src/user_source/hdl_source/yingxu_sdram_framebuffer.v:154:        : Padding 1 high bits of the port.
+src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:174: warning: Port 29 (slot_tag0) of yingxu_yxv_loader expects 32 bits, got 16.
+src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:174:        : Padding 16 high bits of the port.
+src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:174: warning: Port 30 (slot_tag1) of yingxu_yxv_loader expects 32 bits, got 16.
+src/user_source/hdl_source/media/mjpeg/yingxu_yxv_pipeline.v:174:        : Padding 16 high bits of the port.
+hardware_test_P0_UART_V5_CRC32.v:648: warning: @* is sensitive to all 9 words in array 'lba_rom'.
