@@ -45,6 +45,9 @@ module sd_card_control #(
     );
 
     reg [7:0] file_bytes[0:2999999];
+    reg [7:0] cart_a_bytes[0:4095],cart_b_bytes[0:4095];
+    integer cart_a_size=0,cart_b_size=0;
+    reg [1023:0] cart_a_name,cart_b_name;
     integer state=0,delay_count=0,byte_index=0,phase=0,file_size,fd,narg,bad=0;
     integer transfer_bytes=0,noinit=0;reg [27:0] lba=0;
     reg ram_we=0;reg [8:0] ram_addr=0;reg [7:0] ram_data=0;
@@ -56,6 +59,14 @@ module sd_card_control #(
         fd=$fopen(filename,"rb");if(!fd)$fatal(1,"SD model open");
         file_size=$fread(file_bytes,fd);$fclose(fd);
         if(bad)file_bytes[0]=0;
+        if($value$plusargs("cart_a=%s",cart_a_name))begin
+            fd=$fopen(cart_a_name,"rb");if(!fd)$fatal(1,"cart A open");
+            cart_a_size=$fread(cart_a_bytes,fd);$fclose(fd);
+        end
+        if($value$plusargs("cart_b=%s",cart_b_name))begin
+            fd=$fopen(cart_b_name,"rb");if(!fd)$fatal(1,"cart B open");
+            cart_b_size=$fread(cart_b_bytes,fd);$fclose(fd);
+        end
     end
     ram_dual_port_simple #(.data_width(8),.data_num(512)) RD_RAM(
         .douta(),.doutb(rd_ram_dout),.dina(ram_data),.addra(ram_addr),.addrb(rd_ram_addr),.wea(ram_we),.clka(clk),.clkb(clk));
@@ -92,6 +103,10 @@ module sd_card_control #(
                         phase<=0;ram_addr<=byte_index;ram_we<=1;
                         if(lba>=3000000 && (lba-3000000)*512+byte_index<file_size)
                             ram_data<=file_bytes[(lba-3000000)*512+byte_index];
+                        else if(lba>=1000000 && lba<1001000 && (lba-1000000)*512+byte_index<cart_a_size)
+                            ram_data<=cart_a_bytes[(lba-1000000)*512+byte_index];
+                        else if(lba>=1001000 && lba<1002000 && (lba-1001000)*512+byte_index<cart_b_size)
+                            ram_data<=cart_b_bytes[(lba-1001000)*512+byte_index];
                         else ram_data<=0;
                         transfer_bytes<=transfer_bytes+1;
                         if(byte_index==511)begin state<=3;delay_count<=4;end

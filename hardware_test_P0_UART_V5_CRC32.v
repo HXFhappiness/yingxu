@@ -21,6 +21,7 @@
 module hardware_test #(
     parameter integer IMG_COUNT = 9,
     parameter integer SIM_FAST_BOOT = 0,
+    parameter integer BOOT_MENU = 1,
     parameter integer VIDEO_ACQUIRE_LIMIT = 250_000_000
 )(
     input  wire                             clk,
@@ -105,8 +106,8 @@ module hardware_test #(
     reg        sw_real_valid;
     wire [7:0] sw_eff = menu_override ? menu_pattern : sw;
     localparam [7:0] MENU_PAT_PHOTO = 8'hFF;   // SW7 OFF: photo / menu
-    localparam [7:0] MENU_PAT_GAME  = 8'h7F;   // D7: hardware breakout
-    localparam [7:0] MENU_PAT_PLANE = 8'h5F;   // D7 virtual code; menu-only decode below
+    localparam [7:0] MENU_PAT_GAME  = 8'h5F;   // YX-8 BREAKOUT @ 1,001,000
+    localparam [7:0] MENU_PAT_PLANE = 8'h1F;   // YX-8 INVADERS @ 1,000,000
     localparam [7:0] MENU_PAT_VIDEO = 8'h77;   // SW7 ON + SW3 ON: video
     localparam [7:0] MENU_PAT_MUSIC = 8'h6F;   // SW7 ON + SW4 ON: music
 
@@ -179,10 +180,8 @@ wire music_sw4 = ~sw4_s[1];                      // SW4 ON = 音乐
 reg  [1:0] sw6_sync;   // G6: moved up (game_sel2/music_on_w both use it)
 wire music_on_w = music_sw4 & game_mode;
 // G6: 音乐使能统一用这一根：SW4 ON + 游戏模式 + SW5/SW6 均 OFF（纯音乐，不抢 SD）
-// D7 specifies 5F for the hardware plane game. Physical 5F remains the
-// legacy cartridge preset; only the menu virtual code maps to game 1.
-wire [1:0] game_sel2 = (menu_override && menu_pattern==MENU_PAT_PLANE) ? 2'd1 :
-                           ~sw5_s[1]   ? 2'd2 :
+// Hardware and cartridge maintenance presets keep the physical DIP decode.
+wire [1:0] game_sel2 = ~sw5_s[1]   ? 2'd2 :
                            ~sw6_sync[1] ? 2'd1 : 2'd0;
     wire       cart_active = game_mode && (game_sel2 == 2'd2);
 wire [27:0] wav_base_w;
@@ -214,8 +213,8 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     wire [7:0]  cart_score_w;
 
     // G4: cartridge image lives at a FIXED high LBA, immune to photo-file churn.
-    localparam [27:0] CART_LBA_A = 28'd1_000_000;   // SW6 OFF -> slot 1 (content set by write_cart)
-    localparam [27:0] CART_LBA_B = 28'd1_001_000;   // SW6 ON  -> slot 2 (content set by write_cart)
+    localparam [27:0] CART_LBA_A = 28'd1_000_000;   // SW6 ON -> INVADERS (write_cart recipe)
+    localparam [27:0] CART_LBA_B = 28'd1_001_000;   // SW6 OFF -> BREAKOUT (write_cart recipe)
     wire cart_restart_w;
 
     // Constant mask of valid indicator segments (one bit per image).
@@ -294,6 +293,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .I_game_mode    (game_mode),
         .I_music_en     (music_on_w & ~cart_busy_w),
         .I_menu_ctx     (menu_visible),
+        .I_scene_epoch  (scene_epoch),
         .I_menu_sel     (menu_fallback ? 3'd0:menu_sel),
         .I_menu_page    (menu_fallback ? 1'b0:menu_page),
         .O_wav_base     (wav_base_w),
@@ -310,7 +310,11 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
         .O_wav_byte_cnt (wav_dbg_byte_w),
         .O_wav_rate     (wav_dbg_rate_w),
         .I_game_sel     (game_sel2),
-        .I_cart_swap    (cart_swap),
+        .I_cart_swap    (1'b0),
+        // A queued cartridge restart may still be waiting for an old photo
+        // read to drain. Only actual cartridge-sector bytes belong to the CPU.
+        .I_cart_stream_valid(cart_active && sd_dbg_stream_sector>=cart_lba_sel &&
+                             sd_dbg_stream_sector<cart_lba_sel+28'd6),
         .I_sd_ready     (sd_seen),
         .O_cart_restart (cart_restart_w),
         .O_cart_busy    (cart_busy_w),
@@ -456,12 +460,25 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n)key0_pp<=1'b1;else key0_pp<=key_0;
     end
-    wire key0_exit=(sw[7]==1'b0) && key0_pp && !key_0;
+    wire key0_exit=(sw[7]==1'b0) && key0_pp && !key_0 && (!menu_ui || menu_page);
     wire menu_ui = menu_override && (menu_pattern == MENU_PAT_PHOTO) && (img_idx == 4'd0);
     // Maintenance faults keep MISE/I1 latched until the operator returns.
     // Their fallback picture is hardware too, with no background SD read.
     wire menu_fallback = !menu_override && video_failed;
     wire menu_visible = menu_ui || menu_fallback;
+    reg scene_epoch,scene_override_q,scene_visible_q,scene_page_q;
+    reg [7:0] scene_pattern_q;
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)begin
+            scene_epoch<=0;scene_pattern_q<=8'hFF;scene_override_q<=(BOOT_MENU!=0);
+            scene_visible_q<=0;scene_page_q<=0;
+        end else begin
+            scene_pattern_q<=sw_eff;scene_override_q<=menu_override;
+            scene_visible_q<=menu_visible;scene_page_q<=menu_page;
+            if(scene_pattern_q!=sw_eff || scene_override_q!=menu_override ||
+               scene_visible_q!=menu_visible || scene_page_q!=menu_page)scene_epoch<=~scene_epoch;
+        end
+    end
     wire menu_return = ((!menu_ui || menu_page) && key0_exit && key_lock==0) ||
                        (menu_override && !menu_ui && menu_hold_2s) ||
                        (menu_override && !video_failed_q && video_failed) ||
@@ -496,7 +513,9 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             end else menu_sw_count<=0;
         end
     end
-    wire menu_real_change = menu_override && menu_sw_changed && !menu_return;
+    // Menu ownership is exclusive: a physical switch never takes it away.
+    // In a BOOT_MENU=0 maintenance build sw_eff follows the pins directly.
+    wire menu_real_change = !menu_override && menu_sw_changed && !menu_return;
 
     // ------------------------------------------------------------------
     // Key handling: edge detect + short lockout (the validated baseline).
@@ -537,11 +556,11 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            menu_override <= 1'b1;
+            menu_override <= (BOOT_MENU != 0);
             menu_pattern <= MENU_PAT_PHOTO;
             menu_sel <= 3'd0;
             menu_page <= 1'b0;
-            img_idx     <= 4'd0;
+            img_idx     <= (BOOT_MENU != 0) ? 4'd0:4'd1;
             img_restart <= 1'b0;
             key0_p      <= 1'b1;
             key1_p      <= 1'b1;
@@ -969,11 +988,11 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     yingxu_sd_integration_probe #(.CLOCK_FREQ(50_000_000), .DYNAMIC_COUNT(1), .SECTOR_COUNT(16'd5401)) U_SD_INTEGRATION (
         .clk                       (clk),
         .rst                       (sd_rst),
-        .legacy_inhibit(video_handoff),.dynamic_enable(video_owned),.dynamic_count(video_sd_sectors),.transaction_done(video_sd_done),
+        .legacy_inhibit(video_handoff),.dynamic_enable(video_owned || cart_active),.dynamic_count(video_owned ? video_sd_sectors:16'd6),.transaction_done(video_sd_done),
         .trigger_sw                (1'b0),   // SW6 is handled in the top now
         .start_sector              (video_owned ? video_sd_lba : cart_busy_w ? cart_lba_sel :
                              music_on_w ? wav_base_w : img_lba),
-        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? 1'b0 : (load_start | cart_restart_w | cart_swap | wav_restart_w)),
+        .restart                   (video_owned ? video_sd_start : (video_requested && !video_failed) ? 1'b0 : (load_start | cart_restart_w | wav_restart_w)),
         .out_stream_data           (sd_bmp_sd_data),
         .out_stream_valid          (sd_bmp_sd_valid),
         .out_stream_ready          (sd_bmp_sd_ready),

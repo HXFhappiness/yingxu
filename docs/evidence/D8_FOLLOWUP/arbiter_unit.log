@@ -1,0 +1,10 @@
+GRANT_TRACE: owner=0 failure=0
+GRANT_TRACE: owner=1 failure=0
+GRANT_TRACE: owner=2 failure=1
+GRANT_TRACE: owner=2 failure=0
+GRANT_TRACE: owner=0 failure=0
+ARBCHK: PASS grants=5 priority=display>decode>other owner-until-done stalled-command-stable error-routed
+- tb/tb_mjpeg_bus.v:42: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 435ns; walltime 0.000 s; speed 688.263 us/s
+- Verilator: cpu 0.001 s on 1 threads; alloced 33 MB

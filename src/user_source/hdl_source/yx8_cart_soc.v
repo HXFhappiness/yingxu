@@ -76,6 +76,33 @@ module yx8_cart_soc_v2 #(
     output wire [7:0]  cart_score
 );
 
+    // Selection is a reset boundary, not merely a loader-start permission.
+    (* async_reg="true" *) reg [1:0] selected_sys,selected_pix;
+    always @(posedge sys_clk)begin
+        if(sys_rst)selected_sys<=0;else selected_sys<={selected_sys[0],en};
+    end
+    always @(posedge pix_clk)begin
+        if(pix_rst)selected_pix<=0;else selected_pix<={selected_pix[0],en};
+    end
+    wire cart_sys_rst=sys_rst || !selected_sys[1];
+    wire cart_pix_rst=pix_rst || !selected_pix[1];
+    reg request_toggle,request_meta,request_sync,request_seen,request_pulse;
+    reg stream_armed;
+    always @(posedge pix_clk)begin
+        if(cart_pix_rst)request_toggle<=0;
+        else if(restart_pend)request_toggle<=~request_toggle;
+    end
+    always @(posedge sys_clk)begin
+        if(cart_sys_rst)begin
+            request_meta<=0;request_sync<=0;request_seen<=0;request_pulse<=0;stream_armed<=0;
+        end else begin
+            request_meta<=request_toggle;request_sync<=request_meta;request_pulse<=0;
+            if(request_sync!=request_seen)begin
+                request_seen<=request_sync;request_pulse<=1;stream_armed<=1;
+            end
+        end
+    end
+
     // ==== ?? RAM?????A=sys ??B=pix ?? ==============================
     // ??????? ram_dual_port_simple ???TD ????? BRAM??
     // ???????FSM ? 1 ? we ?? + ??/??????????? loaded_s
@@ -99,11 +126,11 @@ module yx8_cart_soc_v2 #(
     wire         bq_empty  = (bq_rg == bq_wg_s);
 
     always @(posedge sys_clk) begin
-        if (sys_rst || por) begin
+        if (cart_sys_rst || por) begin
             bq_wp <= 11'd0;
             bq_wg <= 11'd0;
         end
-        else if (sd_valid) begin
+        else if (sd_valid && stream_armed) begin
             bq_mem[bq_wp[9:0]] <= sd_data;
             bq_wp         <= bq_wp_nxt;
             bq_wg         <= bq_wg_nxt;
@@ -114,7 +141,7 @@ module yx8_cart_soc_v2 #(
     reg       bq_q_v;      // one-cycle strobe: a byte is ready
 
     always @(posedge pix_clk) begin
-        if (pix_rst) begin
+        if (cart_pix_rst) begin
             bq_rp    <= 11'd0;
             bq_rg    <= 11'd0;
             bq_wg_m  <= 11'd0;
@@ -142,7 +169,7 @@ module yx8_cart_soc_v2 #(
     // 回读地址切换延后 4 拍：否则会抢走 L_META 对地址 1023 的写入
     reg [3:0] ld_dly;
     always @(posedge pix_clk) begin
-        if (pix_rst) ld_dly <= 4'd0;
+        if (cart_pix_rst) ld_dly <= 4'd0;
         else         ld_dly <= {ld_dly[2:0], loaded_s};
     end
 
@@ -241,14 +268,14 @@ module yx8_cart_soc_v2 #(
     end
     wire por = (por_cnt != 20'd999_999);
 
-    assign cart_restart = restart_pend;
+    assign cart_restart = request_pulse; // full SYS-clock pulse from pixel toggle
     assign cart_busy    = en & ~loaded_s;
     assign cart_lstate  = lstate;
     assign cart_wcnt    = wcnt;
     assign cart_en_dbg  = en;   // LED1: ???/??(??) = ??
 
     always @(posedge pix_clk) begin
-        if (pix_rst || por) begin
+        if (cart_pix_rst || por) begin
             lstate <= L_IDLE; loaded_s <= 1'b0; restart_pend <= 1'b0;
             cart_seen <= 1'b0;
             tst_idx  <= 6'd0;
@@ -446,7 +473,7 @@ module yx8_cart_soc_v2 #(
     // 取指地址先打一拍：BRAM 输出再寄存一拍 => 总延迟确定 2 拍（与 CPU 的 S_WAIT 对齐）
     reg  [9:0]  raddr_q;
     always @(posedge pix_clk) begin
-        if (pix_rst) raddr_q <= 10'd0;
+        if (cart_pix_rst) raddr_q <= 10'd0;
         else         raddr_q <= b_raddr;
     end
 
@@ -470,7 +497,7 @@ module yx8_cart_soc_v2 #(
                                                  instr_r[7:0];
 
     always @(posedge pix_clk) begin
-        if (pix_rst) begin
+        if (cart_pix_rst) begin
             up_state <= UP_IDLE; up_da <= 8'd0; up_cnt <= 16'd0; up_dly <= 4'd0;
             up_dlen <= 16'd0; up_wc <= 10'd0; up_raddr <= 10'd0;
         end
@@ -533,12 +560,12 @@ module yx8_cart_soc_v2 #(
         up_done_d  <= up_done;
         up_done_d2 <= up_done_d;
     end
-    wire        cpu_rst = pix_rst || !loaded_p || !up_done_d2;
+    wire        cpu_rst = cart_pix_rst || !loaded_p || !up_done_d2;
     // First fetched instruction (diagnostic): latch once the CPU leaves reset.
     reg [3:0]  fi_dly;
     reg [23:0] first_instr;
     always @(posedge pix_clk) begin
-        if (pix_rst) begin
+        if (cart_pix_rst) begin
             fi_dly      <= 4'd0;
             first_instr <= 24'd0;
         end
@@ -614,7 +641,7 @@ module yx8_cart_soc_v2 #(
     );
 
     // ---- I/O ???pix_clk ??? CPU ??? ---------------------------------
-    reg [7:0]  mask_b [0:7];
+    reg [7:0]  mask_b [0:7];integer mask_reset_i;
     reg        s_en;
     reg [10:0] s_x;
     reg [9:0]  s_y;
@@ -680,7 +707,7 @@ module yx8_cart_soc_v2 #(
     assign cpu_drdata = (cpu_daddr < 8'hE0) ? dram[cpu_daddr[7:0]] : io_rd;
 
     always @(posedge pix_clk) begin
-        if (pix_rst) begin
+        if (cart_pix_rst) begin
             s_en <= 1'b0; s_x <= 11'd0; s_y <= 10'd0; s_w <= 7'd0; s_h <= 6'd0;
             s_c565 <= 16'd0;
             frame_cnt <= 8'd0; lfsr <= 8'hAC;
@@ -692,6 +719,7 @@ module yx8_cart_soc_v2 #(
             spr_we <= 1'b0; spr_slot <= 4'd0; spr_en <= 1'b0;
             spr_x <= 11'd0; spr_y <= 10'd0; spr_w <= 7'd0; spr_h <= 6'd0;
             spr_color <= 24'd0; brick_mask <= 60'd0;
+            for(mask_reset_i=0;mask_reset_i<8;mask_reset_i=mask_reset_i+1)mask_b[mask_reset_i]<=0;
             ev_hit <= 1'b0; ev_paddle <= 1'b0; ev_lose <= 1'b0; ev_win <= 1'b0;
         end
         else begin

@@ -9,41 +9,51 @@ module yingxu_mjpeg_arbiter(
     input wire [2:0] cwvalid,output reg [2:0] cwready,input wire [95:0] cwdata,input wire [2:0] cwlast,
     output reg [2:0] crvalid,input wire [2:0] crready,output wire [31:0] crdata,output wire crlast,
     output reg [2:0] cdone,cerror,
-    output wire mvalid,input wire mready,output wire mwrite,output wire [20:0] maddr,output wire [3:0] mwords,
-    output wire mwvalid,input wire mwready,output wire [31:0] mwdata,output wire mwlast,
-    input wire mrvalid,output wire mrready,input wire [31:0] mrdata,input wire mrlast,
+    output wire mvalid,input wire mready,output reg mwrite,output reg [20:0] maddr,output reg [3:0] mwords,
+    output reg mwvalid,input wire mwready,output reg [31:0] mwdata,output reg mwlast,
+    input wire mrvalid,output reg mrready,input wire [31:0] mrdata,input wire mrlast,
     output wire [2:0] debug_owner,
     input wire mdone,merror
 );
-    reg active;reg [1:0] owner;
+    reg active,pending;reg [1:0] owner;
     assign debug_owner={active,owner};
-    reg held;reg [1:0] chosen;
-    wire [1:0] priority_owner=cvalid[0] ? 2'd0:cvalid[1] ? 2'd1:2'd2;
-    wire [1:0] select_owner=held ? chosen:priority_owner;
-    assign mvalid=!active && (held || |cvalid);
-    assign mwrite=cwrite[select_owner];
-    assign maddr=select_owner==0 ? caddr[20:0]:select_owner==1 ? caddr[41:21]:caddr[62:42];
-    assign mwords=cwords[select_owner*4+:4];
-    assign mwvalid=active && cwvalid[owner];
-    assign mwdata=cwdata[owner*32+:32];
-    assign mwlast=cwlast[owner];
-    assign mrready=active && crready[owner];
+    // D9: register the entire command at each hop. VALID no longer travels
+    // combinationally through both priority selectors to the receiver. The
+    // selected payload stays stable until the actual downstream acceptance.
+    assign mvalid=pending;
     assign crdata=mrdata;assign crlast=mrlast;
     always @* begin
         cready=0;cwready=0;crvalid=0;cdone=0;cerror=0;
-        if(!active && mvalid) cready[select_owner]=mready;
-        if(active) begin
-            cwready[owner]=mwready;crvalid[owner]=mrvalid;
-            cdone[owner]=mdone;cerror[owner]=merror;
-        end
+        mwvalid=0;mwdata=0;mwlast=0;mrready=0;
+        // Constant slices/indices keep the legacy TD reader's mux structure
+        // explicit, for both command acknowledgement and transaction routing.
+        case(owner)
+            0:begin
+                if(pending)cready[0]=mready;
+                if(active)begin cwready[0]=mwready;crvalid[0]=mrvalid;cdone[0]=mdone;cerror[0]=merror;
+                    mwvalid=cwvalid[0];mwdata=cwdata[31:0];mwlast=cwlast[0];mrready=crready[0];end
+            end
+            1:begin
+                if(pending)cready[1]=mready;
+                if(active)begin cwready[1]=mwready;crvalid[1]=mrvalid;cdone[1]=mdone;cerror[1]=merror;
+                    mwvalid=cwvalid[1];mwdata=cwdata[63:32];mwlast=cwlast[1];mrready=crready[1];end
+            end
+            default:begin
+                if(pending)cready[2]=mready;
+                if(active)begin cwready[2]=mwready;crvalid[2]=mrvalid;cdone[2]=mdone;cerror[2]=merror;
+                    mwvalid=cwvalid[2];mwdata=cwdata[95:64];mwlast=cwlast[2];mrready=crready[2];end
+            end
+        endcase
     end
     always @(posedge clk) begin
-        if(rst) begin active<=0;owner<=0;held<=0;chosen<=0;end
+        if(rst) begin active<=0;owner<=0;pending<=0;mwrite<=0;maddr<=0;mwords<=0;end
         else begin
-            // Hold selection as soon as a stalled physical command is exposed;
-            // a later high-priority arrival cannot change valid payload.
-            if(mvalid && !mready && !held) begin held<=1;chosen<=select_owner;end
-            if(mvalid && mready) begin active<=1;owner<=select_owner;held<=0;end
+            if(!active && !pending)begin
+                if(cvalid[0])begin pending<=1;owner<=0;mwrite<=cwrite[0];maddr<=caddr[20:0];mwords<=cwords[3:0];end
+                else if(cvalid[1])begin pending<=1;owner<=1;mwrite<=cwrite[1];maddr<=caddr[41:21];mwords<=cwords[7:4];end
+                else if(cvalid[2])begin pending<=1;owner<=2;mwrite<=cwrite[2];maddr<=caddr[62:42];mwords<=cwords[11:8];end
+            end
+            if(pending && mready)begin active<=1;pending<=0;end
             if(active && (mdone || merror)) active<=0;
         end
     end

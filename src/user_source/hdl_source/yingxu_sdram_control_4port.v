@@ -70,7 +70,7 @@ module yingxu_sdram_control_4port #(parameter MJPEG_PORT=0)(
 		//
         MJ_ACTIVE, MJ_VALID, MJ_READY, MJ_WRITE, MJ_ADDR, MJ_WORDS,
         MJ_WVALID, MJ_WREADY, MJ_WDATA, MJ_WLAST,
-        MJ_RVALID, MJ_RREADY, MJ_RDATA, MJ_RLAST, MJ_DONE, MJ_ERROR, MJ_IDLE, MJ_DEBUG_WRITE,
+        MJ_RVALID, MJ_RREADY, MJ_RDATA, MJ_RLAST, MJ_DONE, MJ_ERROR, MJ_IDLE, MJ_DEBUG_WRITE, MJ_DEBUG_CMD,
 		test_oe
         );
 
@@ -196,7 +196,7 @@ input MJ_ACTIVE,MJ_VALID,MJ_WRITE,MJ_WVALID,MJ_WLAST,MJ_RREADY;
 input [20:0] MJ_ADDR;input [3:0] MJ_WORDS;input [31:0] MJ_WDATA;
 output MJ_READY,MJ_WREADY,MJ_RVALID,MJ_RLAST,MJ_DONE,MJ_ERROR,MJ_IDLE;
 output [31:0] MJ_RDATA;
-output [6:0] MJ_DEBUG_WRITE;
+output [6:0] MJ_DEBUG_WRITE;output [4:0] MJ_DEBUG_CMD;
 
 
 //	Internal Registers/Wires
@@ -266,13 +266,13 @@ generate if(MJPEG_PORT) begin: mj_port
         .cmd_valid(MJ_VALID),.cmd_ready(MJ_READY),.cmd_write(MJ_WRITE),.cmd_addr(MJ_ADDR),.cmd_words(MJ_WORDS),
         .wvalid(MJ_WVALID),.wready(MJ_WREADY),.wdata(MJ_WDATA),.wlast(MJ_WLAST),
         .rvalid(MJ_RVALID),.rready(MJ_RREADY),.rdata(MJ_RDATA),.rlast(MJ_RLAST),
-        .done(MJ_DONE),.error(MJ_ERROR),.idle(MJ_IDLE),.debug_write(MJ_DEBUG_WRITE),
+        .done(MJ_DONE),.error(MJ_ERROR),.idle(MJ_IDLE),.debug_write(MJ_DEBUG_WRITE),.debug_cmd(MJ_DEBUG_CMD),
         .request(mj_request),.grant(mj_grant),.write(mj_write),.addr(mj_addr),.words(mj_words),
         .phy_wdata(mj_wdata),.phy_mask(mj_mask),.phy_in_req(IN_REQ && mj_owner),.phy_out_valid(OUT_VALID && mj_owner),
         .phy_rdata(mDATAOUT),.phy_done((mWR_DONE || mRD_DONE) && mj_owner));
 end else begin: no_mj_port
     assign MJ_READY=0;assign MJ_WREADY=0;assign MJ_RVALID=0;assign MJ_RLAST=0;
-    assign MJ_DEBUG_WRITE=0;assign MJ_DONE=0;assign MJ_ERROR=0;assign MJ_IDLE=1;assign MJ_RDATA=0;
+    assign MJ_DEBUG_WRITE=0;assign MJ_DEBUG_CMD=0;assign MJ_DONE=0;assign MJ_ERROR=0;assign MJ_IDLE=1;assign MJ_RDATA=0;
     assign mj_request=0;assign mj_write=0;assign mj_addr=0;assign mj_words=0;assign mj_wdata=0;assign mj_mask=0;
 end endgenerate
 //	DRAM Internal Control

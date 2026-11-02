@@ -1,0 +1,1 @@
+CAPTURE_ACK_FORMAL PASS arbitrary valid omission/reset/enable/payload; capture before ack; latched fields select COLLECT/WAIT/error next cycle

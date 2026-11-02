@@ -9,7 +9,7 @@ module yingxu_sdram_burst_port(
     input wire wvalid,output wire wready,input wire [31:0] wdata,input wire wlast,
     output wire rvalid,input wire rready,output wire [31:0] rdata,output wire rlast,
     output reg done,error,output wire idle,
-    output wire [6:0] debug_write,
+    output wire [6:0] debug_write,output wire [4:0] debug_cmd,
     output wire request,input wire grant,output wire write,
     output wire [20:0] addr,output wire [3:0] words,
     output wire [31:0] phy_wdata,output wire [3:0] phy_mask,input wire phy_in_req,phy_out_valid,
@@ -21,6 +21,16 @@ module yingxu_sdram_burst_port(
     reg [2:0] state;reg wr,bad;
     reg [20:0] address;reg [3:0] length,position;
     reg [31:0] buffer[0:7];
+    // Receiver-side command pins and a clock tag, diagnostics only.
+    reg clock_tag,command_seen;
+    always @(posedge clk)begin
+        if(rst)begin clock_tag<=0;command_seen<=0;end
+        else begin
+            clock_tag<=~clock_tag;
+            if(cmd_valid)command_seen<=1;else if(state==IDLE)command_seen<=0;
+        end
+    end
+    assign debug_cmd={clock_tag,cmd_valid,enable,rst,command_seen};
     assign debug_write={state,position}; // existing functional registers only
     assign idle=state==IDLE;
     // D8: never let the two upstream arbiters commit on an idle permission

@@ -66,7 +66,7 @@ module tb_d5_menu;
         if(dut.menu_ui || dut.img_idx!=1 || dut.game_mode || !dut.menu_override || clears==0)$fatal(1,"photo confirm");
         back_to_menu();
         press(1);press(0);press(0);
-        if(dut.cart_active || !dut.game_mode || dut.game_sel2!=0 || dut.menu_ui)$fatal(1,"game confirm ctx=%b sel=%d pat=%h override=%b game=%b cart=%b vs=%b",dut.menu_ui,dut.menu_sel,dut.menu_pattern,dut.menu_override,dut.game_mode,dut.cart_active,dut.video_requested);
+        if(!dut.cart_active || !dut.game_mode || dut.game_sel2!=2 || dut.menu_ui)$fatal(1,"game confirm ctx=%b sel=%d pat=%h override=%b game=%b cart=%b vs=%b",dut.menu_ui,dut.menu_sel,dut.menu_pattern,dut.menu_override,dut.game_mode,dut.cart_active,dut.video_requested);
         back_to_menu();
         press(1);press(1);press(0);
         if(!dut.video_requested || dut.menu_ui)$fatal(1,"video confirm");
@@ -79,14 +79,15 @@ module tb_d5_menu;
         // DIP change must escape even while the key lock is active.
         wait(dut.sw_real_valid);
         @(negedge clk);sw=8'h6f;repeat(1000016)@(negedge clk);
-        if(dut.menu_override || !dut.music_on_w)$fatal(1,"physical DIP escape");
-        back_to_menu();
+        if(!dut.menu_override || !dut.menu_ui)$fatal(1,"physical DIP stole menu");
+        @(negedge clk);sw=8'hff;
+        press(1); // about -> main selection 0; ownership was never lost
         press(1);press(1);press(0);
         force dut.video_failed=1'b1;
         repeat(5)@(negedge clk);
         if(!dut.menu_ui || dut.img_idx!=0)$fatal(1,"video fault return");
         release dut.video_failed;
-        $display("D5_MENUCHK: PASS boot LBA, five rows/wrap, wipe repair, photo/hardware-breakout/video/music, about, hold return, DIP escape, video failure");
+        $display("D5_MENUCHK: PASS boot LBA, five rows/wrap, wipe repair, photo/YX-8-breakout/video/music, about, hold return, DIP ownership, video failure");
         $finish;
     end
     initial begin #200000000;$fatal(1,"menu timeout");end

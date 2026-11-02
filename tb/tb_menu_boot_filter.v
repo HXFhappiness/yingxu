@@ -21,8 +21,8 @@ module tb_menu_boot_filter;
         sw=8'hff;repeat(999998)@(negedge clk);
         if(events)$fatal(1,"post-boot move too early");
         repeat(32)@(negedge clk);
-        if(events!=1 || baseline!=8'hff)$fatal(1,"post-boot deliberate move missing");
-        $display("D6_FULL_BOOT PASS 25000000 real cycles inhibited; long startup presets ignored; 20ms baseline/move; one event");
+        if(events!=0 || baseline!=8'hff)$fatal(1,"menu ownership changed after stable DIP");
+        $display("D6_FULL_BOOT PASS 25000000 real cycles inhibited; long startup presets ignored; 20ms baseline/move observed without giving away menu ownership");
         $finish;
     end
     initial begin #550000000;$fatal(1,"boot filter timeout");end

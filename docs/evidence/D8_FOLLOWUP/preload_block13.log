@@ -1,0 +1,6 @@
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+EARLY_EXIT PASS healthy PCM exit, complete accepted bursts=1 words=8, SD reset released
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:110: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 260us; walltime 0.121 s; speed 2.135 ms/s
+- Verilator: cpu 0.122 s on 1 threads; alloced 57 MB

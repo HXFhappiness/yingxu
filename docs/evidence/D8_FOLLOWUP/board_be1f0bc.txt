@@ -1,0 +1,17 @@
+Source: user-uploaded codex_reply.txt, be1f0bc board result; not a cloud simulation.
+
+be1f0bc 的"物理口先锁存命令、下一拍确认接收"修复没有解决，但**阶段码变了**，说明执行路径确实被推动了。
+
+修复后新鲜视频数据（20 秒稳定捕获，全程无跳变）：
+
+A SEEN=1 BUSY=1 ERR=0 DNE=0 POR=1 FLU=0 KIL=0 RET=0 WFT=0 GM=0 CA=0
+B CTRL=4 INIT=0 RSP=D459585631 RD=0 RDT=00 DIV=3E SPIK=1 CNT=0 SEL=0 ADS=0 DDS=0 CSN=1 MOS=1 SCK=0 MISO=1
+C SST=01FA SNX=01FA SDN=4C70 ACC=020 OFF=D02DC6C0 VLD=0 W2F=0 R2E=0 HB=0
+D MISE=929F SCE=8000 SW=FF LS=6 WC=000 BU=0 SP=0001 F=A PC=3FF DW=0000 I0=859FE6 RC=0000 I1=000000
+
+与上一版（0f92aac）的差异：
+- MISE 阶段码 0x94 → **0x92**（错误码仍 0x9F 超时）
+- I1 由 DD3000 → **000000**（sent=0 / state=0 / position=0，物理口从未启动）
+- 其余同：ACC=0x020（只有 32 字节 / 一个 8word 事务）、OFF=D02DC6C0（SD 读已发起）、
+  DNE=0、BUSY=1、LS=6（abort 保持 SD 复位）、F=A（owned=1, init_done=0, busy=1）
+- SST 只到 0x1FA=506 后停住（20 秒内不变），说明 SD 侧再无新请求

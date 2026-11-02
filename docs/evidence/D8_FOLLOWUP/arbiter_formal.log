@@ -1,0 +1,501 @@
+
+-- Running command `read_verilog src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v tb/formal/registered_arbiter.v; prep -top registered_arbiter -flatten; opt; sat -seq 5 -tempinduct -maxsteps 16 -set-init-zero -set rst 0 -set-at 1 rst 1 -prove safe 1 -verify' --
+
+1. Executing Verilog-2005 frontend: src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v
+Parsing Verilog input from `src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v' to AST representation.
+Generating RTLIL representation for module `\yingxu_mjpeg_arbiter'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: tb/formal/registered_arbiter.v
+Parsing Verilog input from `tb/formal/registered_arbiter.v' to AST representation.
+Generating RTLIL representation for module `\registered_arbiter'.
+Successfully finished Verilog frontend.
+
+3. Executing PREP pass.
+
+3.1. Executing HIERARCHY pass (managing design hierarchy).
+
+3.1.1. Analyzing design hierarchy..
+Top module:  \registered_arbiter
+Used module:     \yingxu_mjpeg_arbiter
+
+3.1.2. Analyzing design hierarchy..
+Top module:  \registered_arbiter
+Used module:     \yingxu_mjpeg_arbiter
+Removed 0 unused modules.
+
+3.2. Executing PROC pass (convert processes to netlists).
+
+3.2.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+3.2.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 1 switch rules as full_case in process $proc$tb/formal/registered_arbiter.v:16$9 in module registered_arbiter.
+Marked 3 switch rules as full_case in process $proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2 in module yingxu_mjpeg_arbiter.
+Marked 7 switch rules as full_case in process $proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1 in module yingxu_mjpeg_arbiter.
+Removed a total of 0 dead cases.
+
+3.2.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 6 redundant assignments.
+Promoted 9 assignments to connections.
+
+3.2.4. Executing PROC_INIT pass (extract init attributes).
+
+3.2.5. Executing PROC_ARST pass (detect async resets in processes).
+
+3.2.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~15 debug messages>
+
+3.2.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+     1/6: $0\payload[25:0]
+     2/6: $0\saved_owner[2:0]
+     3/6: $0\last_end[0:0]
+     4/6: $0\active[0:0]
+     5/6: $0\stalled[0:0]
+     6/6: $0\history[0:0]
+Creating decoders for process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+     1/6: $0\owner[1:0]
+     2/6: $0\pending[0:0]
+     3/6: $0\active[0:0]
+     4/6: $0\mwords[3:0]
+     5/6: $0\maddr[20:0]
+     6/6: $0\mwrite[0:0]
+Creating decoders for process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+     1/46: $4\mrready[0:0]
+     2/46: $4\mwlast[0:0]
+     3/46: $4\mwdata[31:0]
+     4/46: $4\mwvalid[0:0]
+     5/46: $4\cerror[2:2]
+     6/46: $4\cdone[2:2]
+     7/46: $4\crvalid[2:2]
+     8/46: $4\cwready[2:2]
+     9/46: $4\cready[2:2]
+    10/46: $1\cerror[2:0] [1]
+    11/46: $3\mwlast[0:0]
+    12/46: $3\mwdata[31:0]
+    13/46: $3\mwvalid[0:0]
+    14/46: $3\cerror[1:1]
+    15/46: $3\cdone[1:1]
+    16/46: $3\crvalid[1:1]
+    17/46: $3\cwready[1:1]
+    18/46: $3\cready[1:1]
+    19/46: $1\cerror[2:0] [2]
+    20/46: $1\cerror[2:0] [0]
+    21/46: $1\cdone[2:0] [0]
+    22/46: $1\crvalid[2:0] [0]
+    23/46: $1\cwready[2:0] [0]
+    24/46: $1\cready[2:0] [0]
+    25/46: $2\mwlast[0:0]
+    26/46: $2\mwdata[31:0]
+    27/46: $2\mwvalid[0:0]
+    28/46: $2\cerror[0:0]
+    29/46: $2\cdone[0:0]
+    30/46: $2\crvalid[0:0]
+    31/46: $2\cwready[0:0]
+    32/46: $2\cready[0:0]
+    33/46: $1\mrready[0:0]
+    34/46: $1\mwlast[0:0]
+    35/46: $1\mwdata[31:0]
+    36/46: $1\mwvalid[0:0]
+    37/46: $1\cdone[2:0] [2]
+    38/46: $1\crvalid[2:0] [2]
+    39/46: $1\cwready[2:0] [2]
+    40/46: $1\cready[2:0] [2]
+    41/46: $2\mrready[0:0]
+    42/46: $1\cdone[2:0] [1]
+    43/46: $1\crvalid[2:0] [1]
+    44/46: $1\cwready[2:0] [1]
+    45/46: $1\cready[2:0] [1]
+    46/46: $3\mrready[0:0]
+
+3.2.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\cready' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\cwready' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\crvalid' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\cdone' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\cerror' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\mwvalid' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\mwdata' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\mwlast' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+No latch inferred for signal `\yingxu_mjpeg_arbiter.\mrready' from process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+
+3.2.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\registered_arbiter.\active' using process `\registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+  created $dff cell `$procdff$394' with positive edge clock.
+Creating register for signal `\registered_arbiter.\history' using process `\registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+  created $dff cell `$procdff$395' with positive edge clock.
+Creating register for signal `\registered_arbiter.\stalled' using process `\registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+  created $dff cell `$procdff$396' with positive edge clock.
+Creating register for signal `\registered_arbiter.\last_end' using process `\registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+  created $dff cell `$procdff$397' with positive edge clock.
+Creating register for signal `\registered_arbiter.\saved_owner' using process `\registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+  created $dff cell `$procdff$398' with positive edge clock.
+Creating register for signal `\registered_arbiter.\payload' using process `\registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+  created $dff cell `$procdff$399' with positive edge clock.
+Creating register for signal `\yingxu_mjpeg_arbiter.\mwrite' using process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+  created $dff cell `$procdff$400' with positive edge clock.
+Creating register for signal `\yingxu_mjpeg_arbiter.\maddr' using process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+  created $dff cell `$procdff$401' with positive edge clock.
+Creating register for signal `\yingxu_mjpeg_arbiter.\mwords' using process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+  created $dff cell `$procdff$402' with positive edge clock.
+Creating register for signal `\yingxu_mjpeg_arbiter.\active' using process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+  created $dff cell `$procdff$403' with positive edge clock.
+Creating register for signal `\yingxu_mjpeg_arbiter.\pending' using process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+  created $dff cell `$procdff$404' with positive edge clock.
+Creating register for signal `\yingxu_mjpeg_arbiter.\owner' using process `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+  created $dff cell `$procdff$405' with positive edge clock.
+
+3.2.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+3.2.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 1 empty switch in `\registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+Removing empty process `registered_arbiter.$proc$tb/formal/registered_arbiter.v:16$9'.
+Found and cleaned up 7 empty switches in `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+Removing empty process `yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:48$2'.
+Found and cleaned up 7 empty switches in `\yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+Removing empty process `yingxu_mjpeg_arbiter.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:25$1'.
+Cleaned up 15 empty switches.
+
+3.2.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+<suppressed ~6 debug messages>
+Optimizing module yingxu_mjpeg_arbiter.
+<suppressed ~32 debug messages>
+
+3.3. Executing FLATTEN pass (flatten design).
+Deleting now unused module yingxu_mjpeg_arbiter.
+<suppressed ~1 debug messages>
+
+3.4. Executing FUTURE pass.
+
+3.5. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+
+3.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \registered_arbiter..
+Removed 52 unused cells and 200 unused wires.
+<suppressed ~61 debug messages>
+
+3.7. Executing CHECK pass (checking for obvious problems).
+Checking module registered_arbiter...
+Found and reported 0 problems.
+
+3.8. Executing OPT pass (performing simple optimizations).
+
+3.8.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+
+3.8.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\registered_arbiter'.
+<suppressed ~123 debug messages>
+Removed a total of 41 cells.
+
+3.8.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \registered_arbiter..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 1/3 on $pmux $flatten\dut.$procmux$182.
+    dead port 2/3 on $pmux $flatten\dut.$procmux$182.
+    dead port 1/3 on $pmux $flatten\dut.$procmux$189.
+    dead port 2/3 on $pmux $flatten\dut.$procmux$189.
+    dead port 1/3 on $pmux $flatten\dut.$procmux$196.
+    dead port 2/3 on $pmux $flatten\dut.$procmux$196.
+    dead port 1/3 on $pmux $flatten\dut.$procmux$203.
+    dead port 2/3 on $pmux $flatten\dut.$procmux$203.
+    dead port 2/2 on $mux $flatten\dut.$procmux$231.
+    dead port 2/2 on $mux $flatten\dut.$procmux$237.
+    dead port 2/2 on $mux $flatten\dut.$procmux$243.
+    dead port 2/2 on $mux $flatten\dut.$procmux$249.
+    dead port 2/2 on $mux $flatten\dut.$procmux$255.
+    dead port 2/2 on $mux $flatten\dut.$procmux$307.
+    dead port 2/2 on $mux $flatten\dut.$procmux$314.
+    dead port 2/2 on $mux $flatten\dut.$procmux$321.
+    dead port 2/2 on $mux $flatten\dut.$procmux$328.
+    dead port 2/2 on $mux $flatten\dut.$procmux$335.
+    dead port 1/3 on $pmux $flatten\dut.$procmux$175.
+    dead port 2/3 on $pmux $flatten\dut.$procmux$175.
+Removed 20 multiplexer ports.
+<suppressed ~27 debug messages>
+
+3.8.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \registered_arbiter.
+    New ctrl vector for $pmux cell $flatten\dut.$procmux$258: $auto$opt_reduce.cc:137:opt_pmux$408
+    New ctrl vector for $pmux cell $flatten\dut.$procmux$354: $auto$opt_reduce.cc:137:opt_pmux$410
+    New ctrl vector for $pmux cell $flatten\dut.$procmux$358: $auto$opt_reduce.cc:137:opt_pmux$412
+    New ctrl vector for $pmux cell $flatten\dut.$procmux$362: $auto$opt_reduce.cc:137:opt_pmux$414
+    New ctrl vector for $pmux cell $flatten\dut.$procmux$366: $auto$opt_reduce.cc:137:opt_pmux$416
+  Optimizing cells in module \registered_arbiter.
+Performed a total of 5 changes.
+
+3.8.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\registered_arbiter'.
+<suppressed ~42 debug messages>
+Removed a total of 14 cells.
+
+3.8.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \registered_arbiter..
+Removed 0 unused cells and 70 unused wires.
+<suppressed ~1 debug messages>
+
+3.8.7. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+
+3.8.8. Rerunning OPT passes. (Maybe there is more to do..)
+
+3.8.9. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \registered_arbiter..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~32 debug messages>
+
+3.8.10. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \registered_arbiter.
+Performed a total of 0 changes.
+
+3.8.11. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\registered_arbiter'.
+Removed a total of 0 cells.
+
+3.8.12. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \registered_arbiter..
+
+3.8.13. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+
+3.8.14. Finished OPT passes. (There is nothing left to do.)
+
+3.9. Executing WREDUCE pass (reducing word size of cells).
+Removed top 2 bits (of 3) from port B of cell registered_arbiter.$eq$tb/formal/registered_arbiter.v:25$26 ($eq).
+Removed top 1 bits (of 3) from port B of cell registered_arbiter.$eq$tb/formal/registered_arbiter.v:25$28 ($eq).
+Removed top 1 bits (of 2) from port B of cell registered_arbiter.$flatten\dut.$procmux$176_CMP0 ($eq).
+
+3.10. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \registered_arbiter..
+
+3.11. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+3.12. Executing OPT pass (performing simple optimizations).
+
+3.12.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+
+3.12.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\registered_arbiter'.
+Removed a total of 0 cells.
+
+3.12.3. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \registered_arbiter..
+
+3.12.4. Finished fast OPT passes.
+
+3.13. Printing statistics.
+
+=== registered_arbiter ===
+
+   Number of wires:                152
+   Number of wire bits:            846
+   Number of public wires:          71
+   Number of public wire bits:     618
+   Number of ports:                 18
+   Number of port bits:            227
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                115
+     $dff                           12
+     $eq                             7
+     $logic_and                     14
+     $logic_not                     13
+     $logic_or                      11
+     $mux                           55
+     $reduce_bool                    1
+     $reduce_or                      1
+     $scopeinfo                      1
+
+3.14. Executing CHECK pass (checking for obvious problems).
+Checking module registered_arbiter...
+Found and reported 0 problems.
+
+4. Executing OPT pass (performing simple optimizations).
+
+4.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+
+4.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\registered_arbiter'.
+Removed a total of 0 cells.
+
+4.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \registered_arbiter..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~32 debug messages>
+
+4.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \registered_arbiter.
+Performed a total of 0 changes.
+
+4.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\registered_arbiter'.
+Removed a total of 0 cells.
+
+4.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $procdff$399 ($dff) from module registered_arbiter (D = { \dut.mwrite \dut.maddr \dut.mwords }, Q = \payload, rval = 26'00000000000000000000000000).
+Adding SRST signal on $procdff$398 ($dff) from module registered_arbiter (D = { \dut.active \dut.owner }, Q = \saved_owner, rval = 3'000).
+Adding SRST signal on $procdff$397 ($dff) from module registered_arbiter (D = $flatten\dut.$logic_or$src/user_source/hdl_source/media/mjpeg/yingxu_mjpeg_arbiter.v:57$7_Y, Q = \last_end, rval = 1'0).
+Adding SRST signal on $procdff$396 ($dff) from module registered_arbiter (D = $logic_and$tb/formal/registered_arbiter.v:19$11_Y, Q = \stalled, rval = 1'0).
+Adding SRST signal on $procdff$394 ($dff) from module registered_arbiter (D = \dut.active, Q = \active, rval = 1'0).
+Adding SRST signal on $flatten\dut.$procdff$405 ($dff) from module registered_arbiter (D = $flatten\dut.$procmux$77_Y, Q = \dut.owner, rval = 2'00).
+Adding EN signal on $auto$ff.cc:266:slice$422 ($sdff) from module registered_arbiter (D = $flatten\dut.$procmux$75_Y, Q = \dut.owner).
+Adding SRST signal on $flatten\dut.$procdff$404 ($dff) from module registered_arbiter (D = $flatten\dut.$procmux$90_Y, Q = \dut.pending, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$428 ($sdff) from module registered_arbiter (D = $flatten\dut.$procmux$88_Y, Q = \dut.pending).
+Adding SRST signal on $flatten\dut.$procdff$403 ($dff) from module registered_arbiter (D = $flatten\dut.$procmux$97_Y, Q = \dut.active, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$436 ($sdff) from module registered_arbiter (D = 1'1, Q = \dut.active).
+Adding SRST signal on $flatten\dut.$procdff$402 ($dff) from module registered_arbiter (D = $flatten\dut.$procmux$112_Y, Q = \dut.mwords, rval = 4'0000).
+Adding EN signal on $auto$ff.cc:266:slice$440 ($sdff) from module registered_arbiter (D = $flatten\dut.$procmux$110_Y, Q = \dut.mwords).
+Adding SRST signal on $flatten\dut.$procdff$401 ($dff) from module registered_arbiter (D = $flatten\dut.$procmux$125_Y, Q = \dut.maddr, rval = 21'000000000000000000000).
+Adding EN signal on $auto$ff.cc:266:slice$446 ($sdff) from module registered_arbiter (D = $flatten\dut.$procmux$123_Y, Q = \dut.maddr).
+Adding SRST signal on $flatten\dut.$procdff$400 ($dff) from module registered_arbiter (D = $flatten\dut.$procmux$138_Y, Q = \dut.mwrite, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$452 ($sdff) from module registered_arbiter (D = $flatten\dut.$procmux$136_Y, Q = \dut.mwrite).
+
+4.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \registered_arbiter..
+Removed 19 unused cells and 19 unused wires.
+<suppressed ~20 debug messages>
+
+4.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+<suppressed ~5 debug messages>
+
+4.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+4.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \registered_arbiter..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~26 debug messages>
+
+4.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \registered_arbiter.
+Performed a total of 0 changes.
+
+4.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\registered_arbiter'.
+<suppressed ~24 debug messages>
+Removed a total of 8 cells.
+
+4.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \registered_arbiter..
+Removed 0 unused cells and 8 unused wires.
+<suppressed ~1 debug messages>
+
+4.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+
+4.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+4.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \registered_arbiter..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~26 debug messages>
+
+4.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \registered_arbiter.
+Performed a total of 0 changes.
+
+4.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\registered_arbiter'.
+Removed a total of 0 cells.
+
+4.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \registered_arbiter..
+
+4.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module registered_arbiter.
+
+4.23. Finished OPT passes. (There is nothing left to do.)
+
+5. Executing SAT pass (solving SAT problems in the circuit).
+
+Setting up time step 1:
+Import set-constraint: \rst = 1'0
+Import set-constraint for this timestep: \rst = 1'1
+Final constraint equation: \rst = 1'1
+Imported 100 cells to SAT database.
+Final init constraint equation: { \history \dut.mwrite \dut.maddr \dut.mwords \dut.active \dut.pending \dut.owner \active \stalled \last_end \saved_owner \payload } = 63'000000000000000000000000000000000000000000000000000000000000000
+
+Setting up time step 2:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 100 cells to SAT database.
+
+Setting up time step 3:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 100 cells to SAT database.
+
+Setting up time step 4:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 100 cells to SAT database.
+
+Setting up time step 5:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 100 cells to SAT database.
+
+Setting up time step 1:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 100 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+** Trying induction with length 1 **
+
+Setting up time step 6:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 100 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[base case 1] Solving problem with 9380 variables and 24098 clauses..
+Base case for induction length 1 proven.
+
+Setting up time step 2:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 100 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[induction step 1] Solving problem with 2820 variables and 7048 clauses..
+Induction step proven: SUCCESS!
+
+                  /$$$$$$      /$$$$$$$$     /$$$$$$$    
+                 /$$__  $$    | $$_____/    | $$__  $$   
+                | $$  \ $$    | $$          | $$  \ $$   
+                | $$  | $$    | $$$$$       | $$  | $$   
+                | $$  | $$    | $$__/       | $$  | $$   
+                | $$/$$ $$    | $$          | $$  | $$   
+                |  $$$$$$/ /$$| $$$$$$$$ /$$| $$$$$$$//$$
+                 \____ $$$|__/|________/|__/|_______/|__/
+                       \__/                              
+

@@ -1,0 +1,13 @@
+preload_fast_build.log: exit=0
+preload_486_block11_fast_nocancel.log: exit=0
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=11 MISE=929f SP=0001 ACC=020 sent=0 phy_state=0 position=0 ST=0 reset=1 F=a
+SD_RESET_ORDERCHK: PASS init_commands=1 fault=1259945000000 then abort_reset=1259990000000 then init_drop=1259990000000; DNE was cleared at PCM request
+WRITE_DIAGCHK: PASS block=11 I1=0095d000 sent=0 state=0 position=0 inner=001 outer=010 RP/LR/CV/CR/WV/WR=111010
+COMMAND_WAITCHK: PASS persistent missing valid stays before command acceptance; no ghost owner or replay
+COMMAND_PATH PASS I1=0095d000 inner=001 outer=010 CLK/OV/CV/PV/EN/RST=111010
+PENDING_EXIT_BASELINE expected stuck owned=1 reset=1
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:167: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 1ms; walltime 0.722 s; speed 4.465 ms/s
+- Verilator: cpu 0.292 s on 1 threads; alloced 57 MB

@@ -4,7 +4,8 @@
 module yingxu_yxv_pipeline #(
     parameter integer STALL_LIMIT=500_000_000,
     parameter integer ACQUIRE_LIMIT=250_000_000,
-    parameter integer RECOVER_LOST_WRITE=1
+    parameter integer RECOVER_LOST_WRITE=1,
+    parameter integer CANCEL_PENDING=1
 )(
     input wire sys_clk,clk,pix_clk,rst,enable,mem_ready,
     input wire sd_init,sd_busy,sd_done,input wire [7:0] sd_data,input wire sd_data_valid,
@@ -20,12 +21,28 @@ module yingxu_yxv_pipeline #(
     output wire cmd_valid,input wire cmd_ready,output wire cmd_write,output wire [20:0] cmd_addr,output wire [3:0] cmd_words,
     output wire wvalid,input wire wready,output wire [31:0] wdata,output wire wlast,
     input wire rvalid,output wire rready,input wire [31:0] rdata,input wire rlast,input wire mem_done,mem_error,
-    input wire port_idle,input wire [6:0] port_debug_write,
+    input wire port_idle,input wire [6:0] port_debug_write,input wire [4:0] port_debug_cmd,
     output wire [31:0] decoded_frames,displayed_frames,dropped_frames,played_samples,
     output wire [15:0] sd_occupancy,output wire [23:0] status
 );
     reg [1:0] request_sync;
-    wire local_rst=rst || !owned || !mem_ready;
+    wire base_rst=rst || !owned || !mem_ready;
+    reg cancelled;
+    (* async_reg="true" *) reg [1:0] cancel_enable_sync;
+    reg [1:0] cancel_sys;
+    wire local_rst=base_rst || cancelled;
+    // A user exit may discard pending commands only while NO arbiter or
+    // physical port owns an accepted transaction. Suppress VALID immediately
+    // on that boundary, then reset the work state and abort the SD read.
+    wire cancel_now=CANCEL_PENDING && !base_rst && !cancel_enable_sync[1] &&
+                    port_idle && !inner_owner_debug[2] && !outer_owner_debug[2];
+    always @(posedge clk)begin
+        if(base_rst)begin cancelled<=0;cancel_enable_sync<=2'b11;end
+        else begin
+            cancel_enable_sync<={cancel_enable_sync[0],enable};
+            if(cancel_now)cancelled<=1;
+        end
+    end
     reg fault;reg [7:0] fault_code;reg [28:0] stall;reg last_sample;
     reg audio_run;wire [31:0] sample_count;
     wire [7:0] lp,lf,lr;wire [10:0] lc;
@@ -36,6 +53,16 @@ module yingxu_yxv_pipeline #(
     reg [23:0] frozen_write,fail_write;
     wire [2:0] inner_owner_debug,outer_owner_debug;
     reg write_replayed;
+    reg port_clock_q,port_clock_progress;
+    always @(posedge clk)begin
+        if(local_rst || lp[2:1]!=2'd1)begin
+            port_clock_q<=port_debug_cmd[4];port_clock_progress<=0;
+        end else begin
+            port_clock_q<=port_debug_cmd[4];
+            if(port_clock_q!=port_debug_cmd[4])port_clock_progress<=1;
+        end
+    end
+
     // No data beat was acknowledged to the loader. Both
     // arbiters own THIS loader write, so neither can discard another client.
     // Retry once; do not reset the progress watchdog or the SD transaction.
@@ -54,7 +81,7 @@ module yingxu_yxv_pipeline #(
     // Capture before abort changes loader state. Held until common release;
     // fault_sys gives multiple clocks of stability before the SYS snapshot.
     always @(posedge clk)begin
-        if(local_rst)begin diag_frozen<=0;frozen_phase<=0;frozen_reason<=0;frozen_flags<=0;frozen_count<=0;frozen_write<=0;end
+        if(base_rst)begin diag_frozen<=0;frozen_phase<=0;frozen_reason<=0;frozen_flags<=0;frozen_count<=0;frozen_write<=0;end
         else if(fault && !diag_frozen)begin
             diag_frozen<=1;
             frozen_phase<=fault_code==8'h95 ? 8'h0E:fault_code==8'h9E ? 8'h1E:
@@ -65,6 +92,13 @@ module yingxu_yxv_pipeline #(
                 frozen_write<={1'b1,inner_owner_debug,outer_owner_debug,
                                write_replayed,lready,cmd_valid,cmd_ready,wvalid,wready,
                                loader_sent,port_debug_write};
+            else if(lp[2:1]==2'd1)
+                // D9 command-wait format: owners, observed receiver clock,
+                // inner VALID, outer VALID, receiver-sampled VALID, enable/reset.
+                // Low 11 bits retain sent/state/position; phase 94 is unchanged.
+                frozen_write<={1'b1,inner_owner_debug,outer_owner_debug,
+                               port_clock_progress,ov,cmd_valid,
+                               port_debug_cmd[0],port_debug_cmd[2:1],loader_sent,port_debug_write};
             else frozen_write<={13'd0,loader_sent,port_debug_write};
             frozen_reason<=lr;frozen_flags<=lf;frozen_count<=lc;
         end
@@ -84,10 +118,11 @@ module yingxu_yxv_pipeline #(
     wire quiet;reg [1:0] quiet_sys,fault_sys;
     reg [1:0] audio_sys;reg [27:0] acquire_wait;
     always @(posedge sys_clk) begin
-        if(rst) begin owned<=0;failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;fail_write<=0;quiet_sys<=0;fault_sys<=0;audio_sys<=0;abort_sys<=0;acquire_wait<=0;end
+        if(rst) begin owned<=0;failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;fail_write<=0;quiet_sys<=0;fault_sys<=0;audio_sys<=0;abort_sys<=0;cancel_sys<=0;acquire_wait<=0;end
         else begin
             quiet_sys<={quiet_sys[0],quiet};fault_sys<={fault_sys[0],fault};
             audio_sys<={audio_sys[0],audio_run};abort_sys<={abort_sys[0],fault};
+            cancel_sys<={cancel_sys[0],cancelled};
             if(!owned && !enable) begin failed<=0;error_code<=0;diagnosis<=0;detail<=0;fail_count<=0;fail_write<=0;end
             if(owned || !enable || failed)acquire_wait<=0;
             else if(sd_init && !sd_busy) begin owned<=1;acquire_wait<=0;end
@@ -100,7 +135,8 @@ module yingxu_yxv_pipeline #(
                 error_code<=fault_code;diagnosis<={frozen_phase,fault_code};
                 detail<={frozen_reason,frozen_flags};fail_count<=frozen_count;fail_write<=frozen_write;
             end
-            if(owned && (!enable || fault_sys[1]) && quiet_sys[1] && !sd_inflight) begin
+            if(owned && (!enable || fault_sys[1]) && quiet_sys[1] && !sd_inflight &&
+               (!CANCEL_PENDING || enable || fault_sys[1] || cancel_sys[1])) begin
                 owned<=0;
                 if(fault_sys[1]) begin failed<=1;error_code<=fault_code;
                     diagnosis<={frozen_phase,fault_code};detail<={frozen_reason,frozen_flags};
@@ -108,7 +144,7 @@ module yingxu_yxv_pipeline #(
             end
         end
     end
-    assign sd_reset=owned && abort_sys[1];
+    assign sd_reset=owned && (abort_sys[1] || cancel_sys[1]);
     assign audio_enable=owned && audio_sys[1] && !fault_sys[1];
     assign sd_occupancy={sd_busy,8'd0,byte_level};
     yingxu_mjpeg_mailbox #(.WIDTH(44),.STATUS(1)) sd_commands(
@@ -197,7 +233,9 @@ module yingxu_yxv_pipeline #(
     assign sample_count=fromgray(sample_sync);
     always @(posedge clk) begin
         if(local_rst) begin
-            request_sync<=0;sample_meta<=0;sample_sync<=0;fault<=0;fault_code<=0;stall<=0;last_sample<=0;audio_run<=0;
+            request_sync<=0;sample_meta<=0;sample_sync<=0;
+            if(base_rst)begin fault<=0;fault_code<=0;end
+            stall<=0;last_sample<=0;audio_run<=0;
             rgb_ready<=0;front_valid<=0;front_bank<=0;decode_bank<=0;decode_slot<=0;next_decode<=0;decode_tag<=0;
             completed<=0;present_number<=0;present_pts<=0;drops<=0;slot_release<=0;tag_bank0<=0;tag_bank1<=0;
             exchange_pending<=0;exchange_bank<=0;
@@ -246,12 +284,14 @@ module yingxu_yxv_pipeline #(
     assign pready=ir[0];assign lready=ir[1];assign lwr=iwready[1];
     assign prv=irvalid[0];assign prd=inner_rdata;assign prl=inner_rlast;assign pdone=idone[0];assign perror=ierror[0];
     assign ldone=idone[1];assign lerror=ierror[1];
+    wire command_pending;
+    assign cmd_valid=command_pending && !cancel_now && !cancelled;
     wire [2:0] er,ewready,ervalid,edone,eerror;wire [31:0] external_rdata;wire external_rlast;
     yingxu_mjpeg_arbiter write_arb(.clk(clk),.rst(local_rst || replay_write),.debug_owner(outer_owner_debug),
         .cvalid({ov,dv&&dwrite,1'b0}),.cready(er),.cwrite({owrite,1'b1,1'b0}),.caddr({oaddr,daddr,21'd0}),.cwords({owords,dwords,4'd0}),
         .cwvalid({owv,dwv,1'b0}),.cwready(ewready),.cwdata({owd,dwd,32'd0}),.cwlast({owl,dwl,1'b0}),
         .crvalid(ervalid),.crready({orr,1'b1,1'b0}),.crdata(external_rdata),.crlast(external_rlast),.cdone(edone),.cerror(eerror),
-        .mvalid(cmd_valid),.mready(cmd_ready),.mwrite(cmd_write),.maddr(cmd_addr),.mwords(cmd_words),
+        .mvalid(command_pending),.mready(cmd_ready && !cancel_now && !cancelled),.mwrite(cmd_write),.maddr(cmd_addr),.mwords(cmd_words),
         .mwvalid(wvalid),.mwready(wready),.mwdata(wdata),.mwlast(wlast),.mrvalid(rvalid),.mrready(rready),.mrdata(rdata),.mrlast(rlast),.mdone(mem_done),.merror(mem_error));
     assign oready=er[2];assign owr=ewready[2];assign orv=ervalid[2];assign ord=external_rdata;assign orl=external_rlast;
     assign odone=edone[2];assign oerror=eerror[2];assign dready=dwrite ? er[1]:ir[2];assign dwr=ewready[1];

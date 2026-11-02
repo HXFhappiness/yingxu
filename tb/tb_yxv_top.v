@@ -12,7 +12,7 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
     reg clk=0;always #10 clk=~clk;
     reg rst_n=0;reg [7:0] sw=SWITCH_TEST; // D4a: SW7 ON + SW3 ON (video), SW4/5/6 OFF
     wire uart_tx;
-    hardware_test #(.SIM_FAST_BOOT(1),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
+    hardware_test #(.SIM_FAST_BOOT(1),.BOOT_MENU(0),.VIDEO_ACQUIRE_LIMIT(ACQUIRE_LIMIT_TEST)) dut(.clk(clk),.rst_n(rst_n),.uart_rx(1'b1),.uart_tx(uart_tx),
         .sd_miso(1'b1),.I2S_DI(1'b0),.I2S_RCLK(1'b0),.I2S_BCLK(1'b0),
         .key_0(1'b1),.key_1(1'b1),.ir(1'b1),.sw(sw),.eth_rxc(1'b0),.eth_rxd(4'd0),.eth_rxdv(1'b0),
         .camera_vsync(1'b0),.camera_href(1'b0),.camera_pclk(1'b0),.camera_data(8'd0));
@@ -120,12 +120,8 @@ module tb_yxv_top #(parameter integer ACQUIRE_LIMIT_TEST=250_000_000, parameter 
         gfd=$fopen(goldname,"rb");if(!gfd)$fatal(1,"top gold open");
         #200;rst_n=1;
         @(negedge clk);dut.sw_boot_cnt=27'd24_999_998;
-        // D5 boots into the menu. Exercise the physical DIP escape before
-        // the existing D4 direct-mode playback/fault regressions.
-        wait(dut.sw_real_valid);
-        @(negedge clk);sw[0]=~sw[0];
-        wait(!dut.menu_override);
-        @(negedge clk);sw[0]=~sw[0];
+        // D9: an explicit maintenance boot replaces physical DIP theft of
+        // menu ownership. Playback/fault regressions still use real DIP decode.
         if(pending)begin
             // Test-only injection: keep a memory command pending, then inject
             // the same no-progress fault tested by tb_yxv_fault_pending.

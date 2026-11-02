@@ -13,7 +13,7 @@ module tb_yxv_fault_pending;
         .sd_data_valid(reading),.sd_data_ready(ready),.sd_start(start),.sd_lba(lba),.sd_sectors(sectors),.sd_reset(sdreset),
         .owned(owned),.failed(failed),.error_code(code),.diagnosis(diagnosis),.detail(detail),.fail_count(count),.fail_index(index),.fail_word(word),
         .audio_ready(1'b0),.audio_pop(1'b0),.x(11'd0),.y(10'd0),.pixel_active(1'b0),.rd2_data(32'd0),.rd2_empty(1'b1),
-        .cmd_ready(1'b0),.wready(1'b0),.rvalid(1'b0),.rdata(32'd0),.rlast(1'b0),.mem_done(1'b0),.mem_error(1'b0),.port_idle(1'b1),.port_debug_write(7'd0));
+        .cmd_ready(1'b0),.wready(1'b0),.rvalid(1'b0),.rdata(32'd0),.rlast(1'b0),.mem_done(1'b0),.mem_error(1'b0),.port_idle(1'b1),.port_debug_write(7'd0),.port_debug_cmd(5'd0));
     always @(posedge sys)begin
         if(rst)begin busy<=0;done<=0;reading<=0;init_done<=1;offset<=0;requests<=0;end
         else begin
@@ -39,10 +39,10 @@ module tb_yxv_fault_pending;
             {owned,init_done,busy,1'b0},owned,init_done,busy,sdreset,failed,dut.fault_code,dut.loader.state,dut.loader.mstate,diagnosis,requests);
         if(!owned || failed || init_done || !busy || !sdreset || requests!=3 || dut.loader.mstate!=1 || dut.fault_code!=8'h9f)$fatal(1,"did not reproduce pending fault");
         if(diagnosis!=16'h929f || code!=8'h9f || count!=32)$fatal(1,"pending fault hidden until ownership release");
-        if(detail[15:8]!=0 || index!=0 || word!=0)$fatal(1,"unexpected validation failure");
+        if(detail[15:8]!=0 || index!=0 || word!=32'h94c000)$fatal(1,"unexpected validation failure");
         repeat(100)@(negedge sys);
         if(diagnosis!=16'h929f || !owned)$fatal(1,"pending snapshot not stable");
-        $display("LIVEFAULTCHK: PASS PCM blocked before command acceptance; F=A reset held, three read requests; diagnosis=929F ACC=020 visible while owned=1 failed=0");$finish;
+        $display("LIVEFAULTCHK: PASS PCM blocked before command acceptance; F=A reset held, three read requests; diagnosis=929F ACC=020 I1=94C000 visible while owned=1 failed=0 (receiver debug stub=0)");$finish;
     end
     initial begin #1000000;$fatal(1,"pending fault timeout");end
 endmodule

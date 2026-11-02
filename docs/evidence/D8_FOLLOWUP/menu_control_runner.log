@@ -1,0 +1,26 @@
+D6_FULL_BOOT PASS 25000000 real cycles inhibited; long startup presets ignored; 20ms baseline/move observed without giving away menu ownership
+- /workspace/yingxu-fpga/tb/tb_menu_boot_filter.v:26: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 540ms; walltime 7.281 s; speed 76.359 ms/s
+- Verilator: cpu 7.072 s on 1 threads; alloced 32 MB
+D6_BOOT PASS >20ms startup preset ignored, 25000000-cycle terminal, initial baseline has no event
+D7_PATH PASS path=0 glitch=0 mode persists, SW7+key0 return
+CART_STREAM_OWNER PASS old photo bytes rejected while cartridge request queued
+D9_CART_GAMEPLAY PASS path=1 real SD image, CPU retired instructions, sprites, left/right movement
+D7_PATH PASS path=1 glitch=0 mode persists, SW7+key0 return
+D9_CART_GAMEPLAY PASS path=2 real SD image, CPU retired instructions, sprites, left/right movement
+D7_PATH PASS path=2 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=3 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=4 glitch=0 mode persists, SW7+key0 return
+D7_PATH PASS path=0 glitch=1 mode persists, SW7+key0 return
+D9_CART_GAMEPLAY PASS path=1 real SD image, CPU retired instructions, sprites, left/right movement
+D7_PATH PASS path=1 glitch=1 mode persists, SW7+key0 return
+D9_CART_GAMEPLAY PASS path=2 real SD image, CPU retired instructions, sprites, left/right movement
+D7_PATH PASS path=2 glitch=1 mode persists, SW7+key0 return
+D7_PATH PASS path=3 glitch=1 mode persists, SW7+key0 return
+D7_PATH PASS path=4 glitch=1 mode persists, SW7+key0 return
+D9_CONTROL_ACCEPTANCE PASS paths=10 real YX-8 cards, exclusive ownership, SW7-before-key exit, zero CPU/table residue, main KEY0 ON; menu pixels=921600
+- tb/tb_menu_mode_paths.v:214: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 1s; walltime 273.436 s; speed 4.394 ms/s
+- Verilator: cpu 272.501 s on 1 threads; alloced 44 MB

@@ -1,0 +1,5 @@
+D9_DIRECT PASS BOOT_MENU=0 hardware presets and YX-8 retained; explicit return transfers exclusive ownership
+- tb/tb_menu_mode_paths.v:106: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 120ms; walltime 27.527 s; speed 4.363 ms/s
+- Verilator: cpu 27.513 s on 1 threads; alloced 44 MB

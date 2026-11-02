@@ -90,7 +90,7 @@ module yingxu_sdram_framebuffer #(
     input wire           i_mj_wvalid,i_mj_wlast,input wire [31:0] i_mj_wdata,
     output wire          o_mj_wready,o_mj_rvalid,o_mj_rlast,
     output wire [31:0]   o_mj_rdata,input wire i_mj_rready,
-    output wire [6:0]    o_mj_debug_write,
+    output wire [6:0]    o_mj_debug_write,output wire [4:0] o_mj_debug_cmd,
     output wire          o_mj_done,o_mj_error,o_mj_idle
 );
 
@@ -155,7 +155,7 @@ module yingxu_sdram_framebuffer #(
         .MJ_ACTIVE(i_mj_active),.MJ_VALID(i_mj_valid),.MJ_READY(o_mj_ready),.MJ_WRITE(i_mj_write),
         .MJ_ADDR(i_mj_addr),.MJ_WORDS(i_mj_words),.MJ_WVALID(i_mj_wvalid),.MJ_WREADY(o_mj_wready),
         .MJ_WDATA(i_mj_wdata),.MJ_WLAST(i_mj_wlast),.MJ_RVALID(o_mj_rvalid),.MJ_RREADY(i_mj_rready),
-        .MJ_RDATA(o_mj_rdata),.MJ_RLAST(o_mj_rlast),.MJ_DONE(o_mj_done),.MJ_ERROR(o_mj_error),.MJ_IDLE(o_mj_idle),.MJ_DEBUG_WRITE(o_mj_debug_write),
+        .MJ_RDATA(o_mj_rdata),.MJ_RLAST(o_mj_rlast),.MJ_DONE(o_mj_done),.MJ_ERROR(o_mj_error),.MJ_IDLE(o_mj_idle),.MJ_DEBUG_WRITE(o_mj_debug_write),.MJ_DEBUG_CMD(o_mj_debug_cmd),
         .REF_CLK      (sys_clk),
         .RESET_N      (ctrl_reset_n),
         .CLK          (sdram_ctrl_clk),

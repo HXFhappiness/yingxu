@@ -7,7 +7,8 @@ from mjpeg_ref.vectors import make_jpeg
 R=Path(__file__).resolve().parents[1];O=R/'out/unified_menu'
 def main():
     global O
-    p=argparse.ArgumentParser();p.add_argument('--baseline-ref');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--baseline-ref');p.add_argument('--direct',action='store_true');a=p.parse_args()
+    if a.direct:O=O/'direct'
     if a.baseline_ref:O=O/('baseline_'+re.sub(r'[^a-zA-Z0-9_.-]','_',a.baseline_ref))
     O.mkdir(parents=True,exist_ok=True)
     fixture,_=build_container([make_jpeg()],bytes(8000))
@@ -39,13 +40,13 @@ def main():
     v=shutil.which('verilator') or '/workspace/.yingxu-env/verilator/usr/bin/verilator'
     env=os.environ.copy()
     if '.yingxu-env' in v:env['VERILATOR_ROOT']='/workspace/.yingxu-env/verilator/usr/share/verilator'
-    if not a.baseline_ref:
+    if not a.baseline_ref and not a.direct:
         boot=O/'vboot'
         for cmd,log in [([v,'--binary','--timing','-j','4','-Wno-fatal','--top-module','tb_menu_boot_filter','--Mdir',boot,O/'dip_filter.v',R/'tb/tb_menu_boot_filter.v'],'boot_build.log'),([boot/'Vtb_menu_boot_filter'],'boot.log')]:
             with (O/log).open('w')as f:rc=subprocess.call([str(x)for x in cmd],cwd=R,env=env,stdout=f,stderr=subprocess.STDOUT)
             if rc:raise SystemExit((O/log).read_text()[-6000:])
         print((O/'boot.log').read_text(),end='',flush=True)
-    for cmd,log in [([v,'--binary','--timing','-j','4','-Wno-fatal','--top-module','tb_menu_mode_paths','--Mdir',O/'vpaths',*sources],'build.log'),([O/'vpaths/Vtb_menu_mode_paths',f'+file={O}/control.yxv'],'paths.log')]:
+    for cmd,log in [([v,'--binary','--timing','-j','4','-Wno-fatal','--top-module','tb_menu_mode_paths',*(['-GBOOT_MENU=0']if a.direct else []),'--Mdir',O/'vpaths',*sources],'build.log'),([O/'vpaths/Vtb_menu_mode_paths',f'+file={O}/control.yxv','+cart_a=cartridges/invaders.yxc','+cart_b=cartridges/breakout.yxc'],'paths.log')]:
         with (O/log).open('w')as f:rc=subprocess.call([str(x)for x in cmd],cwd=R,env=env,stdout=f,stderr=subprocess.STDOUT)
         if rc:raise SystemExit((O/log).read_text()[-6000:])
     print((O/'paths.log').read_text(),end='')

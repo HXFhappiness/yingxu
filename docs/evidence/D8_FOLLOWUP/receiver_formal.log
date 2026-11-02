@@ -1,0 +1,566 @@
+
+-- Running command `read_verilog src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v tb/formal/port_capture_ack.v; prep -top port_capture_ack -flatten; memory_map; opt; sat -seq 6 -tempinduct -maxsteps 16 -set-init-zero -set rst 0 -set-at 1 rst 1 -prove safe 1 -verify' --
+
+1. Executing Verilog-2005 frontend: src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v
+Parsing Verilog input from `src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v' to AST representation.
+Generating RTLIL representation for module `\yingxu_sdram_burst_port'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: tb/formal/port_capture_ack.v
+Parsing Verilog input from `tb/formal/port_capture_ack.v' to AST representation.
+Generating RTLIL representation for module `\port_capture_ack'.
+Successfully finished Verilog frontend.
+
+3. Executing PREP pass.
+
+3.1. Executing HIERARCHY pass (managing design hierarchy).
+
+3.1.1. Analyzing design hierarchy..
+Top module:  \port_capture_ack
+Used module:     \yingxu_sdram_burst_port
+
+3.1.2. Analyzing design hierarchy..
+Top module:  \port_capture_ack
+Used module:     \yingxu_sdram_burst_port
+Removed 0 unused modules.
+
+3.2. Executing PROC pass (convert processes to netlists).
+
+3.2.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+3.2.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 1 switch rules as full_case in process $proc$tb/formal/port_capture_ack.v:15$89 in module port_capture_ack.
+Marked 11 switch rules as full_case in process $proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21 in module yingxu_sdram_burst_port.
+Marked 2 switch rules as full_case in process $proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:26$3 in module yingxu_sdram_burst_port.
+Removed a total of 0 dead cases.
+
+3.2.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 5 redundant assignments.
+Promoted 6 assignments to connections.
+
+3.2.4. Executing PROC_INIT pass (extract init attributes).
+
+3.2.5. Executing PROC_ARST pass (detect async resets in processes).
+
+3.2.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~24 debug messages>
+
+3.2.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\port_capture_ack.$proc$tb/formal/port_capture_ack.v:15$89'.
+     1/5: $0\capture_prev[0:0]
+     2/5: $0\ack_prev[0:0]
+     3/5: $0\bad_saved[0:0]
+     4/5: $0\write_saved[0:0]
+     5/5: $0\captured[0:0]
+Creating decoders for process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+     1/32: $5$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_EN[31:0]$74
+     2/32: $5$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_DATA[31:0]$73
+     3/32: $5$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_ADDR[2:0]$72
+     4/32: $4$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_EN[31:0]$68
+     5/32: $4$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_DATA[31:0]$67
+     6/32: $4$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_ADDR[2:0]$66
+     7/32: $3$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_EN[31:0]$64
+     8/32: $3$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_DATA[31:0]$63
+     9/32: $3$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_ADDR[2:0]$62
+    10/32: $3$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_EN[31:0]$49
+    11/32: $3$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_DATA[31:0]$48
+    12/32: $3$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_ADDR[2:0]$47
+    13/32: $2$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_EN[31:0]$39
+    14/32: $2$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_DATA[31:0]$38
+    15/32: $2$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_ADDR[2:0]$37
+    16/32: $2$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_EN[31:0]$36
+    17/32: $2$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_DATA[31:0]$35
+    18/32: $2$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_ADDR[2:0]$34
+    19/32: $0\error[0:0]
+    20/32: $0\done[0:0]
+    21/32: $1$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_EN[31:0]$33
+    22/32: $1$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_DATA[31:0]$32
+    23/32: $1$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_ADDR[2:0]$31
+    24/32: $1$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_EN[31:0]$30
+    25/32: $1$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_DATA[31:0]$29
+    26/32: $1$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_ADDR[2:0]$28
+    27/32: $0\position[3:0]
+    28/32: $0\length[3:0]
+    29/32: $0\address[20:0]
+    30/32: $0\bad[0:0]
+    31/32: $0\wr[0:0]
+    32/32: $0\state[2:0]
+Creating decoders for process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:26$3'.
+     1/2: $0\clock_tag[0:0]
+     2/2: $0\command_seen[0:0]
+
+3.2.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+3.2.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\port_capture_ack.\captured' using process `\port_capture_ack.$proc$tb/formal/port_capture_ack.v:15$89'.
+  created $dff cell `$procdff$569' with positive edge clock.
+Creating register for signal `\port_capture_ack.\ack_prev' using process `\port_capture_ack.$proc$tb/formal/port_capture_ack.v:15$89'.
+  created $dff cell `$procdff$570' with positive edge clock.
+Creating register for signal `\port_capture_ack.\capture_prev' using process `\port_capture_ack.$proc$tb/formal/port_capture_ack.v:15$89'.
+  created $dff cell `$procdff$571' with positive edge clock.
+Creating register for signal `\port_capture_ack.\write_saved' using process `\port_capture_ack.$proc$tb/formal/port_capture_ack.v:15$89'.
+  created $dff cell `$procdff$572' with positive edge clock.
+Creating register for signal `\port_capture_ack.\bad_saved' using process `\port_capture_ack.$proc$tb/formal/port_capture_ack.v:15$89'.
+  created $dff cell `$procdff$573' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\done' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$574' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\error' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$575' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\state' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$576' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\wr' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$577' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\bad' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$578' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\address' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$579' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\length' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$580' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\position' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$581' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_ADDR' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$582' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_DATA' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$583' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:69$1_EN' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$584' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_ADDR' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$585' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_DATA' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$586' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.$memwr$\buffer$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:81$2_EN' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+  created $dff cell `$procdff$587' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\clock_tag' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:26$3'.
+  created $dff cell `$procdff$588' with positive edge clock.
+Creating register for signal `\yingxu_sdram_burst_port.\command_seen' using process `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:26$3'.
+  created $dff cell `$procdff$589' with positive edge clock.
+
+3.2.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+3.2.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 3 empty switches in `\port_capture_ack.$proc$tb/formal/port_capture_ack.v:15$89'.
+Removing empty process `port_capture_ack.$proc$tb/formal/port_capture_ack.v:15$89'.
+Found and cleaned up 18 empty switches in `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+Removing empty process `yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:47$21'.
+Found and cleaned up 3 empty switches in `\yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:26$3'.
+Removing empty process `yingxu_sdram_burst_port.$proc$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:26$3'.
+Cleaned up 24 empty switches.
+
+3.2.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+<suppressed ~2 debug messages>
+Optimizing module yingxu_sdram_burst_port.
+<suppressed ~10 debug messages>
+
+3.3. Executing FLATTEN pass (flatten design).
+Deleting now unused module yingxu_sdram_burst_port.
+<suppressed ~1 debug messages>
+
+3.4. Executing FUTURE pass.
+
+3.5. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+
+3.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \port_capture_ack..
+Removed 110 unused cells and 278 unused wires.
+<suppressed ~121 debug messages>
+
+3.7. Executing CHECK pass (checking for obvious problems).
+Checking module port_capture_ack...
+Found and reported 0 problems.
+
+3.8. Executing OPT pass (performing simple optimizations).
+
+3.8.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+
+3.8.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\port_capture_ack'.
+<suppressed ~132 debug messages>
+Removed a total of 44 cells.
+
+3.8.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \port_capture_ack..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~16 debug messages>
+
+3.8.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \port_capture_ack.
+Performed a total of 0 changes.
+
+3.8.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\port_capture_ack'.
+<suppressed ~12 debug messages>
+Removed a total of 4 cells.
+
+3.8.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \port_capture_ack..
+Removed 0 unused cells and 48 unused wires.
+<suppressed ~1 debug messages>
+
+3.8.7. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+
+3.8.8. Rerunning OPT passes. (Maybe there is more to do..)
+
+3.8.9. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \port_capture_ack..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~18 debug messages>
+
+3.8.10. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \port_capture_ack.
+Performed a total of 0 changes.
+
+3.8.11. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\port_capture_ack'.
+Removed a total of 0 cells.
+
+3.8.12. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \port_capture_ack..
+
+3.8.13. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+
+3.8.14. Finished OPT passes. (There is nothing left to do.)
+
+3.9. Executing WREDUCE pass (reducing word size of cells).
+Removed top 2 bits (of 3) from port B of cell port_capture_ack.$eq$tb/formal/port_capture_ack.v:31$111 ($eq).
+Removed top 1 bits (of 3) from port B of cell port_capture_ack.$eq$tb/formal/port_capture_ack.v:31$112 ($eq).
+Removed top 1 bits (of 3) from mux cell port_capture_ack.$flatten\dut.$procmux$546 ($mux).
+Removed top 1 bits (of 3) from mux cell port_capture_ack.$flatten\dut.$procmux$538 ($mux).
+Removed top 1 bits (of 3) from port B of cell port_capture_ack.$flatten\dut.$procmux$354_CMP0 ($eq).
+Removed top 28 bits (of 32) from port B of cell port_capture_ack.$flatten\dut.$ne$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:86$82 ($ne).
+Removed top 31 bits (of 32) from port B of cell port_capture_ack.$flatten\dut.$add$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:86$81 ($add).
+Removed top 27 bits (of 32) from port Y of cell port_capture_ack.$flatten\dut.$add$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:86$81 ($add).
+Removed top 28 bits (of 32) from port B of cell port_capture_ack.$flatten\dut.$lt$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:80$65 ($lt).
+Removed top 28 bits (of 32) from port B of cell port_capture_ack.$flatten\dut.$gt$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:57$44 ($gt).
+Removed top 27 bits (of 32) from wire port_capture_ack.$flatten\dut.$add$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:86$81_Y.
+Removed top 1 bits (of 3) from wire port_capture_ack.$flatten\dut.$procmux$538_Y.
+Removed top 1 bits (of 3) from wire port_capture_ack.$flatten\dut.$procmux$546_Y.
+Removed top 1 bits (of 5) from wire port_capture_ack.receiver_status.
+
+3.10. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \port_capture_ack..
+Removed 0 unused cells and 4 unused wires.
+<suppressed ~1 debug messages>
+
+3.11. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+3.12. Executing OPT pass (performing simple optimizations).
+
+3.12.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+
+3.12.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\port_capture_ack'.
+Removed a total of 0 cells.
+
+3.12.3. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \port_capture_ack..
+
+3.12.4. Finished fast OPT passes.
+
+3.13. Printing statistics.
+
+=== port_capture_ack ===
+
+   Number of wires:                172
+   Number of wire bits:            479
+   Number of public wires:          62
+   Number of public wire bits:     262
+   Number of ports:                 18
+   Number of port bits:            103
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                131
+     $add                            2
+     $dff                           13
+     $eq                             6
+     $gt                             1
+     $logic_and                     16
+     $logic_not                     10
+     $logic_or                       9
+     $lt                             1
+     $mux                           64
+     $ne                             2
+     $pmux                           5
+     $reduce_bool                    1
+     $scopeinfo                      1
+
+3.14. Executing CHECK pass (checking for obvious problems).
+Checking module port_capture_ack...
+Found and reported 0 problems.
+
+4. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+5. Executing OPT pass (performing simple optimizations).
+
+5.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+
+5.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\port_capture_ack'.
+Removed a total of 0 cells.
+
+5.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \port_capture_ack..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~18 debug messages>
+
+5.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \port_capture_ack.
+Performed a total of 0 changes.
+
+5.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\port_capture_ack'.
+Removed a total of 0 cells.
+
+5.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $procdff$573 ($dff) from module port_capture_ack (D = $procmux$128_Y, Q = \bad_saved, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$597 ($sdff) from module port_capture_ack (D = $flatten\dut.$logic_or$src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:57$45_Y, Q = \bad_saved).
+Adding SRST signal on $procdff$572 ($dff) from module port_capture_ack (D = $procmux$133_Y, Q = \write_saved, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$599 ($sdff) from module port_capture_ack (D = \write_cmd, Q = \write_saved).
+Adding SRST signal on $procdff$571 ($dff) from module port_capture_ack (D = $logic_and$tb/formal/port_capture_ack.v:19$93_Y, Q = \capture_prev, rval = 1'0).
+Adding SRST signal on $procdff$570 ($dff) from module port_capture_ack (D = \ready, Q = \ack_prev, rval = 1'0).
+Adding SRST signal on $procdff$569 ($dff) from module port_capture_ack (D = $procmux$140_Y, Q = \captured, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$603 ($sdff) from module port_capture_ack (D = $procmux$140_Y, Q = \captured).
+Adding SRST signal on $flatten\dut.$procdff$589 ($dff) from module port_capture_ack (D = $flatten\dut.$procmux$564_Y, Q = \dut.command_seen, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$607 ($sdff) from module port_capture_ack (D = $flatten\dut.$procmux$564_Y, Q = \dut.command_seen).
+Adding SRST signal on $flatten\dut.$procdff$581 ($dff) from module port_capture_ack (D = $flatten\dut.$procmux$424_Y, Q = \dut.position, rval = 4'0000).
+Adding EN signal on $auto$ff.cc:266:slice$611 ($sdff) from module port_capture_ack (D = $flatten\dut.$procmux$424_Y, Q = \dut.position).
+Adding SRST signal on $flatten\dut.$procdff$580 ($dff) from module port_capture_ack (D = $flatten\dut.$procmux$464_Y, Q = \dut.length, rval = 4'0000).
+Adding EN signal on $auto$ff.cc:266:slice$625 ($sdff) from module port_capture_ack (D = \command_words, Q = \dut.length).
+Adding SRST signal on $flatten\dut.$procdff$578 ($dff) from module port_capture_ack (D = $flatten\dut.$procmux$490_Y, Q = \dut.bad, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$629 ($sdff) from module port_capture_ack (D = $flatten\dut.$procmux$490_Y, Q = \dut.bad).
+Adding SRST signal on $flatten\dut.$procdff$577 ($dff) from module port_capture_ack (D = $flatten\dut.$procmux$512_Y, Q = \dut.wr, rval = 1'0).
+Adding EN signal on $auto$ff.cc:266:slice$645 ($sdff) from module port_capture_ack (D = \write_cmd, Q = \dut.wr).
+Adding SRST signal on $flatten\dut.$procdff$576 ($dff) from module port_capture_ack (D = $flatten\dut.$procmux$522_Y, Q = \dut.state, rval = 3'000).
+Adding EN signal on $auto$ff.cc:266:slice$649 ($sdff) from module port_capture_ack (D = $flatten\dut.$procmux$522_Y, Q = \dut.state).
+Adding SRST signal on $flatten\dut.$procdff$575 ($dff) from module port_capture_ack (D = $flatten\dut.$procmux$353_Y, Q = \dut.error, rval = 1'0).
+Adding SRST signal on $flatten\dut.$procdff$574 ($dff) from module port_capture_ack (D = $flatten\dut.$procmux$376_Y, Q = \dut.done, rval = 1'0).
+
+5.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \port_capture_ack..
+Removed 19 unused cells and 19 unused wires.
+<suppressed ~20 debug messages>
+
+5.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+<suppressed ~4 debug messages>
+
+5.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+5.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \port_capture_ack..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~12 debug messages>
+
+5.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \port_capture_ack.
+Performed a total of 0 changes.
+
+5.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\port_capture_ack'.
+<suppressed ~21 debug messages>
+Removed a total of 7 cells.
+
+5.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+5.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \port_capture_ack..
+Removed 0 unused cells and 7 unused wires.
+<suppressed ~1 debug messages>
+
+5.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+
+5.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+5.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \port_capture_ack..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~12 debug messages>
+
+5.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \port_capture_ack.
+Performed a total of 0 changes.
+
+5.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\port_capture_ack'.
+Removed a total of 0 cells.
+
+5.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+5.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \port_capture_ack..
+
+5.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module port_capture_ack.
+
+5.23. Finished OPT passes. (There is nothing left to do.)
+
+6. Executing SAT pass (solving SAT problems in the circuit).
+
+Setting up time step 1:
+Import set-constraint: \rst = 1'0
+Import set-constraint for this timestep: \rst = 1'1
+Final constraint equation: \rst = 1'1
+Imported 130 cells to SAT database.
+Final init constraint equation: { \dut.done \dut.error \dut.state \dut.wr \dut.bad \dut.length \dut.position \dut.command_seen \captured \ack_prev \capture_prev \write_saved \bad_saved } = 21'000000000000000000000
+
+Setting up time step 2:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+
+Setting up time step 3:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+
+Setting up time step 4:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+
+Setting up time step 5:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+
+Setting up time step 6:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+
+Setting up time step 1:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+** Trying induction with length 1 **
+
+Setting up time step 7:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[base case 1] Solving problem with 9802 variables and 26413 clauses..
+Base case for induction length 1 proven.
+
+Setting up time step 2:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[induction step 1] Solving problem with 2684 variables and 7174 clauses..
+Induction step failed. Incrementing induction length.
+
+  Time Signal Name                      Dec       Hex           Bin
+  ---- ------------------------ ----------- --------- -------------
+  init \ack_prev                          0         0             0
+  init \bad_saved                         0         0             0
+  init \capture_prev                      0         0             0
+  init \captured                          1         1             1
+  init \dut.bad                           0         0             0
+  init \dut.command_seen                  0         0             0
+  init \dut.done                          0         0             0
+  init \dut.error                         0         0             0
+  init \dut.length                        2         2          0010
+  init \dut.position                      0         0          0000
+  init \dut.state                         5         5           101
+  init \dut.wr                            1         1             1
+  init \write_saved                       0         0             0
+  ---- ------------------------ ----------- --------- -------------
+     1 \clk                               0         0             0
+     1 \command_addr [2:0]                0         0           000
+     1 \command_words                     1         1          0001
+     1 \drop_valid                        1         1             1
+     1 \enable                            0         0             0
+     1 \grant                             0         0             0
+     1 \in_req                            0         0             0
+     1 \out_valid                         0         0             0
+     1 \phy_done                          0         0             0
+     1 \rready                            0         0             0
+     1 \rst                               0         0             0
+     1 \safe                              1         1             1
+     1 \source_valid                      1         1             1
+     1 \wlast                             0         0             0
+     1 \write_cmd                         0         0             0
+     1 \wvalid                            0         0             0
+  ---- ------------------------ ----------- --------- -------------
+     2 \clk                               0         0             0
+     2 \command_addr [2:0]                0         0           000
+     2 \command_words                     1         1          0001
+     2 \drop_valid                        0         0             0
+     2 \enable                            0         0             0
+     2 \grant                             0         0             0
+     2 \in_req                            0         0             0
+     2 \out_valid                         0         0             0
+     2 \phy_done                          0         0             0
+     2 \rready                            0         0             0
+     2 \rst                               0         0             0
+     2 \safe                              0         0             0
+     2 \source_valid                      1         1             1
+     2 \wlast                             0         0             0
+     2 \write_cmd                         0         0             0
+     2 \wvalid                            0         0             0
+
+** Trying induction with length 2 **
+
+Setting up time step 8:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[base case 2] Solving problem with 11286 variables and 30459 clauses..
+Base case for induction length 2 proven.
+
+Setting up time step 3:
+Import set-constraint: \rst = 1'0
+Final constraint equation: \rst = 1'0
+Imported 130 cells to SAT database.
+Import proof-constraint: \safe = 1'1
+Final proof equation: \safe = 1'1
+
+[induction step 2] Solving problem with 4232 variables and 11432 clauses..
+Induction step proven: SUCCESS!
+
+                  /$$$$$$      /$$$$$$$$     /$$$$$$$    
+                 /$$__  $$    | $$_____/    | $$__  $$   
+                | $$  \ $$    | $$          | $$  \ $$   
+                | $$  | $$    | $$$$$       | $$  | $$   
+                | $$  | $$    | $$__/       | $$  | $$   
+                | $$/$$ $$    | $$          | $$  | $$   
+                |  $$$$$$/ /$$| $$$$$$$$ /$$| $$$$$$$//$$
+                 \____ $$$|__/|________/|__/|_______/|__/
+                       \__/                              
+

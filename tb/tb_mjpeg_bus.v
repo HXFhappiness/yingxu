@@ -15,8 +15,8 @@ module tb_mjpeg_arbiter;
         .mdone(mdone),.merror(merror));
     task service(input integer expected,input integer failure);
         begin
-            #1;if(!mv || ma!=(expected+1)*100 || mn!=8) $fatal(1,"priority/address grant");
-            mr=1;@(negedge clk);mr=0;cv[expected]=0;
+            wait(mv);#1;if(!mv || ma!=(expected+1)*100 || mn!=8) $fatal(1,"priority/address grant");
+            mr=1;@(posedge clk);@(negedge clk);mr=0;cv[expected]=0;
             if(mv) $fatal(1,"owner released before done");
             if(expected==1) begin
                 wv=2;#1;if(!mwv || mwd!==32'hBBBBBBBB || wr!==2 || !mwl) $fatal(1,"write routing");

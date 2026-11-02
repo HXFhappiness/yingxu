@@ -26,6 +26,7 @@ module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
     input  wire                             I_menu_ctx                            ,
     input  wire         [ 2: 0]             I_menu_sel                            ,
     input  wire                             I_menu_page                           ,
+    input  wire                             I_scene_epoch                         ,
     input  wire                             I_music_en                             ,
     output wire [27:0]                      O_wav_base                             ,
     output wire                             O_wav_restart                          ,
@@ -42,6 +43,7 @@ module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
     output wire [15:0]                      O_wav_rate                            ,   // G6diag
     input  wire [1:0]                       I_game_sel                             ,   // G3: 00鎵撶爾鍧?01渚电暐鑰?10鍗″甫
     input  wire                             I_cart_swap                            ,   // G4: 鍗″甫妯″紡涓嬪垏鎹㈤暅鍍?鈫?閲嶈浇
+    input  wire                             I_cart_stream_valid                   ,
     input  wire                             I_sd_ready                             ,   // G3: SD 就绪(粘滞)
     output wire                             O_cart_restart                         ,   // G3: 卡带加载触发
     output wire                             O_cart_busy                            ,   // G4: 鍗″甫鍔犺浇涓?璋冭瘯LED)
@@ -98,10 +100,37 @@ module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
     output wire         [   3: 0]           O_hdmi_debug                            
 );
 
+    // D9: every scene transition resets game work in both clocks and wipes
+    // all sprite slots. The toggle cannot be lost between SYS and pixel clocks.
+    reg scene_sys_q;
+    (* async_reg="true" *) reg scene_pix_meta,scene_pix_sync;
+    reg scene_pix_q;
+    reg [3:0] game_reset_sys_count,game_reset_pix_count;
+    wire scene_sys_change=scene_sys_q!=I_scene_epoch;
+    wire scene_pix_change=scene_pix_q!=scene_pix_sync;
+    wire game_reset_sys=S_rst || scene_sys_change || (game_reset_sys_count!=0);
+    wire game_reset_pix=S_rst_pix || scene_pix_change || (game_reset_pix_count!=0);
+    always @(posedge I_sys_clk)begin
+        if(S_rst)begin scene_sys_q<=0;game_reset_sys_count<=0;end
+        else begin
+            scene_sys_q<=I_scene_epoch;
+            if(scene_sys_change)game_reset_sys_count<=8;
+            else if(game_reset_sys_count!=0)game_reset_sys_count<=game_reset_sys_count-1'b1;
+        end
+    end
+    always @(posedge S_pixel_clk or posedge S_rst_pix)begin
+        if(S_rst_pix)begin scene_pix_meta<=0;scene_pix_sync<=0;scene_pix_q<=0;game_reset_pix_count<=0;end
+        else begin
+            scene_pix_meta<=I_scene_epoch;scene_pix_sync<=scene_pix_meta;scene_pix_q<=scene_pix_sync;
+            if(scene_pix_change)game_reset_pix_count<=8;
+            else if(game_reset_pix_count!=0)game_reset_pix_count<=game_reset_pix_count-1'b1;
+        end
+    end
+
     // D3: mode controls cross through synchronizers; RGB selection uses the
     // existing replay output register, preserving the compositor logic depth.
     wire video_mem_clk,video_mem_ready,video_port_idle;
-    wire [6:0] video_write_debug;
+    wire [6:0] video_write_debug;wire [4:0] video_command_debug;
     wire vm_valid,vm_ready,vm_write,vm_wvalid,vm_wready,vm_wlast,vm_rvalid,vm_rready,vm_rlast,vm_done,vm_error;
     wire [20:0] vm_addr;wire [3:0] vm_words;wire [31:0] vm_wdata,vm_rdata;
     wire video_sd_byte_ready,video_audio_enable,video_audio_valid,video_actual_pop;
@@ -366,7 +395,7 @@ reg [1:0] S_rst_g, S_rst_v, S_rst_t;
     wire        bmp_sd_ready;
     // G6: 音乐播放时把背压权交给播放器（探针一次 restart 连读 5401 扇区，
 // 不背压会冲爆 1024 样本 FIFO）
-assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_ready : I_music_en ? wav_sd_ready : bmp_sd_ready;
+assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_ready : (I_menu_ctx || sel_cart) ? 1'b1 : I_music_en ? wav_sd_ready : bmp_sd_ready;
 
     wire [23:0] S_player_rgb;
 
@@ -488,9 +517,9 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
         .V_ACTIVE   (720 )
     ) U_hw_inv (
         .clk        (S_pixel_clk),
-        .rst        (S_rst_pix  ),
+        .rst        (game_reset_pix),
         .frame_tick (frame_tick ),
-        .enable     (sel_hw     ),
+        .enable     (sel_hw && !clr_active && !game_reset_pix),
         .restart    (hw_restart ),
         .key_left   (~I_key0_n  ),
         .key_right  (~I_key1_n  ),
@@ -522,8 +551,8 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
     wire [59:0] b_brick_mask;
     wire b_ev_hit,b_ev_paddle,b_ev_lose,b_ev_win;
     yingxu_breakout U_hw_breakout(
-        .clk(S_pixel_clk),.rst(S_rst_pix),.frame_tick(frame_tick),
-        .enable(sel_breakout),.restart(sel_breakout && !sel_breakout_q),
+        .clk(S_pixel_clk),.rst(game_reset_pix),.frame_tick(frame_tick),
+        .enable(sel_breakout && !clr_active && !game_reset_pix),.restart(sel_breakout && !sel_breakout_q),
         .key_left(~I_key0_n),.key_right(~I_key1_n),
         .spr_we(b_spr_we),.spr_slot(b_spr_slot),.spr_en(b_spr_en),
         .spr_x(b_spr_x),.spr_y(b_spr_y),.spr_w(b_spr_w),.spr_h(b_spr_h),.spr_c(b_spr_c),
@@ -656,7 +685,7 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
             // push a slot in the same frame), so sweep continuously for ~3000
             // pixel clocks after any mode or game change.
             if ((mode_d && !I_game_mode) || (I_game_mode && (gsel_d != I_game_sel)) ||
-                (breakout_mode_d && !sel_breakout)) begin
+                (breakout_mode_d && !sel_breakout) || scene_pix_change) begin
                 clr_hold   <= 14'd3000;
                 clr_cnt    <= 5'd0;
                 clr_active <= 1'b1;
@@ -840,12 +869,12 @@ wire        c_spr_we;
     yx8_cart_soc_v2 u_cart (
         .sys_clk        (I_sys_clk     ),
         .pix_clk        (S_pixel_clk   ),
-        .pix_rst        (S_rst_pix     ),
-        .sys_rst        (S_rst         ),
-        .en             (sel_cart      ),
+        .pix_rst        (game_reset_pix),
+        .sys_rst        (game_reset_sys),
+        .en             (sel_cart && !clr_active && !game_reset_pix && !game_reset_sys),
         .sd_ready       (I_sd_ready    ),
         .sd_data        (I_bmp_sd_data ),
-        .sd_valid       (I_bmp_sd_valid && !O_video_owned),
+        .sd_valid       (I_bmp_sd_valid && I_cart_stream_valid && sel_cart && !game_reset_sys && !O_video_owned),
         .key0_n         (I_key0_n      ),
         .key1_n         (I_key1_n      ),
         .pix_frame_tick (frame_tick    ),
@@ -923,7 +952,7 @@ assign O_inv_wave  = 4'd0;
         .i_mj_active(O_video_owned),.i_mj_valid(vm_valid),.o_mj_ready(vm_ready),.i_mj_write(vm_write),
         .i_mj_addr(vm_addr),.i_mj_words(vm_words),.i_mj_wvalid(vm_wvalid),.o_mj_wready(vm_wready),
         .i_mj_wdata(vm_wdata),.i_mj_wlast(vm_wlast),.o_mj_rvalid(vm_rvalid),.i_mj_rready(vm_rready),
-        .o_mj_rdata(vm_rdata),.o_mj_rlast(vm_rlast),.o_mj_done(vm_done),.o_mj_error(vm_error),.o_mj_idle(video_port_idle),.o_mj_debug_write(video_write_debug),
+        .o_mj_rdata(vm_rdata),.o_mj_rlast(vm_rlast),.o_mj_done(vm_done),.o_mj_error(vm_error),.o_mj_idle(video_port_idle),.o_mj_debug_write(video_write_debug),.o_mj_debug_cmd(video_command_debug),
         .sys_clk                            (I_sys_clk                           ),
         .pixel_clk                          (S_pixel_clk                         ),
         .rst                                (video_reset_sys                     ),
@@ -974,7 +1003,7 @@ assign O_inv_wave  = 4'd0;
         .x(S_pixel_x),.y(S_pixel_y),.pixel_active(S_pixel_active),.rd2_data(S_rd2_data),.rd2_empty(S_rd2_empty),
         .rd2_en(video_rd_en),.rd2_load(video_rd_load),.rd2_addr(video_rd_addr),.rd2_max(video_rd_max),.rd2_len(video_rd_len),.rgb(video_rgb),
         .cmd_valid(vm_valid),.cmd_ready(vm_ready),.cmd_write(vm_write),.cmd_addr(vm_addr),.cmd_words(vm_words),
-        .wvalid(vm_wvalid),.wready(vm_wready),.wdata(vm_wdata),.wlast(vm_wlast),.rvalid(vm_rvalid),.rready(vm_rready),.rdata(vm_rdata),.rlast(vm_rlast),.mem_done(vm_done),.mem_error(vm_error),.port_idle(video_port_idle),.port_debug_write(video_write_debug),
+        .wvalid(vm_wvalid),.wready(vm_wready),.wdata(vm_wdata),.wlast(vm_wlast),.rvalid(vm_rvalid),.rready(vm_rready),.rdata(vm_rdata),.rlast(vm_rlast),.mem_done(vm_done),.mem_error(vm_error),.port_idle(video_port_idle),.port_debug_write(video_write_debug),.port_debug_cmd(video_command_debug),
         .decoded_frames(O_video_decoded),.displayed_frames(O_video_displayed),.dropped_frames(O_video_dropped),.played_samples(O_video_samples),.sd_occupancy(O_video_sd_occupancy),.status(O_video_status));
 
     hdmi_1_4b_transmitter_core_wrapper#(

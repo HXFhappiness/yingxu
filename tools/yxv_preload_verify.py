@@ -6,7 +6,7 @@ from mjpeg_ref.container import build_container
 from mjpeg_ref.vectors import make_jpeg
 R=Path(__file__).resolve().parents[1];O=R/'out/mjpeg_d4f';M=R/'src/user_source/hdl_source/media/mjpeg';S=R/'src/user_source/hdl_source/media/sd';H=R/'src/user_source/hdl_source'
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--frames',type=int,default=486);p.add_argument('--block',type=int,default=0,choices=range(11),help='0 normal; 1..6 data/grant/done stalls; 7 permanent missing command; 8 initial valid delay; 9 valid omitted on ACK; 10 delay every PCM command');p.add_argument('--no-build',action='store_true');p.add_argument('--no-recovery',action='store_true');p.add_argument('--fast-card',action='store_true',help='Accelerate transaction card model only; no pin-rate claim');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--frames',type=int,default=486);p.add_argument('--block',type=int,default=0,choices=range(17),help='0 normal; 1..6 data/grant/done stalls; 7 permanent missing command; 8 initial valid delay; 9 valid omitted on ACK; 10 delay every PCM command; 11 pending exit; 12 accepted partial write exit; 13 healthy early exit; 14 receiver clock stopped; 15 receiver disabled; 16 receiver reset');p.add_argument('--no-build',action='store_true');p.add_argument('--no-recovery',action='store_true');p.add_argument('--no-cancel',action='store_true');p.add_argument('--fast-card',action='store_true',help='Accelerate transaction card model only; no pin-rate claim');a=p.parse_args()
     O.mkdir(parents=True,exist_ok=True)
     pcm=bytes(((i*37)^(i>>8)^(i>>16)^0xa7)&255 for i in range(a.frames*8000))
     fixture,_=build_container([make_jpeg()]*a.frames,pcm);f=O/f'pcm{a.frames}.yxv';f.write_bytes(fixture)
@@ -17,13 +17,19 @@ def main():
     model_path.write_text(model)
     v=shutil.which('verilator') or '/workspace/.yingxu-env/verilator/usr/bin/verilator';env=os.environ.copy()
     if '.yingxu-env' in v:env['VERILATOR_ROOT']='/workspace/.yingxu-env/verilator/usr/share/verilator'
-    build=O/(('vpreload_fast' if a.fast_card else 'vpreload')+('_norecovery'if a.no_recovery else ''))
-    sources=[R/'tb/tb_yxv_preload.v',model_path,R/'tb/models/d3_sdram_models.v',H/'yingxu_sdram_control_4port.v',H/'media/bmp/bmp_header_parser.v',*[S/x for x in ('sd_stream_reader.v','sd_stream_reader_core.v','yingxu_sd_integration_probe.v','ram_dual_port_simple.v')],*sorted(M.glob('*.v')),*[R/'src/5640/sdram_ctrl_4p'/f'{x}.v' for x in ('command','control_interface','sdr_data_path')]]
-    commands=[] if a.no_build else [([v,'--binary','--timing','-j','4','-Wno-fatal','--top-module','tb_yxv_preload',*(['-GRECOVERY=0']if a.no_recovery else []),'--Mdir',build,*sources],'preload_fast_build.log'if a.fast_card else 'preload_build.log')]
-    commands.append(([build/'Vtb_yxv_preload',f'+file={f}',f'+block={a.block}'],f'preload_{a.frames}_block{a.block}'+('_fast'if a.fast_card else '')+('_norecovery.log'if a.no_recovery else '.log')))
+    build=O/(('vpreload_fast' if a.fast_card else 'vpreload')+('_norecovery'if a.no_recovery else '')+('_nocancel'if a.no_cancel else ''))
+    # Receiver-local faults only: the real controller/pipeline clock keeps
+    # running, while the generated simulation copy gates just the adapter.
+    ctrl=(H/'yingxu_sdram_control_4port.v').read_text()
+    ctrl=ctrl.replace('.clk(CLK),.rst(!RESET_N),.enable(MJ_ACTIVE)',
+        ".clk((tb_yxv_preload.block==14 && !tb_yxv_preload.rst) ? 1'b0:CLK),.rst(!RESET_N || tb_yxv_preload.block==16),.enable(MJ_ACTIVE && tb_yxv_preload.block!=15)")
+    ctrl_path=O/'controller_faults.v';ctrl_path.write_text(ctrl)
+    sources=[R/'tb/tb_yxv_preload.v',model_path,R/'tb/models/d3_sdram_models.v',ctrl_path,H/'media/bmp/bmp_header_parser.v',*[S/x for x in ('sd_stream_reader.v','sd_stream_reader_core.v','yingxu_sd_integration_probe.v','ram_dual_port_simple.v')],*sorted(M.glob('*.v')),*[R/'src/5640/sdram_ctrl_4p'/f'{x}.v' for x in ('command','control_interface','sdr_data_path')]]
+    commands=[] if a.no_build else [([v,'--binary','--timing','-j','4','-Wno-fatal','--top-module','tb_yxv_preload',*(['-GRECOVERY=0']if a.no_recovery else []),*(['-GCANCEL_PENDING=0']if a.no_cancel else []),'--Mdir',build,*sources],'preload_fast_build.log'if a.fast_card else 'preload_build.log')]
+    commands.append(([build/'Vtb_yxv_preload',f'+file={f}',f'+block={a.block}'],f'preload_{a.frames}_block{a.block}'+('_fast'if a.fast_card else '')+('_norecovery'if a.no_recovery else '')+('_nocancel'if a.no_cancel else '')+'.log'))
     for args,log in commands:
         with (O/log).open('w') as out:rc=subprocess.call([str(x) for x in args],cwd=R,env=env,stdout=out,stderr=subprocess.STDOUT)
         print(f'{log}: exit={rc}',flush=True)
         if rc:raise SystemExit((O/log).read_text()[-8000:])
-    print((O/(f'preload_{a.frames}_block{a.block}'+('_fast'if a.fast_card else '')+('_norecovery.log'if a.no_recovery else '.log'))).read_text(),end='')
+    print((O/(f'preload_{a.frames}_block{a.block}'+('_fast'if a.fast_card else '')+('_norecovery'if a.no_recovery else '')+('_nocancel'if a.no_cancel else '')+'.log')).read_text(),end='')
 if __name__=='__main__':main()
