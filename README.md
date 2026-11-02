@@ -80,9 +80,10 @@ python tools/music2sd.py --in 你的歌.mp3 --slot 0 --drive E
 统一分支 `feat/unified-menu-photo-video` 默认上电显示硬件菜单：key1 选择、key0 确认。
 游戏子菜单两项均运行 YX-8 CPU 卡带：打砖块读取 LBA 1,001,000，飞机大战读取
 LBA 1,000,000（仓库镜像标题 INVADERS）。游戏中 SW7 OFF 时 key0 左、key1 右；
-回菜单使用 SW7 ON + key0 短按，2 秒长按保留兜底。主菜单中 SW7 ON 仍可 key0 确认。
+回菜单使用 SW7 ON + key0 短按，2 秒长按保留兜底；游戏退出回子菜单原选项，
+子菜单退出回主菜单“游戏”。导航锁定 100ms，主菜单中 SW7 ON 仍可 key0 确认。
 菜单接管后实体 DIP 不再抢占模式。视频板测跟进、I1 编码及本地构建入口见
-[最新交付说明](docs/D8_BOARD_FOLLOWUP.md)。
+[最新交付说明](docs/D10_CLOCK_MENU_RETURN.md)。
 
 以下为冻结固件及 `BOOT_MENU=0` 维护构建的实体 DIP 直通表；统一菜单固件默认不使用它。
 

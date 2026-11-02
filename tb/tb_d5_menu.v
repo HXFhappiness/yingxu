@@ -36,7 +36,7 @@ module tb_d5_menu;
             repeat(12)@(negedge clk);
         end
     endtask
-    task back_to_menu;
+    task back_to_menu(input integer page,input integer selection);
         begin
             @(negedge clk);key0=0;
             // Accelerate only the elapsed-time counter, exercise terminal edge.
@@ -44,7 +44,7 @@ module tb_d5_menu;
             repeat(5)@(negedge clk);key0=1;
             wait(!dut.video_owned);
             repeat(15)@(negedge clk);
-            if(!dut.menu_ui || dut.img_idx!=0 || dut.menu_sel!=0)$fatal(1,"hold return");
+            if(!dut.menu_ui || dut.img_idx!=0 || dut.menu_page!=page || dut.menu_sel!=selection)$fatal(1,"hold return");
         end
     endtask
     initial begin
@@ -64,19 +64,22 @@ module tb_d5_menu;
         if(rows!=5'b11111)$fatal(1,"not all coordinates reached: %b",rows);
         press(0);
         if(dut.menu_ui || dut.img_idx!=1 || dut.game_mode || !dut.menu_override || clears==0)$fatal(1,"photo confirm");
-        back_to_menu();
+        back_to_menu(0,0);
         press(1);press(0);press(0);
         if(!dut.cart_active || !dut.game_mode || dut.game_sel2!=2 || dut.menu_ui)$fatal(1,"game confirm ctx=%b sel=%d pat=%h override=%b game=%b cart=%b vs=%b",dut.menu_ui,dut.menu_sel,dut.menu_pattern,dut.menu_override,dut.game_mode,dut.cart_active,dut.video_requested);
-        back_to_menu();
-        press(1);press(1);press(0);
+        back_to_menu(1,0);
+        @(negedge clk);dut.key_lock=0;sw=8'h7f;key0=0;
+        repeat(4)@(negedge clk);key0=1;sw=8'hff;repeat(12)@(negedge clk);
+        if(!dut.menu_ui || dut.menu_page || dut.menu_sel!=1)$fatal(1,"submenu parent return");
+        press(1);press(0);
         if(!dut.video_requested || dut.menu_ui)$fatal(1,"video confirm");
-        back_to_menu();
-        press(1);press(1);press(1);press(0);
+        back_to_menu(0,2);
+        press(1);press(0);
         if(!dut.music_on_w || dut.menu_ui)$fatal(1,"music confirm");
-        back_to_menu();
-        repeat(4)press(1);press(0);
+        back_to_menu(0,3);
+        press(1);press(0);
         if(!dut.menu_ui || dut.menu_sel!=4)$fatal(1,"about placeholder");
-        // DIP change must escape even while the key lock is active.
+        // A stable DIP change cannot take menu ownership, even during lockout.
         wait(dut.sw_real_valid);
         @(negedge clk);sw=8'h6f;repeat(1000016)@(negedge clk);
         if(!dut.menu_override || !dut.menu_ui)$fatal(1,"physical DIP stole menu");

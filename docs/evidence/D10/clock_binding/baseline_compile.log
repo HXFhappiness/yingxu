@@ -1,0 +1,17 @@
+/workspace/yingxu-fpga/src/5640/sdram_ctrl_4p/command.v:1: warning: timescale for command inherited from another file.
+/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:1: ...: The inherited timescale is here.
+/workspace/yingxu-fpga/src/5640/sdram_ctrl_4p/control_interface.v:1: warning: timescale for control_interface inherited from another file.
+/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:1: ...: The inherited timescale is here.
+/workspace/yingxu-fpga/src/5640/sdram_ctrl_4p/sdr_data_path.v:1: warning: timescale for sdr_data_path inherited from another file.
+/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:1: ...: The inherited timescale is here.
+/workspace/yingxu-fpga/src/5640/sdram_ctrl_4p/sdr_data_path.v:86: warning: Numeric constant truncated to 1 bits.
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:13: warning: timescale for yingxu_sdram_control_4port inherited from another file.
+/workspace/yingxu-fpga/src/user_source/hdl_source/media/mjpeg/yingxu_sdram_burst_port.v:1: ...: The inherited timescale is here.
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:265: warning: implicit definition of wire 'CLK'.
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:239: warning: Port declaration of CS_N inherits dimensions from var/net.
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:239: warning: Scalar port ``CS_N'' has a vectored net declaration [1:0].
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:311: warning: Port 3 (CMD) of control_interface expects 3 bits, got 2.
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:311:        : Padding 1 high bits of the port.
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:311: warning: Instantiating module control_interface with dangling input port 6 (INIT_ACK) floating.
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:356: warning: Port 4 (DM) of sdr_data_path expects 4 bits, got 2.
+/workspace/yingxu-fpga/out/d10/clock_binding/baseline_controller.v:356:        : Padding 2 high bits of the port.

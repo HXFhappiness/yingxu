@@ -1,0 +1,2 @@
+CLOCK_SHADOW_REPRO PASS parent_edges=28 receiver_edges=0 receiver_clk=Z ACKs=0; unmodified baseline RTL, no clock force
+/workspace/yingxu-fpga/tb/tb_sdram_clock_binding.v:40: $finish called at 280000 (1ps)

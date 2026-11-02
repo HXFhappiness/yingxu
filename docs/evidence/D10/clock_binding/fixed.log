@@ -1,0 +1,2 @@
+CLOCK_BINDING PASS parent_edges=18 receiver_edges=18 ACKs=1 data_words=8 state=WAIT sampled_VALID=1
+/workspace/yingxu-fpga/tb/tb_sdram_clock_binding.v:40: $finish called at 180000 (1ps)

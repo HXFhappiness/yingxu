@@ -1,3 +1,4 @@
+`default_nettype none
 // -----------------------------------------------------------------------------
 // YingXu V0.3B-B-R3
 // Derived from the uploaded vendor Sdram_Control_4Port.v.
@@ -257,6 +258,10 @@ wire	[15:0]					write_side_fifo_rusedw1;
 wire	[15:0]					read_side_fifo_wusedw1;
 wire	[15:0]					write_side_fifo_rusedw2;
 wire	[15:0]					read_side_fifo_wusedw2;
+// Declare the PLL clock BEFORE the generate block. A late non-ANSI port
+// declaration creates an undriven generate-local CLK in Icarus (and the board
+// symptom matches): only the adapter stops, while the parent controller runs.
+output wire CLK;
 // D3: optional service port; default=0 retains legacy FIFO scheduling.
 wire mj_request,mj_write;wire [20:0] mj_addr;wire [3:0] mj_words;
 wire [31:0] mj_wdata;wire [3:0] mj_mask;reg mj_grant,mj_owner;
@@ -289,7 +294,7 @@ wire							ref_req;
 wire							init_req;
 wire							cm_ack;
 wire							active;
-output   wire                   CLK;
+
 assign test_oe = oe;
 //output                          CLK_18;
 //output test_wrfifo1_rd,test_rdfifo1_wr;
@@ -698,3 +703,5 @@ begin
 end
 
 endmodule
+
+`default_nettype wire

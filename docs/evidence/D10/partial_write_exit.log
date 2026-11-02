@@ -1,0 +1,10 @@
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PCM_STALL_REPRO block=12 MISE=949f SP=0001 ACC=020 sent=4 phy_state=1 position=4 ST=0 reset=1 F=a
+SD_RESET_ORDERCHK: PASS init_commands=1 fault=1259945000000 then abort_reset=1259990000000 then init_drop=1259990000000; DNE was cleared at PCM request
+WRITE_DIAGCHK: PASS block=12 I1=00dc1214 sent=4 state=1 position=4 inner=101 outer=110 RP/LR/CV/CR/WV/WR=000010
+PCM_WAITCHK: PASS distinct real SDRAM waits still produce the original bounded write timeout
+PENDING_EXIT PASS block=12 owned=0 SD reset released, accepted words=8
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:167: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 1ms; walltime 0.281 s; speed 5.080 ms/s
+- Verilator: cpu 0.249 s on 1 threads; alloced 57 MB

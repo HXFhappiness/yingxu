@@ -102,6 +102,7 @@ module design_top_wrapper #(parameter integer VIDEO_ACQUIRE_LIMIT=250_000_000) (
 
     // D9: every scene transition resets game work in both clocks and wipes
     // all sprite slots. The toggle cannot be lost between SYS and pixel clocks.
+    reg clr_active; // declare before the game-enable instance connections
     reg scene_sys_q;
     (* async_reg="true" *) reg scene_pix_meta,scene_pix_sync;
     reg scene_pix_q;
@@ -636,11 +637,6 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
     // Game mode blanks the background: the last photo must not stay behind the
     // playfield.
     wire [23:0] menu_rgb;
-    yingxu_menu_ui menu_renderer(
-        .clk(S_pixel_clk),.rst(S_rst_pix),.pixel_x(S_pixel_x),
-        .pixel_y({1'b0,S_pixel_y}),.pixel_active(S_pixel_active),
-        .menu_visible(menu_ctx_qq),.page(menu_page_qq),.sel(menu_sel_qq),
-        .menu_rgb(menu_rgb));
     wire [23:0] S_base_rgb = menu_ctx_qq ? menu_rgb : I_game_mode ? 24'h000000 :
                              I_sd_fail ? 24'hC000C0 :
                              bar_on    ? (bar_hit ? 24'hFFC000 : 24'h502020) :
@@ -649,7 +645,6 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
     // Photo mode carries no sprites, so the table is wiped whenever the mode
     // leaves the game (otherwise the ball and paddle would stay on screen).
     reg [4:0]  clr_cnt;
-    reg        clr_active;
     reg [13:0] clr_hold;      // keep sweeping for a while after a switch
     reg        mode_d;
     reg        breakout_mode_d;
@@ -754,6 +749,12 @@ assign O_bmp_sd_ready = I_video_pending ? 1'b1 : O_video_owned ? video_sd_byte_r
     wire [6:0]  menu_spr_w    = 7'd12;
     wire [5:0]  menu_spr_h    = 6'd56;
     wire [23:0] menu_spr_c    = 24'h00A651;
+    // The synchronized page/selection registers are declared above this instance.
+    yingxu_menu_ui menu_renderer(
+        .clk(S_pixel_clk),.rst(S_rst_pix),.pixel_x(S_pixel_x),
+        .pixel_y({1'b0,S_pixel_y}),.pixel_active(S_pixel_active),
+        .menu_visible(menu_ctx_qq),.page(menu_page_qq),.sel(menu_sel_qq),
+        .menu_rgb(menu_rgb));
 wire        src_we   = sel_menu ? menu_spr_we : sel_breakout ? b_spr_we : sel_hw ? hw_spr_we   : c_spr_we;
     wire [3:0]  src_slot = sel_menu ? menu_spr_slot : sel_breakout ? b_spr_slot : sel_hw ? hw_spr_slot : c_spr_slot;
     wire        src_en   = sel_menu ? menu_spr_en   : sel_breakout ? b_spr_en : sel_hw ? hw_spr_en   : c_spr_en;

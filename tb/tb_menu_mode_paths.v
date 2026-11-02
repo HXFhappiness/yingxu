@@ -66,7 +66,7 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
             repeat(2)@(negedge clk);key0=1;repeat(128)@(negedge clk);
         end
     endtask
-    task short_return;
+    task short_return(input integer expected_page,input integer expected_sel);
         begin
             @(negedge clk);sw=sw & 8'h7f;
             // Reproduce the real operation: move SW7, wait >20ms, THEN press.
@@ -74,7 +74,7 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
             if(!dut.menu_override && BOOT_MENU)$fatal(1,"SW7 stole menu ownership");
             @(negedge clk);dut.key_lock=0;key0=0;
             repeat(16)@(negedge clk);
-            if(!dut.menu_ui || dut.menu_page || dut.menu_sel!=0 || dut.img_idx!=0)
+            if(!dut.menu_ui || dut.menu_page!=expected_page || dut.menu_sel!=expected_sel || dut.img_idx!=0)
                 $fatal(1,"SW7+key0 return / held key reconfirmed");
             key0=1;wait(!dut.video_owned);
             wait(!dut.design_top_wrapper.clr_active && !dut.design_top_wrapper.game_reset_pix);
@@ -100,7 +100,7 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
             if(!dut.design_top_wrapper.U_hw_inv.enable || invader_writes<2)$fatal(1,"maintenance Invaders unavailable");
             sw=8'h1f;repeat(1000016)@(negedge clk);
             if(!dut.cart_active || dut.cart_wcnt_w!=604)$fatal(1,"maintenance cartridge unavailable");
-            short_return();
+            short_return(0,0);
             sw=8'h77;repeat(1000016)@(negedge clk);
             if(!dut.menu_ui || !dut.menu_override)$fatal(1,"DIP stole menu after direct return");
             $display("D9_DIRECT PASS BOOT_MENU=0 hardware presets and YX-8 retained; explicit return transfers exclusive ownership");$finish;
@@ -166,7 +166,11 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
                 repeat(16)@(negedge clk);
                 $display("D9_CART_GAMEPLAY PASS path=%0d real SD image, CPU retired instructions, sprites, left/right movement",path);$fflush();
             end
-            short_return();
+            short_return(path==1 || path==2, path==1 ? 0:path==2 ? 1:path==3 ? 2:path==4 ? 3:0);
+            if(path==1 || path==2)begin
+                // A second exit leaves the restored game submenu for main sel=1.
+                short_return(0,1);
+            end
             if(events!=base_events)$fatal(1,"virtual mode/return produced DIP exit");
             cases=cases+1;$display("D7_PATH PASS path=%0d glitch=%0d mode persists, SW7+key0 return",path,glitch);$fflush();
         end
@@ -176,7 +180,7 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
         if(!dut.menu_ui || dut.menu_page || dut.menu_sel!=4)$fatal(1,"about placeholder");
         next_selection();next_selection();confirm(0);next_selection();next_selection();
         if(!dut.menu_page || dut.menu_sel!=0)$fatal(1,"submenu two-item wrap");
-        short_return();
+        short_return(0,1);
         // 2s fallback is retained, with an exact terminal boundary check.
         reset_menu();confirm(0);
         @(negedge clk);key0=0;dut.menu_hold_cnt=27'd99_999_998;
@@ -195,7 +199,7 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
         // Leave SW7 ON in the main menu: KEY0 must still confirm, once.
         confirm(0);
         if(dut.menu_ui || dut.img_idx!=1)$fatal(1,"SW7 ON locked main KEY0 into return");
-        short_return();
+        short_return(0,0);
         // A complete post-game/return frame must contain only the hardware menu.
         while(!(dut.design_top_wrapper.S_pixel_x==0 && dut.design_top_wrapper.S_pixel_y==0))
             @(negedge dut.design_top_wrapper.S_pixel_clk);
@@ -210,7 +214,7 @@ module tb_menu_mode_paths #(parameter integer BOOT_MENU=1);
             end
             @(negedge dut.design_top_wrapper.S_pixel_clk);
         end
-        $display("D9_CONTROL_ACCEPTANCE PASS paths=%0d real YX-8 cards, exclusive ownership, SW7-before-key exit, zero CPU/table residue, main KEY0 ON; menu pixels=%0d",cases,pixel_checks);
+        $display("D10_CONTROL_ACCEPTANCE PASS paths=%0d real YX-8 cards, exclusive ownership, SW7-before-key exit, zero CPU/table residue, restored source page/selection, main KEY0 ON; menu pixels=%0d",cases,pixel_checks);
         $finish;
     end
     initial begin #1500000000;$fatal(1,"menu path timeout");end

@@ -1,0 +1,9 @@
+PCM_REQUEST frames=486 LBA=3002924 sectors=7594 expected_bytes=3888128
+PRELOAD_PROGRESS block=10 owned=1 init=1 busy=1 start=0 requests=          3 phase=94 count=161472 sdvalid=1 ready=1 diag=0000 model=          0 FIFO= 68/ 64
+CAPTURE_ACKCHK: PASS block=10 delayed/masked command valid, full PCM zero-diff, replays=0, no SD reset or repeated initialization
+PCM_FULLCHK: PASS frames=486 sectors=7594 payload=3888000 padded=3888128 bursts=121504/121504 words=972032/972032 zero-diff init_done=1 failed=0
+WRITE_RATIOCHK: PASS first_latency=31 max_latency=31/1000 cycles display_words=128
+- /workspace/yingxu-fpga/tb/tb_yxv_preload.v:182: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 235ms; walltime 33.338 s; speed 7.049 ms/s
+- Verilator: cpu 33.324 s on 1 threads; alloced 57 MB

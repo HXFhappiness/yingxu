@@ -176,6 +176,7 @@ module yx8_cart_soc_v2 #(
     reg        prog_we;
     reg [9:0]  prog_waddr;
     reg [23:0] prog_wdata;
+    reg  [9:0]  raddr_q; // declare before the program-RAM port connection
     wire [23:0] instr_r;
     wire [23:0] prog_dbg;
 
@@ -471,7 +472,6 @@ module yx8_cart_soc_v2 #(
     wire        up_done;
     wire [9:0]  b_raddr = up_done ? cpu_next_pc[9:0] : up_raddr;
     // 取指地址先打一拍：BRAM 输出再寄存一拍 => 总延迟确定 2 拍（与 CPU 的 S_WAIT 对齐）
-    reg  [9:0]  raddr_q;
     always @(posedge pix_clk) begin
         if (cart_pix_rst) raddr_q <= 10'd0;
         else         raddr_q <= b_raddr;

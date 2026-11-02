@@ -483,8 +483,8 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
                        (menu_override && !menu_ui && menu_hold_2s) ||
                        (menu_override && !video_failed_q && video_failed) ||
                        (!menu_override && menu_hold_2s);
-    // Only a stable physical DIP move may leave the virtual-switch menu.
-    // sw_eff/menu_pattern changes are deliberately outside this detector.
+    // Only a stable physical DIP move is reported by this observer.
+    // Menu ownership is sticky; this observer cannot clear it.
     (* async_reg="true" *) reg [7:0] menu_sw_meta,menu_sw_sync;
     reg [7:0] menu_sw_candidate;
     reg [19:0] menu_sw_count;
@@ -527,7 +527,10 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
     reg        tr_busy;          // high while a fade/load transition is running
     reg [3:0]  img_index;
     reg        key0_p, key1_p;
-    reg [23:0] key_lock;        // 330 ms lockout: one press = one step
+    reg [23:0] key_lock;        // 100 ms lockout: one press = one step
+    localparam [23:0] KEY_LOCK_CYCLES = 24'd5_000_000;
+    reg menu_return_page;
+    reg [2:0] menu_return_sel;
 
     // Auto carousel: one image every 5 s in photo mode. Any key press resets
     // the timer, so manual browsing never fights the automatic advance.
@@ -560,6 +563,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             menu_pattern <= MENU_PAT_PHOTO;
             menu_sel <= 3'd0;
             menu_page <= 1'b0;
+            menu_return_page <= 1'b0;menu_return_sel <= 3'd0;
             img_idx     <= (BOOT_MENU != 0) ? 4'd0:4'd1;
             img_restart <= 1'b0;
             key0_p      <= 1'b1;
@@ -579,26 +583,29 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             if (key_lock != 24'd0)
                 key_lock <= key_lock - 24'd1;
 
-            // SW6: reload the current image (must also re-arm the loader).
-            if (menu_real_change) begin
-                menu_override <= 1'b0; menu_page<=1'b0; img_idx <= 4'd1;
-            end
-            else if (menu_return) begin
-                menu_override <= 1'b1; menu_pattern <= MENU_PAT_PHOTO;
-                menu_sel <= 3'd0; menu_page<=1'b0; img_idx <= 4'd0;
-                key_lock <= 24'hFFFFFF;
+            // Once acquired, menu ownership is never cleared outside reset.
+            // BOOT_MENU=0 still follows physical pins until an explicit return.
+            if (menu_return) begin
+                menu_override <= 1'b1; menu_pattern <= MENU_PAT_PHOTO;img_idx <= 4'd0;
+                if(menu_ui && menu_page)begin
+                    // The game submenu itself returns to its main-menu item.
+                    menu_page<=1'b0;menu_sel<=3'd1;
+                end else begin
+                    menu_page<=menu_return_page;menu_sel<=menu_return_sel;
+                end
+                key_lock <= KEY_LOCK_CYCLES;
             end
             else if (!game_mode && !video_requested && !video_owned && !menu_ui && key_lock == 24'd0 && (sw6_sync[1] ^ sw6_p)) begin
-                key_lock    <= 24'hFFFFFF;
+                key_lock    <= KEY_LOCK_CYCLES;
                 img_restart <= 1'b1;
             end
             else if (!game_mode && !video_requested && !video_owned && !menu_ui && key_lock == 24'd0 && key1_p && !key_1) begin
-                key_lock    <= 24'hFFFFFF;
+                key_lock    <= KEY_LOCK_CYCLES;
                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd1 : (img_idx + 4'd1);
                 img_restart <= 1'b1;
             end
             else if (!game_mode && !video_requested && !video_owned && !menu_ui && key_lock == 24'd0 && key0_p && !key_0) begin
-                key_lock    <= 24'hFFFFFF;
+                key_lock    <= KEY_LOCK_CYCLES;
                 img_idx     <= (img_idx <= 4'd1) ? (IMG_COUNT - 1) : (img_idx - 4'd1);
                 img_restart <= 1'b1;
             end
@@ -606,7 +613,7 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             // holding the loader.
             else if (!game_mode && !video_requested && !video_owned && !menu_ui && key_lock == 24'd0 && !sd_dbg_busy &&
                      carousel_cnt == CAROUSEL_MAX) begin
-                key_lock    <= 24'hFFFFFF;
+                key_lock    <= KEY_LOCK_CYCLES;
                 img_idx     <= (img_idx == IMG_COUNT - 1) ? 4'd1 : (img_idx + 4'd1);
                 img_restart <= 1'b1;
             end
@@ -614,23 +621,27 @@ wire [15:0] wav_dbg_rate_w;     // G6diag
             // browse/carousel branches above are gated off while menu_ui is set.
             else if (menu_override && menu_ui &&
                      key_lock == 24'd0 && key1_p && !key_1) begin
-                key_lock <= 24'hFFFFFF;
+                key_lock <= KEY_LOCK_CYCLES;
                 if(menu_page)menu_sel <= (menu_sel==3'd1) ? 3'd0 : 3'd1;
                 else menu_sel <= (menu_sel == 3'd4) ? 3'd0 : menu_sel + 3'd1;
             end
             else if (menu_override && menu_ui &&
                      key_lock == 24'd0 && key0_p && !key_0) begin
-                key_lock <= 24'hFFFFFF;
+                key_lock <= KEY_LOCK_CYCLES;
                 if(menu_page)begin
+                    menu_return_page<=1'b1;menu_return_sel<=menu_sel;
                     if(menu_sel==0)menu_pattern<=MENU_PAT_GAME;
                     else menu_pattern<=MENU_PAT_PLANE;
-                end else case (menu_sel)
+                end else begin
+                    menu_return_page<=1'b0;menu_return_sel<=menu_sel;
+                    case (menu_sel)
                     3'd1: begin menu_page<=1'b1;menu_sel<=3'd0;end
                     3'd2: menu_pattern <= MENU_PAT_VIDEO;
                     3'd3: menu_pattern <= MENU_PAT_MUSIC;
                     3'd0: begin img_idx <= 4'd1; img_restart <= 1'b1; end
                     default: ;                       // 关于: v2
-                endcase
+                    endcase
+                end
             end
 
             // The timer only runs while idle in photo mode; every key press (which
