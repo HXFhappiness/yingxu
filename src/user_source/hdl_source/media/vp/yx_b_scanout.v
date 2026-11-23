@@ -102,6 +102,25 @@ module yx_b_scanout #(
     end
 
     // ---- 时序 + AXI-Stream（A 板文件零改动复用）----
+    // ★ P4：首窗完成（loaded）可能落在显示帧**中间**。此时 RD1 还没有做过任何
+    //   生效的 LOAD（复位期的 boot LOAD 落在 Sdram 控制器 POR 窗被丢弃，
+    //   control_interface: INIT_PER+200 内 LOAD_MODE 强制 0），取数核从陈旧
+    //   ADDR（=0，索引区）预取 → 该半帧像素无效（P4 实测 ax_errs=1024，
+    //   恰为首个 RD1 FIFO 深度 512 字=1024 像素的垃圾）。
+    //   语义修正：显示只在"首窗完成后的第一个帧边界"才对外出图——armed 之前
+    //   屏蔽 AXIS 三元组（HDMI 表现为首帧黑屏，与 A 板同语义）。armed 之后
+    //   的每个帧都由 vblank LOAD 重新对齐，判据无需任何放宽。
+    reg vb_seen;
+    always @(posedge pixel_clk or posedge pixel_rst) begin
+        if (pixel_rst)
+            vb_seen <= 1'b0;
+        else if (!loaded_w)
+            vb_seen <= 1'b0;
+        else if ((px_w == 11'd0) && (py_w == 10'd720))   // 首个 vblank = LOAD 拍
+            vb_seen <= 1'b1;
+    end
+    wire armed_w = vb_seen;
+
     wire [23:0] fb_rgb;
     video_source_test #(
         .HTOTAL  (1650),
@@ -145,16 +164,17 @@ module yx_b_scanout #(
         end
     end
 `ifdef VDLY
-    assign video_valid = vad[`VDLY];
+    assign video_valid = vad[`VDLY] && armed_w;
 `else
-    assign video_valid = vad[7];
+    assign video_valid = vad[7] && armed_w;
 `endif
     // user/last 保持源输出相位（实测与 valid 同时延迟会引入 4 拍错位——源内
     // user 与 active 存在相位差）。valid 与数据已逐像素对齐（tb_scanout:
     // best_sh=0 errs=0）。★ P5 接加密核时需按核的实际采样点校准 user/last
     // 相位（可由 VDLY 统一或对二者单独加延迟）。
-    assign video_user  = vsrc_user_w;
-    assign video_last  = vsrc_last_w;
+    // ★ P4：三元组统一再与 armed 相与（首窗完成→首个帧边界前不出图）。
+    assign video_user  = vsrc_user_w && armed_w;
+    assign video_last  = vsrc_last_w && armed_w;
     wire   vsrc_user_w, vsrc_valid_w, vsrc_last_w;
 
     // ★ 取数核坐标延迟（PIX_DLY 级移位寄存器）：源 2 级流水使 AXIS 流每行

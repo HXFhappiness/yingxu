@@ -18,6 +18,7 @@
 | `src/user_source/hdl_source/media/bmp/` | BMP 头解析 |
 | `src/user_source/hdl_source/audio_arc_calculate.v` | HDMI 音频包生成 |
 | `src/user_source/hdl_source/I2S_receiver.v`、`video_source_test.v`、`key_remove_shakes.v` | 示例外设 |
+| `src/eth_udp_rx_gmii.v`、`src/ip_checksum.v`、`src/crc32_d8.v`、`src/rgmii_to_gmii.v` | 以太网 UDP 接收（GMII/RGMII 头解析+CRC/校验和）；B 板 P4 入口复用，`media/vp/yx_b_eth_rx.v` 在其上封装 CDC/包级提交 |
 
 ## 自研（本项目原创）
 

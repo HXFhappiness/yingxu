@@ -49,7 +49,7 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key')]
+    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth')]
     [string]$Entry
 )
 
@@ -141,6 +141,44 @@ $Entries['bboard_key'] = @{
     # fetch v5（cp 分时）对 KEY 流零扰动，裕量不变，WD 提至与 sys 同档消除边缘风险。
     PlusArgs = @('+STREAM=out\vp_720_key.yxv2', '+WD=12000000')
     Sources  = $Entries['bboard_sys'].Sources
+}
+
+# ---- 入口 4: eth_rx（P4 以太网入口独立验收，快速迭代）----
+# GMII 帧发生器 → yx_b_eth_rx → 逐字节对拍源文件。
+# 用例：坏 CRC 包整包丢弃、错端口包被厂商核丢帧、广播 MAC 接收、消费者背压。
+$Entries['eth_rx'] = @{
+    Defines  = @()
+    Stream   = 'out\vp_720_5f.yxv2'
+    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2')
+    Sources  = @(
+        'tb\tb_eth_rx.v',
+        "$VP\yx_b_eth_rx.v",
+        'src\eth_udp_rx_gmii.v',
+        'src\ip_checksum.v',
+        'src\crc32_d8.v',
+        'src\rgmii_to_gmii.v',
+        "$BSHM\BUFG_0.v",
+        "$BSHM\IDDR_0.v"
+    )
+}
+
+# ---- 入口 5: bboard_sys_eth（P4 全链路：UDP 码流 → 解码/渲染/扫描 → HDMI AXIS）----
+# 判据与 bboard_sys 完全一致（golden/igold/axerr/…）+ 传输层零丢包。
+# WD 16M：以太网按消费能力节流，总拍数略高于文件直推。
+$Entries['bboard_sys_eth'] = @{
+    Defines  = @('BBOARD_SYS', 'BBOARD_ETH')
+    Stream   = 'out\vp_720_5f.yxv2'
+    Golden   = $true
+    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=16000000')
+    Sources  = $Entries['bboard_sys'].Sources + @(
+        "$VP\yx_b_eth_rx.v",
+        'src\eth_udp_rx_gmii.v',
+        'src\ip_checksum.v',
+        'src\crc32_d8.v',
+        'src\rgmii_to_gmii.v',
+        "$BSHM\BUFG_0.v",
+        "$BSHM\IDDR_0.v"
+    )
 }
 
 $Cfg = $Entries[$Entry]

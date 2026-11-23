@@ -39,8 +39,14 @@ module tb_yxvp_bboard;
     reg rst_n = 1'b0;
 
     // ---- 字节流 ----
+`ifdef BBOARD_ETH
+    // 以太网入口模式（P4）：stream 由 yx_b_eth_rx 驱动（见下方 ETH 块）
+    wire       s_valid;
+    wire [7:0] s_data;
+`else
     reg        s_valid = 1'b0;
     reg  [7:0] s_data  = 8'h00;
+`endif
     wire       s_ready;
 
     // ---- 索引 SDRAM 行为模型 ----
@@ -120,9 +126,170 @@ module tb_yxvp_bboard;
         .DRAM_CLK(DRAM_CLK)
     );
 
+    // ================= 以太网 UDP 入口（P4，-DBBOARD_ETH）=================
+    // 数据源 = GMII 帧 → yx_b_eth_rx（125M→100M CDC + 包级提交）→ 顶层 stream。
+    // 判据与 bboard_sys 完全一致（golden/igold/axerr/…），传输层追加：
+    // 全部包 CRC 正确、零丢包（ethdrop=0、ethok=包数）。
+`ifdef BBOARD_ETH
+    localparam [47:0] ETH_LOCAL_MAC  = 48'h00_0a_35_02_00_01;
+    localparam [31:0] ETH_LOCAL_IP   = 32'hc0_a8_00_64;    // 192.168.0.100
+    localparam [15:0] ETH_LOCAL_PORT = 16'd5000;
+    localparam [47:0] ETH_SRC_MAC    = 48'h00_0a_35_01_fe_c0;
+    localparam [31:0] ETH_SRC_IP     = 32'hc0_a8_00_02;    // 192.168.0.2
+    localparam [15:0] ETH_SRC_PORT   = 16'd5000;
+
+    reg gmii_clk = 1'b0;
+    always #4 gmii_clk = ~gmii_clk;            // 125M PHY 时钟（与 100M 异步）
+
+    reg  [7:0] gmii_rxd  = 8'h00;
+    reg        gmii_rxdv = 1'b0;
+
+    wire        eth_sv;
+    wire [7:0]  eth_sd;
+    wire [15:0] eth_ok_cnt, eth_drop_cnt, eth_room;
+    wire [31:0] eth_byte_cnt;
+
+    assign s_valid = eth_sv;
+    assign s_data  = eth_sd;
+
+    yx_b_eth_rx #(.USE_RGMII(0), .FIFO_AW(13)) u_ethrx (
+        .clk100       (clk100),
+        .rst_n        (rst_n),
+        .local_mac    (ETH_LOCAL_MAC),
+        .local_ip     (ETH_LOCAL_IP),
+        .local_port   (ETH_LOCAL_PORT),
+        .gmii_rx_clk  (gmii_clk),
+        .gmii_rxd     (gmii_rxd),
+        .gmii_rxdv    (gmii_rxdv),
+        .rgmii_rx_clk (1'b0),
+        .rgmii_rxd    (4'd0),
+        .rgmii_rxdv   (1'b0),
+        .stream_valid (eth_sv),
+        .stream_data  (eth_sd),
+        .stream_ready (s_ready),
+        .pkt_ok_cnt   (eth_ok_cnt),
+        .pkt_drop_cnt (eth_drop_cnt),
+        .byte_cnt     (eth_byte_cnt),
+        .fifo_room    (eth_room),
+        .rx_clk125    ()
+    );
+
+    // ---- 发送侧 FCS（复用厂商 CRC 件，与 RX 同口径）----
+    reg  [7:0]  e_dat  = 8'h00;
+    reg         e_en   = 1'b0;
+    reg         e_init = 1'b0;
+    wire [31:0] e_crcv;
+    crc32_d8 u_ethcrc (
+        .clk        (gmii_clk),
+        .reset_p    (1'b0),
+        .data       (e_dat),
+        .crc_init   (e_init),
+        .crc_en     (e_en),
+        .crc_result (e_crcv)
+    );
+
+    reg [7:0] efb [0:2047];
+
+    task e_gmii_byte(input [7:0] b);
+    begin
+        @(negedge gmii_clk);
+        gmii_rxdv = 1'b1;
+        gmii_rxd  = b;
+    end
+    endtask
+
+    task e_gmii_idle(input integer n);
+        integer i;
+        begin
+            @(negedge gmii_clk);
+            gmii_rxdv = 1'b0;
+            gmii_rxd  = 8'h00;
+            for (i = 0; i < n; i = i + 1) @(negedge gmii_clk);
+        end
+    endtask
+
+    integer e_ipid = 0;
+
+    task e_send_pkt(input integer off, input integer len);
+        integer i;
+        reg [15:0] tot, id16, udplen;
+        reg [31:0] suma, sumb;
+        reg [15:0] sumc, ipck;
+        reg [31:0] fcs;
+        begin
+            tot    = 16'd20 + 16'd8 + len[15:0];
+            id16   = e_ipid[15:0]; e_ipid = e_ipid + 1;
+            udplen = 16'd8 + len[15:0];
+
+            for (i = 0; i < 6; i = i + 1) efb[i]   = ETH_LOCAL_MAC >> (8*(5-i));
+            for (i = 0; i < 6; i = i + 1) efb[6+i] = ETH_SRC_MAC   >> (8*(5-i));
+            efb[12] = 8'h08; efb[13] = 8'h00;
+            efb[14] = 8'h45; efb[15] = 8'h00;
+            efb[16] = tot[15:8]; efb[17] = tot[7:0];
+            efb[18] = id16[15:8]; efb[19] = id16[7:0];
+            efb[20] = 8'h40; efb[21] = 8'h00;
+            efb[22] = 8'd64; efb[23] = 8'h11;
+            suma = 32'h0000_4500 + tot + id16 + 32'h0000_4000 +
+                   32'h0000_4011 + ETH_SRC_IP[31:16] + ETH_SRC_IP[15:0] +
+                   ETH_LOCAL_IP[31:16] + ETH_LOCAL_IP[15:0];
+            sumb = suma[31:16] + suma[15:0];
+            sumc = sumb[16] + sumb[15:0];
+            ipck = ~sumc;
+            efb[24] = ipck[15:8]; efb[25] = ipck[7:0];
+            for (i = 0; i < 4; i = i + 1) efb[26+i] = ETH_SRC_IP   >> (8*(3-i));
+            for (i = 0; i < 4; i = i + 1) efb[30+i] = ETH_LOCAL_IP >> (8*(3-i));
+            efb[34] = ETH_SRC_PORT[15:8];   efb[35] = ETH_SRC_PORT[7:0];
+            efb[36] = ETH_LOCAL_PORT[15:8]; efb[37] = ETH_LOCAL_PORT[7:0];
+            efb[38] = udplen[15:8]; efb[39] = udplen[7:0];
+            efb[40] = 8'h00; efb[41] = 8'h00;
+            for (i = 0; i < len; i = i + 1) efb[42+i] = smem[off+i];
+
+            // FCS：init/en 撤除必须跨过时钟沿的 delta（#1），否则与 DUT
+            // always 块竞争导致 CRC 寄存器不更新（P4 实测坑）。
+            e_init = 1'b1; @(posedge gmii_clk); #1; e_init = 1'b0;
+            for (i = 0; i < 42 + len; i = i + 1) begin
+                e_dat = efb[i]; e_en = 1'b1;
+                @(posedge gmii_clk);
+            end
+            #1; e_en = 1'b0;
+            @(posedge gmii_clk); #1;
+            fcs = e_crcv;
+
+            for (i = 0; i < 7; i = i + 1) e_gmii_byte(8'h55);
+            e_gmii_byte(8'hD5);
+            for (i = 0; i < 42 + len; i = i + 1) e_gmii_byte(efb[i]);
+            e_gmii_byte(fcs[7:0]);
+            e_gmii_byte(fcs[15:8]);
+            e_gmii_byte(fcs[23:16]);
+            e_gmii_byte(fcs[31:24]);
+            e_gmii_idle(12);
+        end
+    endtask
+
+    reg     eth_tx_done = 1'b0;
+    integer e_npkt, e_pi, e_off, e_len;
+
+    // 发送进程：等顶层 INIT 完成（LOAD 不落控制器 POR 窗）后按 FIFO room 节流
+    initial begin : ethsrc
+        wait (init_done === 1'b1);
+        repeat (100) @(negedge gmii_clk);
+        e_npkt = (slen + 1023) / 1024;
+        for (e_pi = 0; e_pi < e_npkt; e_pi = e_pi + 1) begin
+            e_off = e_pi * 1024;
+            e_len = (e_off + 1024 <= slen) ? 1024 : (slen - e_off);
+            while (eth_room < (e_len + 128)) @(negedge gmii_clk);
+            e_send_pkt(e_off, e_len);
+            if (e_pi % 64 == 0 || e_pi == e_npkt-1)
+                $display("ETHPKT %0d/%0d off=%0d len=%0d ok=%0d drop=%0d",
+                         e_pi, e_npkt-1, e_off, e_len, eth_ok_cnt, eth_drop_cnt);
+        end
+        eth_tx_done = 1'b1;
+        $display("ETHTX done pkts=%0d bytes=%0d", e_npkt, slen);
+    end
+`endif
+
     // ================= 断言状态 =================
-    integer scan_errs = 0, frames_done = 0, bands_scanned = 0;
-    integer stall2_cnt = 0, total_cnt = 0;
+    integer scan_errs = 0, frames_done = 0, bands_scanned = 0;    integer stall2_cnt = 0, total_cnt = 0;
     integer k, ofs, expw, gotw;
     integer disp_pop_prev = 0, disp_samp = 0;   // （旧显示判据遗留名，退役）
 
@@ -148,6 +315,7 @@ module tb_yxvp_bboard;
     integer gerr_first_b [0:5];
     // 收口判定用：各判据布尔结果 + X/Z 违例计数 + mem 落写检查
     integer pd, pf, pb, pg, ps, px, xz_errs, pig, pce, pcp, phe, pax, pmu, pst, pm;
+    integer peth;   // P4 传输层判据（仅 -DBBOARD_ETH 有实质）
     integer nx_idx, nx_fb, mx;
     // Task1: u_ixwr 入口计数
     integer ivc = 0, gnc = 0, ldc = 0, psc = 0, fwc = 0;
@@ -251,7 +419,12 @@ module tb_yxvp_bboard;
                 $display("PATCH %0d: blk=%0d idx=%0d", patch_cnt, u_top.ix_blk, u_top.ix_idx);
             end
             // 字节流探针：入口 vs 解析器实际消费的前 12 字节
-            if (sent < 12 && s_ready) $display("FEED %0d: %02x", sent, s_data);
+            // ★ 用独立计数：ETH 模式下 sent 恒 0（由 eth 驱动），若不计数会每拍
+            //   打印一行刷爆日志（P4 实测 2.4MB/秒）。只在 valid 时计数。
+            if (feed_cnt < 12 && s_ready && s_valid) begin
+                feed_cnt = feed_cnt + 1;
+                $display("FEED %0d: %02x", feed_cnt, s_data);
+            end
         end
     end
     // 码本探针：hdr_ok 沿转储 book[0..7]（期望 0,1,2,3,4,5,6,7）
@@ -556,12 +729,14 @@ module tb_yxvp_bboard;
     localparam SMAX = 4*1024*1024;
     reg [7:0] smem [0:SMAX-1];
     integer slen, soff, sent, payload_len, sf;
+    integer feed_cnt = 0;      // FEED 探针独立计数（ETH 模式 sent 恒 0）
     reg [255:0] path;
     integer hdr_cb;
 
     // ================= 主控 =================
     integer wd = 12000000;
     integer cyc = 0;
+    reg     init_done = 1'b0;    // 顶层 SDRAM 初始化完成（ETH 发送进程的门）
     initial begin
         if (!$value$plusargs("STREAM=%s", path)) begin $display("TB-ERR: +STREAM 必需"); $finish; end
         if (!$value$plusargs("WD=%d", wd)) wd = 12000000;
@@ -598,18 +773,30 @@ module tb_yxvp_bboard;
         wait (u_top.u_sdram.sdram_pll1.extlock === 1'b1);
         #250000;   // INIT_PER=24000 clk（100M）+ 裕量
         $display("INIT done t=%0t", $time);
+        init_done = 1'b1;
 
         // 推流：valid 高直至 ready 采样（带拍数上限，避免 accept 长期为低时死等）
         sent = 0;
+`ifndef BBOARD_ETH
         s_data = smem[soff];
         s_valid = 1'b1;
+`endif
+`ifdef BBOARD_ETH
+        while (!eth_tx_done && cyc < wd) begin
+`else
         while (sent < payload_len && cyc < wd) begin
+`endif
             @(posedge clk100);
             cyc = cyc + 1;
+`ifdef BBOARD_ETH
+            sent = eth_byte_cnt;      // 观测：已转发字节数（POLL 显示用）
+`endif
             if (s_ready) begin
+`ifndef BBOARD_ETH
                 sent = sent + 1;
                 if (sent < payload_len) s_data <= smem[soff + sent];
                 else s_valid <= 1'b0;
+`endif
             end
             if (frame_done_vq) begin
                 frames_done = frames_done + 1;
@@ -619,7 +806,7 @@ module tb_yxvp_bboard;
                          u_top.disp_pass, commit_no, rendered_no,
                          u_top.u_band.st, u_top.sc_busy);
             end
-            if (cyc % 1000000 == 0) begin
+            if (cyc % 250000 == 0) begin
                 $display("POLL t=%0d sent=%0d commit=%0d rno=%0d ixph=%0d act=%b busy=%b%b pf=%0d prno=%0d rdrq=%b | band: st=%0d b=%0d bx=%0d f=%b fw=%b pd=%0d | fet: dr=%b ov=%b cap=%b lr=%b emp=%b re=%b dvl=%b rl=%b bm1=%b we=%b ab=%0d | scan: st=%0d cur=%0d pv=%b push=%0d drn=%0d | ixwr: st=%0d gnt=%b pf_full=%b | ctl: msk=%b mwr=%b ST=%0d ack=%b rpd=%b rreq=%b exw=%b exr=%b dwa=%b dra=%b | w2f: full=%b occ=%0d af=%b wp=%0d rp=%0d rst=%b cw=%b | f1: AE=%0d occ=%0d wp=%0d rp=%0d | rd1f: af=%b emp=%b wb=%0d rbw=%0d ld=%b ldX=%b afX=%b w1=%b r1=%b | ixw2: st=%0d vld=%b gnt=%b en=%b ld=%b full=%b dc=%0d win=%b wn=%b | cnt: ivc=%0d gnc=%0d ldc=%0d psc=%0d fwc=%0d",
                          cyc, sent, commit_no, u_top.rno_done, u_top.u_ixbuf.phase,
                          u_top.u_ixbuf.act, u_top.u_ixbuf.busy[1], u_top.u_ixbuf.busy[0],
@@ -682,9 +869,12 @@ module tb_yxvp_bboard;
                          u_top.REAL_IX.u_ixfetch.cp_quiet,
                          cp_deliv, cp_disc, cp_stale, cp_loads);
 `endif
+                $fflush;      // 实时落盘（长跑时 POLL/FRAME 可即时观测）
             end
         end
+`ifndef BBOARD_ETH
         s_valid <= 1'b0;
+`endif
 
         // 等渲染/扫描收尾 + 显示至少一整有效遍（P3：AXIS 对拍覆盖 720 行）
         // ★ 收尾条件：等 5 帧渲染完成（frames_done*BH），并保证显示已覆盖
@@ -778,6 +968,14 @@ module tb_yxvp_bboard;
         phe = (u_top.hdr_err_w !== 1'b1);
         // P3 显示判据：AXIS 内容对拍 + 覆盖 ≥1 有效遍 + 写读窗互斥 + RD1 供数
         pax = (ax_errs == 0) && (ax_lines >= 720);
+`ifdef BBOARD_ETH
+        // P4 传输层判据：全部包 CRC 正确（ok=包数）、零丢包、转发的字节数
+        // 必须等于源文件长度（slen）。
+        peth = (eth_ok_cnt == e_npkt) && (eth_drop_cnt == 0) &&
+               (eth_byte_cnt == slen);
+`else
+        peth = 1'b1;
+`endif
         pmu = (mutex_errs == 0);
         // disp_stall 含消隐期冲洗（正常），且已被 skid 吸收——ax_errs=0 是
         // 更强的逐像素证据，故 stall 仅作观测，不进 AND 链。
@@ -798,7 +996,13 @@ module tb_yxvp_bboard;
                  ax_lines, (ax_lines >= 720)?"OK":"BAD",
                  mutex_errs, pmu?"OK":"BAD",
                  disp_stall_w, pst?"OK":"BAD");
-        $display("=== TB-SUMMARY: %s ===", (pd && pf && pb && pg && ps && px && pm && pig && pce && pcp && phe && pax && pmu && pst) ? "ALL PASS" : "FAIL");
+`ifdef BBOARD_ETH
+        $display("GATE-ETH ok=%0d(want %0d:%s) drop=%0d(want 0:%s) bytes=%0d(want %0d:%s)",
+                 eth_ok_cnt, e_npkt, (eth_ok_cnt == e_npkt)?"OK":"BAD",
+                 eth_drop_cnt, (eth_drop_cnt == 0)?"OK":"BAD",
+                 eth_byte_cnt, slen, (eth_byte_cnt == slen)?"OK":"BAD");
+`endif
+        $display("=== TB-SUMMARY: %s ===", (pd && pf && pb && pg && ps && px && pm && pig && pce && pcp && phe && pax && pmu && pst && peth) ? "ALL PASS" : "FAIL");
         $display("DECFRAMES=%0d", dec_frames); $display("IXWR ivc=%0d gnc=%0d psc=%0d ldc=%0d fwc=%0d", ivc, gnc, psc, ldc, fwc); $display("GOLDEN=%0d", golden_errs);
         $display("CNT: frames=%0d bands=%0d scan_errs=%0d ax_errs=%0d ax_beats=%0d ax_lines=%0d disp_pass=%0d disp_stall=%0d vbl_loads=%0d stall2=%0d/%0d (%0d%%)",
                  frames_done, bands_scanned, scan_errs, ax_errs, ax_beats, ax_lines,
