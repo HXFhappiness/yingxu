@@ -47,7 +47,12 @@ module yx_vp_ixdec #(
     localparam S_HDR0 = 4'd0, S_HDR1 = 4'd1, S_HDR2 = 4'd2, S_HDR3 = 4'd3, S_HDR4 = 4'd4,
                S_KEY  = 4'd5, S_MAP  = 4'd6, S_WALK = 4'd7, S_DIDX = 4'd8, S_FD = 4'd9;
 
-    reg map_ram [0:131071];
+    // ★ P5：改变块位图。原来声明成 131072 位（1 bit × 128K），但真实索引范围
+    //   只有 NB 个块：写侧 mcnt*8+k（mcnt < MB=NB/8）→ 最大 NB-1；读侧 blk < NB。
+    //   多出来的 7 万多 bit 在 TD 里被算成"BRAM 需求"，把总需求推过 64 块的限，
+    //   导致 TD 把 `ln`（行缓冲）降级成分布式 RAM（SYN-2599），反过来吃掉两万
+    //   LUT。按真实范围声明即可，功能零变化。
+    reg map_ram [0:NB-1];
 
     reg [3:0]  state;
     reg        kind_r;
@@ -65,6 +70,7 @@ module yx_vp_ixdec #(
                      (state == S_MAP)  | (state == S_DIDX);
     // 发射态（S_KEY/S_DIDX）skid 满时不准 ready：否则生产者推进而 FSM 不消费，字节蒸发
     wire emit_state = (state == S_KEY) | (state == S_DIDX);
+    wire q_room;                           // skid 余量（赋值见下方 skid FIFO 处）
     assign stream_ready = want_byte & (!emit_state | q_room);
     wire get = want_byte & stream_valid;
 
@@ -79,7 +85,7 @@ module yx_vp_ixdec #(
     wire q_push  = fsm_we & push_ok;
     wire q_pop   = out_v & ix_rdy;
     wire q_load  = !out_v && !q_pop && (q_cnt != 5'd0);
-    wire q_room  = ((q_cnt + {4'b0, out_v}) <= 5'd14);   // FSM 余量检查（含 1 拍偏斜余量）
+    assign q_room = ((q_cnt + {4'b0, out_v}) <= 5'd14);   // FSM 余量检查（含 1 拍偏斜余量）
     wire q_empty = ((q_cnt + {4'b0, out_v}) == 5'd0);    // 全链清空
 
     always @(posedge clk or negedge rst_n) begin

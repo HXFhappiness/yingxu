@@ -356,7 +356,8 @@ endmodule
 //     只会偏大 → full 提前，安全方向）；
 //   · 读侧是"保持型"接口：rd_valid=1 时 rd_data 有效且保持，rd_en 消费该字节；
 //     内部预取使稳态可达 1 字节/拍（无取数气泡）；
-//   · 存储为简单双口（写 125M / 读 100M），TD 可推断为真双时钟 BRAM。
+//   · 存储为简单双口（写 125M / 读 100M），读口单一地址 + 寄存输出
+//     → TD 推断为真双时钟 BRAM（P5-P1；旧版双读地址导致退化为分布式 RAM）。
 // =========================================================================
 module yx_b_afifo #(
     parameter WIDTH = 8,
@@ -394,11 +395,17 @@ module yx_b_afifo #(
     reg  [PT-1:0] wbin, wgray;
     reg  [AW-1:0] wptr;
     reg  [PT-1:0] rgray_w1, rgray_w2;
+    // ★ 格雷→二进制单独打一拍：g2b 是 PT-1 级串行 XOR（14 位 → 13 级），
+    //   原来与"减法算占用 + 比较出 full"串成一条 11.3ns 路径，125MHz（8ns）
+    //   下违例 -3.4ns（实测 u_bfifo/rgray_w2 → skip_pkt，ADDER=5）。
+    //   多打一拍照样安全：rbin_w 更滞后 → 占用只会估得更大 → full 更早，
+    //   方向保守（与"读指针同步滞后"同一性质），不会溢出。
+    reg  [PT-1:0] rbin_w_q;
     wire [PT-1:0] rbin_w = g2b(rgray_w2);
     wire [PT-1:0] wbin_nxt = wbin + 1'b1;
     wire [PT-1:0] wgray_nxt = wbin_nxt ^ (wbin_nxt >> 1);
 
-    assign wr_occ  = wbin - rbin_w;
+    assign wr_occ  = wbin - rbin_w_q;
     assign wr_full = (wr_occ >= DEPTH[PT-1:0]);
 
     // ---------------- 读域 ----------------
@@ -418,6 +425,11 @@ module yx_b_afifo #(
     assign rd_valid = dvalid_r;
     assign rd_empty = (occ_r == {PT{1'b0}}) && !dvalid_r;
 
+    // ★ 存储读地址（唯一）：消费拍预取下一字，其余拍保持当前字。
+    //   = pop ? rptr+1 : rptr —— 写成加法正好省掉一个地址多路器。
+    wire                   pop    = dvalid_r && rd_en;
+    wire [AW-1:0]          mem_ra = rptr + {{(AW-1){1'b0}}, pop};
+
     always @(posedge wr_clk or posedge wr_rst) begin
         if (wr_rst) begin
             wbin <= {PT{1'b0}};
@@ -425,9 +437,11 @@ module yx_b_afifo #(
             wptr <= {AW{1'b0}};
             rgray_w1 <= {PT{1'b0}};
             rgray_w2 <= {PT{1'b0}};
+            rbin_w_q <= {PT{1'b0}};
         end else begin
             rgray_w1 <= rgray;
             rgray_w2 <= rgray_w1;
+            rbin_w_q <= g2b(rgray_w2);
             if (wr_en && !wr_full) begin
                 mem[wptr] <= wr_data;
                 wptr  <= wptr + 1'b1;
@@ -449,20 +463,22 @@ module yx_b_afifo #(
         end else begin
             wgray_r1 <= wgray;
             wgray_r2 <= wgray_r1;
-            if (dvalid_r && rd_en) begin
+            // ★ P5-P1：存储读口收成"唯一地址 + 无条件同步读"。
+            //   原实现是两个分支各读一个地址（消费拍读 mem[rptr_nxt] 预取、
+            //   其余拍读 mem[rptr]），综合器无法把 mem 映射成 BRAM，退化成
+            //   ~15.7K LUT 分布式逻辑 —— B 板 LUT 爆容(248%)与 125M 域
+            //   "SEQ+4×ADDER+DRAM" -2652ps 违例的共同根因。
+            //   合并为 mem_ra = 消费则 +1 否则不动（= pop ? rptr+1 : rptr），
+            //   读出仍是寄存输出、每拍无气泡，逐拍语义与旧版完全一致。
+            dout_r <= mem[mem_ra];
+            if (pop) begin
                 // 消费当前字节；同时预取下一个（≥2 字节时无气泡）
                 rbin  <= rbin_nxt;
                 rgray <= rgray_nxt;
                 rptr  <= rptr_nxt;
-                if (occ_r > {{(PT-1){1'b0}}, 1'b1}) begin
-                    dout_r   <= mem[rptr_nxt];
-                    dvalid_r <= 1'b1;
-                end else begin
-                    dvalid_r <= 1'b0;
-                end
-            end else if (!dvalid_r && (occ_r != {PT{1'b0}})) begin
-                dout_r   <= mem[rptr];
-                dvalid_r <= 1'b1;
+                dvalid_r <= (occ_r > {{(PT-1){1'b0}}, 1'b1});
+            end else if (!dvalid_r) begin
+                dvalid_r <= (occ_r != {PT{1'b0}});
             end
         end
     end

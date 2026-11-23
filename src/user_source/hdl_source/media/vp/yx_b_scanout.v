@@ -69,6 +69,12 @@ module yx_b_scanout #(
     wire win_show_w = win_sync[1];
     wire loaded_w   = fwin_sync[1];
 
+    // 源时序坐标与 AXIS 原始三元组（u_vsrc 输出；先声明后引用）
+    wire [10:0] px_w;
+    wire [9:0]  py_w;
+    wire        pa_w;
+    wire        vsrc_user_w, vsrc_valid_w, vsrc_last_w;
+
     // ---- 显示窗基址：vblank 更新（与取数核的 vb_start LOAD 同沿对齐）----
     reg [20:0] i_base_r;
     always @(posedge pixel_clk or posedge pixel_rst) begin
@@ -84,9 +90,6 @@ module yx_b_scanout #(
     assign win_show = (i_base_r >= (FB_WIN0 + FB_TOTAL)) ? 1'b1 : 1'b0;
 
     // ---- 遥测 ----
-    wire [10:0] px_w;
-    wire [9:0]  py_w;
-    wire        pa_w;
     wire        frame_tick = (px_w == 11'd0) && (py_w == 10'd0);
     wire        pair_adv   = pa_w && px_w[0];
     always @(posedge pixel_clk or posedge pixel_rst) begin
@@ -175,7 +178,6 @@ module yx_b_scanout #(
     // ★ P4：三元组统一再与 armed 相与（首窗完成→首个帧边界前不出图）。
     assign video_user  = vsrc_user_w && armed_w;
     assign video_last  = vsrc_last_w && armed_w;
-    wire   vsrc_user_w, vsrc_valid_w, vsrc_last_w;
 
     // ★ 取数核坐标延迟（PIX_DLY 级移位寄存器）：源 2 级流水使 AXIS 流每行
     //   吞首 2 拍——延迟取数坐标使弹出的字对准显示位置。

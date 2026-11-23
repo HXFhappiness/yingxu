@@ -13,8 +13,14 @@
 //   帧边界：最后一带完成后 frame_wait 暂停渲染，其 ack 到达才回 frame_done
 //   并接挂起帧/回 IDLE（帧号语义与深度 1 版本一致）。
 //
-// ★ 扫描读端口：scan_ra（行缓冲 14 位地址 {半区,行,列}）→ 下一拍 scan_rd 出数。
-//   渲染写与扫描读分属不同半区，真双口 BRAM 映射（仿真 reg 数组双读）。
+// ★ 扫描读端口：scan_ra（行缓冲线性像素地址 {半区,行[1:0],列[10:0]}）→ 下一拍
+//   scan_rd32 出 32bit 打包字 {奇像素,偶像素}。
+//   ★ P5-P0：行缓冲按 32bit 打包（每字 = 相邻偶/奇两个 RGB565），于是存储退化为
+//   "1 写口 + 1 读口"的简单双口 —— TD 可推断 BRAM。此前是 16bit 双读口组合读，
+//   综合器无法映射 BRAM，退化成 ~20K LUT 分布式逻辑（B 板 LUT 爆容的主因之一）。
+//   打包不是妥协：扫描端消费的本来就是 32bit 打包字（sc_wdata={奇,偶}），
+//   打包后端口从 3 个减到 2 个，语义更直。渲染写与扫描读分属不同半区，
+//   永不访问同一地址，简单双口 BRAM 安全。
 //
 // 帧节拍：swap_done（新帧提交）后开始渲染 frame=commit_no；整帧渲染完回 IDLE
 // 等下一帧（行缓冲保持内容，扫描端可继续重复显示）。渲染中到来的 swap_done
@@ -42,10 +48,8 @@ module yx_vp_band #(
     input  wire [15:0] rd_data,
 
     // ---- 扫描读端口（行缓冲 → SDRAM 扫描入帧 / TB 比对）----
-    input  wire [13:0] scan_ra,         // {band_half, row[1:0], col[9:0]}
-    output wire [15:0] scan_rd,         // ★ 组合读（仿真验收版）
-    input  wire [13:0] scan_rb,         // 第二读口：偶/奇像素同拍读出（打包 32bit 字）
-    output wire [15:0] scan_rd_b,       // 板上实现：ln 双副本 BRAM（渲染写×2/扫描读×2）
+    input  wire [13:0] scan_ra,         // 线性像素地址 {band_half, row[1:0], col[10:0]}
+    output wire [31:0] scan_rd32,       // ★ 同步读：{奇像素, 偶像素}，地址后 1 拍出数
     input  wire        book_we,         // ★ 码本写口（板上头解析装载；仿真绑 0）
     input  wire [13:0] book_wa,
     input  wire [15:0] book_wd,
@@ -56,10 +60,14 @@ module yx_vp_band #(
     output reg  [8:0]  band_no,         // band_done 拍上的完成带号
     input  wire        band_ack,        // 扫描端已消费该带（比对/显示完）
     output reg         frame_done,      // 1 clk 脉冲：整帧渲染完成（= render_ack）
-    output reg         frame_start      // ★ 1 clk 脉冲：渲染器启动新帧（IDLE 直进/
+    output reg         frame_start,     // ★ 1 clk 脉冲：渲染器启动新帧（IDLE 直进/
                                        //   接挂起帧拍；此拍 base_l 已锁存新窗基址，
                                        //   取带器 reload 依此触发——旧 frame_done 拍
                                        //   base_l 还是旧窗，取带会读旧窗数据撕裂）
+    // ---- P5：原来由顶层层次引用读取的两个内部状态，改为显式输出 ----
+    //   TD 不支持层次引用（最小用例实测 HDL-8007）。语义与原层次引用逐位一致。
+    output wire [AW-1:0] frame_base,    // = base_l：本帧索引基址（取带窗 = frame_base+NB）
+    output wire [1:0]    pend_cnt_o     // = pend_cnt：已渲染未 ack 带数（深度 2 观测）
 );
     localparam BW = W/4;
     localparam BH = H/4;
@@ -73,14 +81,44 @@ module yx_vp_band #(
     // 解析装载发生在渲染开始前）
     always @(posedge clk) if (book_we) book[book_wa] <= book_wd;
 
-    // ---- 行缓冲（8 行 × W 像素；2 带 ping-pong）----
-    reg [15:0] ln [0:8*W-1];
-    // 扫描读口（与渲染写分属不同半区，双口安全；双口为打包 32bit 字服务）
-    // ★ 组合读（仿真验收版）：推数拍本拍地址本拍数据，full 停推时地址冻结
-    //   无重复无丢失。板上 BRAM 为同步读，需推数拍对齐流水（P3/P5 适配）。
-    //   reg 数组组合索引在仿真中行为正确，不产生 X。
-    assign scan_rd   = ln[scan_ra];
-    assign scan_rd_b = ln[scan_rb];
+    // ---- 行缓冲（8 行 × W 像素；2 带 ping-pong；32bit 打包字）----
+    // 字地址 = 像素地址/2（行 × W + 列，W 为偶数 → 整除）
+    reg [15:0] pix_hold;                // 打包用：块内偶像素暂存（★ 必须 16 位）
+
+    // 扫描读端口：单地址、无条件、同步读
+    // ★ 渲染写口（下方 WRITE 态）与扫描读口永不访问同一地址（分属不同半区），
+    //   故单写单读的读写冲突行为与本设计无关。
+    // ★★ 显式例化厂商 BRAM（IMPLEMENT="32K"）。为什么不用 reg 数组：
+    //   本设计 BRAM 需求 ≈ 740 Kbit，而 9Kb 池只有 64×9Kbit = 590 Kbit →
+    //   TD 在资源受限时把 book/ln32 一律踢成分布式 RAM（综合日志
+    //   SYN-2599 "will be implemented by dram for resource limit"），
+    //   仅 ln32+book 就吃掉 ~30K LUT。而器件另有 16 块 32Kb 块（64 KB），
+    //   推断路径永远拿不到它，必须显式例化原语并指定 IMPLEMENT="32K"。
+    //   本模块例化：ln32 = 8192×32 → 8 块 32Kb。
+    wire [31:0] scan_rd32_w;
+    EG_LOGIC_BRAM #(
+        .DATA_WIDTH_A (32),
+        .DATA_WIDTH_B (32),
+        .ADDR_WIDTH_A (13),              // 8192 字（≥ 4*W=5120，补到 2 的幂）
+        .ADDR_WIDTH_B (13),
+        .BYTE_ENABLE  (0),
+        .MODE         ("DP"),            // A 写 / B 读
+        .REGMODE_A    ("NOREG"),
+        .REGMODE_B    ("NOREG"),         // 同步读：地址打入 → 下一拍出数
+        .WRITEMODE_A  ("NORMAL"),
+        .WRITEMODE_B  ("NORMAL"),
+        .RESETMODE    ("ASYNC"),
+        .INIT_FILE    ("NONE"),
+        .FILL_ALL     ("NONE"),
+        .IMPLEMENT    ("32K")
+    ) u_ln32 (
+        .dia (ln_wd_r), .addra (ln_wa_r), .cea (1'b1), .ocea (1'b1),
+        .clka(clk),     .wea   (ln_we_r), .rsta(1'b0), .bea  (1'b1),
+        .dib (32'd0),   .addrb (scan_ra[13:1]), .ceb (1'b1), .oceb (1'b1),
+        .clkb(clk),     .web   (1'b0),    .rstb(1'b0), .beb  (1'b1),
+        .doa (),        .dob   (scan_rd32_w)
+    );
+    assign scan_rd32 = scan_rd32_w;
 
     // ---- 状态 ----
     reg [1:0]  st;                       // 0=IDLE 1=FETCH 2=BOOK 3=WRITE
@@ -99,16 +137,33 @@ module yx_vp_band #(
     reg [AW-1:0] pend_base;
     reg [15:0] pend_fno;
 
+    // P5：内部状态显式引出（替代顶层层次引用；纯连线，无逻辑）
+    assign frame_base  = base_l;
+    assign pend_cnt_o  = pend_cnt;
+
     wire [1:0] q_row = wp[3:2];          // ★ 必须显式位宽：隐式 wire 默认 1 位会丢高位
-    wire [1:0] q_col = wp[1:0];
-    // 行缓冲写地址：带内行 band[0]*4 + q_row，列 bx*4 + q_col（8*W ≤ 16384 → 14 位）
-    wire [13:0] ln_wa = {band[0], q_row} * W + {2'b00, bx, 2'b00} + {10'b0, q_col};
+    // 行缓冲写地址（32bit 字）：带内行 {band[0],q_row} × (W/2) + 块内字 bx*2 + wp[1]
+    //   块内 4 列 = 2 个打包字：wp[1]=0 装列 (0,1)，wp[1]=1 装列 (2,3)。
+    //   ★ 只能用 wp[1]：写 wp[2:1] 会把行内列号与行号搅在一起（行 1/2/3 各偏
+    //   +2/+4/+6 字，导致 ln32 每行前 2 字永不被写 —— 实测 ln=X 的根因）。
+    wire [12:0] ln_w32 = {band[0], q_row} * (W/2) + {bx, 1'b0} + wp[1];
     // 索引字地址：base + (band*BW + bx)
     wire [AW-1:0] ix_addr = base_l + (band * BW) + bx;
     // 电平式读请求：取带等待期保持，dvld 到达撤销（刷新窗口不丢请求）
     assign rd_req = (st == 2'd1) && fetch_r[0] && !rd_dvld;
     // ★ 渲染放行条件：帧未收尾等待 + 未 ack 带数 < 2（深度 2 背压）
     wire can_render = !frame_wait && (pend_cnt < 2'd2);
+
+    // ★ 写口寄存器组 → 直接驱动 u_ln32 的 A 口（写使能/地址/数据各打一拍）。
+    //   多出的 1 拍对扫描端无影响（扫描远晚于渲染）。
+    reg         ln_we_r;
+    reg  [12:0] ln_wa_r;
+    reg  [31:0] ln_wd_r;
+    always @(posedge clk) begin
+        ln_we_r <= (st == 2'd3) && wp[0];
+        ln_wa_r <= ln_w32;
+        ln_wd_r <= {book_rdata, pix_hold};
+    end
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -120,6 +175,7 @@ module yx_vp_band #(
             rd_addr <= {AW{1'b0}};
             band_done <= 1'b0; frame_done <= 1'b0; frame_start <= 1'b0;
             book_ra <= 14'd0;
+            pix_hold <= 16'd0;
             pend_v <= 1'b0; pend_base <= {AW{1'b0}}; pend_fno <= 16'hffff;
         end else begin
             band_done <= 1'b0;
@@ -195,8 +251,10 @@ module yx_vp_band #(
                 st      <= 2'd3;
             end
 
-            2'd3: begin // WRITE：16 像素写入行缓冲（book_ra 自动递增）
-                ln[ln_wa] <= book_rdata;
+            2'd3: begin // WRITE：16 像素写入行缓冲（book_ra 自动递增；偶/奇打包 32bit）
+                // 行缓冲实际写入见模块上方独立的无复位写口 always 块；
+                // 本块只负责抓偶像素（pix_hold 是普通触发器，放这里没关系）
+                pix_hold  <= book_rdata;
                 book_ra   <= book_ra + 14'd1;
                 wp        <= wp + 4'd1;
                 if (wp == 4'd15) begin

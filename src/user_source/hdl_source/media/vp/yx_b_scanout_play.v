@@ -95,11 +95,12 @@ module yx_b_scanout_play #(
     wire       sk_empty = (sk_cnt == 3'd0);
     wire       sk_room  = (sk_cnt <= 3'd2);      // 留 1 位给在途
     wire [31:0] sk_head = sk_mem[sk_rp];
+    reg        loading;
+    reg        refwait;                 // ★ B 板：冲洗后回灌等待（防遍首下溢）
+    wire       pair_advance;            // 赋值见下方 vb_start 处
     // 取数条件（组合，避免阻塞赋值顺序问题）
     wire       sk_take  = loaded && !loading && !refwait && !sk_empty &&
                           (!primed || pair_advance);
-    reg        loading;
-    reg        refwait;                 // ★ B 板：冲洗后回灌等待（防遍首下溢）
     reg [15:0] refwait_cnt;
     reg [2:0]  load_cnt;
     reg [3:0]  boot_cnt;
@@ -111,7 +112,7 @@ module yx_b_scanout_play #(
     // 取数推进与像素选择用绝对 x 奇偶（A 板原样）。曾试"连续有效像素计数器"
     // 方案（pcnt），实测反而使 pair 冻结更久，已回退——行首 4 像素现象作为
     // 已知限制记录（见 docs/YX_BBOARD_P3_DISPLAY_20261121.md §8.5）。
-    wire pair_advance = pixel_active && pixel_x[0];
+    assign pair_advance = pixel_active && pixel_x[0];
     wire sel_high     = pixel_x[0];
 
     // ★ B 板布局适配：扫描写端打包 {奇像素,偶像素}（[31:16]=奇/[15:0]=偶，

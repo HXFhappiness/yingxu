@@ -30,7 +30,9 @@ module tb_sdctrl_sanity;
     wire [10:0] SA; wire [1:0] BA; wire [1:0] CS_N; wire CKE, RAS_N, CAS_N, WE_N;
     wire [31:0] DQ; wire [3:0] DQM; wire SDR_CLK; wire test_oe;
 
-    Sdram_Control_4Port u_ctrl(
+    // ★ P5：改测板 B 派生控制器副本（= 厂商原件 + P3 修补 + 状态口）——仿真与
+    //   综合必须是同一份代码，否则这里全绿也不代表上板用的控制器正确。
+    Sdram_Control_4Port_B u_ctrl(
         .REF_CLK(REF_CLK), .RESET_N(RESET_N), .CLK(CLK),
         .WR1_DATA(WR1_DATA), .WR1(WR1), .WR1_ADDR(WR1_ADDR),
         .WR1_MAX_ADDR(WR1_MAX_ADDR), .WR1_LENGTH(WR1_LENGTH), .WR1_LOAD(WR1_LOAD),

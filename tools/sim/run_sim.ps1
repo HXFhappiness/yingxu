@@ -73,11 +73,11 @@ $Entries = @{}
 
 # ---- 入口 1: sdctrl_sanity（vendor SDRAM 控制器写读回环，看门狗 4ms sim 时间，快）----
 $Entries['sdctrl_sanity'] = @{
-    Defines  = @()
+    Defines  = @('YINGXU_SIM')
     PlusArgs = @()
     Sources  = @(
         'tb\tb_sdctrl_sanity.v',
-        "$BSHM\Sdram_Control_4Port.v",
+        "$CTRL\b_board\Sdram_Control_4Port_b.v",
         "$BSHM\EG_PHY_PLL.v",
         "$BSHM\EG_LOGIC_FIFO.v",
         "$BSHM\EG_PHY_SDRAM_2M_32.v",
@@ -87,7 +87,7 @@ $Entries['sdctrl_sanity'] = @{
         "$CTRL\sdr_data_path.v",
         "$CTRL\Sdram_PLL.v",
         "$CTRL\Sdram_WR_FIFO.v",
-        "$CTRL\Sdram_RD_FIFO.v"
+        "$CTRL\b_board\Sdram_RD_FIFO_b.v"
     )
 }
 
@@ -96,8 +96,11 @@ $Entries['sdctrl_sanity'] = @{
 # WD 8M→12M：DELTA 合并流重建 + 真实流节奏比 KEY-only 略慢（YX4 实测 4 帧/8M 边缘）。
 # ★ P3（YX6）：显示 = HDMI 扫出（73.33M 像素域双窗），DISP_NUM/DEN 令牌桶退役
 #   （define 保留传入无害）；RD1_FIFO 用 bshims 版（CDC=1 格雷码双时钟）。
+# ★ P5：控制器改用板 B 派生副本（$CTRL\b_board\），仿真与 TD 综合同一份代码；
+#   原 bshims 的 Sdram_Control_4Port/Sdram_RD_FIFO 只用于历史对照，不再进本入口。
+#   YINGXU_SIM 只用于把 CDC 参数透传给 EG_LOGIC_FIFO 仿真模型（真实硬 FIFO 无此参数）。
 $Entries['bboard_sys'] = @{
-    Defines  = @('BBOARD_SYS')
+    Defines  = @('BBOARD_SYS', 'YINGXU_SIM')
     Stream   = 'out\vp_720_5f.yxv2'
     Golden   = $true
     PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=12000000')
@@ -114,10 +117,12 @@ $Entries['bboard_sys'] = @{
         "$VP\yx_b_scanout_play.v",
         'src\user_source\hdl_source\video_source_test.v',
         "$BSHM\EG_LOGIC_FIFO.v",
+        "$BSHM\EG_LOGIC_BRAM.v",
         "$BSHM\EG_PHY_PLL.v",
         "$BSHM\EG_PHY_SDRAM_2M_32.v",
-        "$BSHM\Sdram_Control_4Port.v",
-        "$BSHM\Sdram_RD_FIFO.v",
+        "$BSHM\BUFG_0.v",
+        "$CTRL\b_board\Sdram_Control_4Port_b.v",
+        "$CTRL\b_board\Sdram_RD_FIFO_b.v",
         "$BSHM\pll_hdmi1_4b.v",
         "$CTRL\sdram_ip.v",
         "$CTRL\command.v",
@@ -135,7 +140,7 @@ $Entries['bboard_sys'] = @{
 #   内容，与旧通过记录 ixpipe_regress.log 的 WR#1 data=002b 一致，非 RTL 错）。
 # 本入口 = bboard_sys 源单/门禁 + 合成码流（历史命令 B 的码流选择）。
 $Entries['bboard_key'] = @{
-    Defines  = @('BBOARD_SYS')
+    Defines  = @('BBOARD_SYS', 'YINGXU_SIM')
     Stream   = 'out\vp_720_key.yxv2'
     # WD 8M→12M（YX6）：YX4 §五.2 实测 KEY-only 5 帧 7.91M 拍、裕量仅 1.1%；
     # fetch v5（cp 分时）对 KEY 流零扰动，裕量不变，WD 提至与 sys 同档消除边缘风险。

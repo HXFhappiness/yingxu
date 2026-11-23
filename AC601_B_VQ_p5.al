@@ -15,7 +15,7 @@
     </MiscSettings>
     <Source_Files>
         <Verilog>
-            <File Path="src/user_source/hdl_source/media/vp/yingxu_vq_board_top.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_vp_ixdec.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -23,7 +23,7 @@
                     <Attr Name="CompileOrder" Val="1"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_vp_ixdec.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_vp_ixbuf.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -31,7 +31,7 @@
                     <Attr Name="CompileOrder" Val="2"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_vp_ixbuf.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_vp_band.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -39,7 +39,7 @@
                     <Attr Name="CompileOrder" Val="3"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_vp_band.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_b_hdr_parse.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -47,7 +47,7 @@
                     <Attr Name="CompileOrder" Val="4"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_b_hdr_parse.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_b_ix_seq_wr.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -55,7 +55,7 @@
                     <Attr Name="CompileOrder" Val="5"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_b_ix_seq_wr.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_b_ix_fetch.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -63,7 +63,7 @@
                     <Attr Name="CompileOrder" Val="6"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_b_ix_fetch.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_b_scanout.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -71,7 +71,7 @@
                     <Attr Name="CompileOrder" Val="7"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_b_scanout.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_b_scanout_play.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -79,7 +79,7 @@
                     <Attr Name="CompileOrder" Val="8"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_b_scanout_play.v">
+            <File Path="src/user_source/hdl_source/media/vp/yx_b_eth_rx.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -87,7 +87,7 @@
                     <Attr Name="CompileOrder" Val="9"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/media/vp/yx_b_eth_rx.v">
+            <File Path="src/eth_udp_rx_gmii.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -95,7 +95,7 @@
                     <Attr Name="CompileOrder" Val="10"/>
                 </FileInfo>
             </File>
-            <File Path="src/eth_udp_rx_gmii.v">
+            <File Path="src/ip_checksum.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -103,7 +103,7 @@
                     <Attr Name="CompileOrder" Val="11"/>
                 </FileInfo>
             </File>
-            <File Path="src/ip_checksum.v">
+            <File Path="src/crc32_d8.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -111,7 +111,7 @@
                     <Attr Name="CompileOrder" Val="12"/>
                 </FileInfo>
             </File>
-            <File Path="src/crc32_d8.v">
+            <File Path="src/rgmii_to_gmii.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -119,7 +119,7 @@
                     <Attr Name="CompileOrder" Val="13"/>
                 </FileInfo>
             </File>
-            <File Path="src/rgmii_to_gmii.v">
+            <File Path="src/user_source/hdl_source/video_source_test.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -127,7 +127,7 @@
                     <Attr Name="CompileOrder" Val="14"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/video_source_test.v">
+            <File Path="src/user_source/hdl_source/hdmi_phy_warpper.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -135,7 +135,7 @@
                     <Attr Name="CompileOrder" Val="15"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/hdmi_phy_warpper.v">
+            <File Path="src/user_source/hdl_source/lane_lvds_10_1.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -143,7 +143,7 @@
                     <Attr Name="CompileOrder" Val="16"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/lane_lvds_10_1.v">
+            <File Path="src/user_source/hdl_source/hdmi1.4b_transmitter_core/hdmi_1_4b_transmitter_core_wrapper.enc.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -151,7 +151,7 @@
                     <Attr Name="CompileOrder" Val="17"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/hdmi1.4b_transmitter_core/hdmi_1_4b_transmitter_core_wrapper.enc.v">
+            <File Path="src/5640/sdram_ctrl_4p/b_board/Sdram_Control_4Port_b.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -159,7 +159,7 @@
                     <Attr Name="CompileOrder" Val="18"/>
                 </FileInfo>
             </File>
-            <File Path="src/5640/sdram_ctrl_4p/Sdram_Control_4Port.v">
+            <File Path="src/5640/sdram_ctrl_4p/b_board/Sdram_RD_FIFO_b.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -215,12 +215,20 @@
                     <Attr Name="CompileOrder" Val="25"/>
                 </FileInfo>
             </File>
-            <File Path="src/5640/sdram_ctrl_4p/Sdram_RD_FIFO.v">
+            <File Path="src/user_source/hdl_source/media/vp/yingxu_vq_board_top.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
                     <Attr Name="CompileOrder" Val="26"/>
+                </FileInfo>
+            </File>
+            <File Path="src/user_source/hdl_source/media/vp/yingxu_vq_board_b.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="27"/>
                 </FileInfo>
             </File>
         </Verilog>
@@ -250,7 +258,7 @@
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="27"/>
+                    <Attr Name="CompileOrder" Val="28"/>
                 </FileInfo>
             </File>
             <File Path="al_ip/BUFG_0/BUFG_0.ipc">
@@ -258,7 +266,7 @@
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="28"/>
+                    <Attr Name="CompileOrder" Val="29"/>
                 </FileInfo>
             </File>
             <File Path="al_ip/IDDR_0/IDDR_0.ipc">
@@ -266,20 +274,24 @@
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="29"/>
+                    <Attr Name="CompileOrder" Val="30"/>
                 </FileInfo>
             </File>
         </IP_FILE>
     </Source_Files>
     <FileSets>
         <FileSet Name="design_1" Type="DesignFiles">
+            <Config>
+              <Define Name="EMIT_HDMI" Val=""/>
+              <Define Name="USE_ETH" Val=""/>
+            </Config>
         </FileSet>
         <FileSet Name="constraint_1" Type="ConstrainFiles">
         </FileSet>
     </FileSets>
     <TOP_MODULE>
-        <LABEL>yingxu_vq_board_top</LABEL>
-        <MODULE>yingxu_vq_board_top</MODULE>
+        <LABEL>yingxu_vq_board_b</LABEL>
+        <MODULE>yingxu_vq_board_b</MODULE>
         <CREATEINDEX>user</CREATEINDEX>
     </TOP_MODULE>
     <Property>
@@ -302,17 +314,6 @@
             </UserParams>
         </Run>
     </Runs>
-    <MultiSeed>
-        <Property Enable="false" GenBit="true" EndStep="bitgen" Random="false" Num="12" Init="28" Jobs="4" Save="12" Step="1">
-            <Filter enabled="false">
-                <congestion>100</congestion>
-                <place_swns>0</place_swns>
-                <route_swns>0</route_swns>
-                <route_hwns>0</route_hwns>
-            </Filter>
-        </Property>
-        <Seeds>28 29 30 31 32 33 34 35 36 37 38 39 </Seeds>
-    </MultiSeed>
     <Project_Settings>
     </Project_Settings>
 </Project>

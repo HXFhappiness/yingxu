@@ -185,6 +185,7 @@ module tb_yxvp_ixpipe;
         input [15:0] fno;
         input [8:0]  bno;
         integer row, x, base_i, lidx;
+        reg [15:0] ln_px;
         begin
             fr_err = 0;
             for (row = 0; row < 4; row = row + 1) begin
@@ -198,10 +199,13 @@ module tb_yxvp_ixpipe;
                     base_i = (bno[0] * 4 + row) * W;
                     for (x = 0; x < W; x = x + 1) begin
                         lidx = base_i + x;
-                        if (u_band.ln[lidx] !== tmprow[x]) begin
+                        // ★ P5-P0：行缓冲已打包 32bit（{奇,偶}），按字/半字取值
+                        ln_px = lidx[0] ? u_band.u_ln32.mem[lidx>>1][31:16]
+                                        : u_band.u_ln32.mem[lidx>>1][15:0];
+                        if (ln_px !== tmprow[x]) begin
                             if (fr_err < 24)
                                 $display("  BAND-MM f%0d b%0d r%0d x%0d: got %04h want %04h",
-                                         fno, bno, row, x, u_band.ln[lidx], tmprow[x]);
+                                         fno, bno, row, x, ln_px, tmprow[x]);
                             fr_err = fr_err + 1;
                         end
                     end
@@ -357,7 +361,7 @@ module tb_yxvp_ixpipe;
 
         // 诊断转储：索引缓冲内容 + 行缓冲
         $writememh("out\\ix_sdram_dump.txt", sdram);
-        $writememh("out\\ix_ln_dump.txt", u_band.ln);
+        $writememh("out\\ix_ln_dump.txt", u_band.u_ln32.mem);
 
         $display("CNT: emit=%0d push=%0d wr=%0d bands=%0d frames=%0d cmpfail-frames=%0d",
                  n_emit, n_push, wr_served, bands_done, frames_done, cmp_total);

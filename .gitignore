@@ -38,6 +38,7 @@ td_*.logw
 *.logw
 _Runs/
 *-Runs/
+*_Runs/
 
 # ---- 一次性排障脚本（保留 run_sim.ps1 / gen_golden.py）----
 tools/sim/probe_*.py

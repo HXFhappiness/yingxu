@@ -72,6 +72,7 @@ module yx_vp_ixbuf #(
     reg [3:0]  pf_cnt;
     reg        pf_ov;
     reg [26:0] pf_od;
+    wire pf_pop;                           // 补丁消费（赋值见下方合并引擎处）
     wire pf_push = ix_we & ix_rdy & (phase == PH_READY || phase == PH_COPY);
     wire pf_load = !pf_ov && !pf_pop && (pf_cnt != 4'd0);
     wire pf_room = ((pf_cnt + {3'b0, pf_ov}) <= 4'd7);
@@ -100,7 +101,7 @@ module yx_vp_ixbuf #(
     // 补丁消费：仅 COPY 相态由合并引擎按命中驱动（含越位丢弃）；其余相态 wr_gnt 弹出
     wire        pf_head_hit = (phase == PH_COPY) && (cp_s == CP_DEC) && pf_ov &&
                               (pf_od[26:10] <= cp_i) && !busy[act ^ 1];
-    wire        pf_pop = pf_head_hit ? 1'b1 : (pf_ov & wr_gnt & (phase != PH_COPY));
+    assign      pf_pop = pf_head_hit ? 1'b1 : (pf_ov & wr_gnt & (phase != PH_COPY));
 
     // ---- 写口呈现（COPY 相态 = 合并流写；其余 = 补丁输出寄存器；两相态互斥）----
     assign wr_valid = (phase == PH_COPY) ? cp_wv : pf_ov;
@@ -129,7 +130,10 @@ module yx_vp_ixbuf #(
             committed <= 16'hffff;
             prev_rno <= 16'hffff;
             pf_wp <= 3'd0; pf_cnt <= 4'd0;
-            pf_ov <= 1'b0; pf_od <= 27'd0;
+            // ★ P5：pf_ov/pf_od 的复位只保留在"补丁输出寄存器"块（下方单驱动）。
+            //   同一个 reg 被两个 always 块驱动在 iverilog 里是竞态、在 TD 里直接
+            //   报 "constantly driven from multiple places"。两处复位值相同，删除
+            //   本块的重复复位不改变任何行为。
             cp_s <= CP_HOLD; cp_i <= 17'd0;
             cp_wv <= 1'b0; cp_wa <= {AW{1'b0}}; cp_wd <= 16'd0;
             cp_fd <= 1'b0;

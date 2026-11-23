@@ -330,6 +330,17 @@ module tb_yxvp_bboard;
     // H2: write_fifo pop 沿 do vs TB 侧推入影子队列
     reg [31:0] q1 [0:1023];
     reg [31:0] q2 [0:1023];
+    // ★ P5-P0 诊断：记录首个带的扫描推数流（u_top.wr1_en/sc_wdata），用于区分
+    //   "扫描推数流本身错"（pt !== ln32）与 "SDRAM 写入被控制器弄错"（pt === ln32
+    //   但 sdram !== ln32）。只测量，不参与判定。
+    reg [31:0] ptrace [0:2559];
+    integer pn = 0;
+    always @(posedge clk100) begin
+        if (rst_n && u_top.wr1_en && pn < 2560) begin
+            ptrace[pn] = u_top.sc_wdata;
+            pn = pn + 1;
+        end
+    end
     integer h1q = 0, t1q = 0, h2q = 0, t2q = 0;
     integer p1r = 0, p2r = 0, x1c = 0, x2c = 0, m1c = 0, m2c = 0, u1c = 0, u2c = 0, n1c = 0, n2c = 0;
     reg [31:0] got1 = 32'h0, got2 = 32'h0, mm1e = 32'h0, mm1g = 32'h0, mm2e = 32'h0, mm2g = 32'h0;
@@ -345,7 +356,8 @@ module tb_yxvp_bboard;
             //   旧 bands_scanned/180 计数在比对滞后跨帧时与渲染帧号错位。
             frm = u_top.u_band.render_no;
             for (k = 0; k < FB_WB; k = k + 1) begin
-                expw = {u_top.u_band.ln[ofs + 2*k + 1], u_top.u_band.ln[ofs + 2*k]};
+                // ★ P5-P0：行缓冲已打包成 32bit 字（{奇,偶}），字地址 = 像素地址/2
+                expw = u_top.u_band.u_ln32.mem[ofs/2 + k];
                 // ★ P3 双窗：带写入帧窗 frm%2（[FBB+win*FB_TOTAL, +FB_TOTAL)）
                 gotw = u_top.u_dram.sdram.mem[FBB + (frm % 2) * FB_TOTAL + scan_band_no * FB_WB + k];
 `ifdef BBOARD_SYS
@@ -389,6 +401,21 @@ module tb_yxvp_bboard;
                 end
             end
             bands_scanned = bands_scanned + 1;
+`ifdef P0_TRACE
+            // ★ 首个带：把"推进 FIFO 的数据流"与行缓冲逐字对齐，定位错位点
+            if (bands_scanned == 1) begin
+                for (k = 0; k < FB_WB; k = k + 1) begin
+                    if (ptrace[k] !== u_top.u_band.u_ln32.mem[k]) begin
+                        $display("PTR-DIFF k=%0d pt=%08h ln=%08h sdram=%08h | prev pt=%08h ln=%08h | next pt=%08h ln=%08h",
+                                 k, ptrace[k], u_top.u_band.u_ln32.mem[k],
+                                 u_top.u_dram.sdram.mem[FBB + scan_band_no * FB_WB + k],
+                                 (k>0) ? ptrace[k-1] : 32'h0,
+                                 (k>0) ? u_top.u_band.u_ln32.mem[k-1] : 32'h0,
+                                 ptrace[k+1], u_top.u_band.u_ln32.mem[k+1]);
+                    end
+                end
+            end
+`endif
             if (scan_errs == 0 && (bands_scanned % 30 == 0))
                 $display("BSCAN ok bands=%0d (frame %0d)", bands_scanned, rendered_no);
         end
@@ -686,6 +713,33 @@ module tb_yxvp_bboard;
                              $time, wr_lo, wr_hi, rd_lo, rd_hi, u_top.sc_st);
             end
             if (u_top.rd1_load_w) vbl_loads = vbl_loads + 1;
+        end
+    end
+
+    // ★ P5 WR1 排空计数等价性（HDL-8007 修复的逐拍证明）：顶层原用写 FIFO 内部
+    //   rp_bin 影子差分（综合不可见），现改 pop 打拍计数。此处在 TB 侧复刻原
+    //   影子差分模型（仿真可穿透 shim），每拍与 DUT 的 wr1_popd 比对，须恒等。
+    //   同时覆盖"空 FIFO 不被读"前提（若读空，re 计数会多于 rp 步进而失配）。
+    //   posedge 采样读到的均为 NBA 更新前的旧值，模型与 DUT 同拍推进。
+    reg  [9:0]  wq_rp_q = 10'd0;
+    reg  [12:0] wq_popd = 13'd0;
+    reg  [9:0]  wq_rp_now, wq_rp_d;
+    integer     wr1_eq_errs = 0;
+    always @(posedge clk100 or negedge rst_n) begin
+        if (!rst_n) begin
+            wq_rp_q = 10'd0;
+            wq_popd = 13'd0;
+        end else begin
+            if (u_top.wr1_popd !== wq_popd) begin
+                wr1_eq_errs = wr1_eq_errs + 1;
+                if (wr1_eq_errs <= 4)
+                    $display("WR1EQ-ERR t=%0t dut=%0d model=%0d st=%0d",
+                             $time, u_top.wr1_popd, wq_popd, u_top.sc_st);
+            end
+            wq_rp_now = u_top.u_sdram.write_fifo1.logic_fifo.SAMEDOM.rp_bin;
+            wq_rp_d   = wq_rp_now - wq_rp_q;
+            wq_rp_q   = wq_rp_now;
+            wq_popd   = (u_top.sc_st == 3'd1) ? 13'd0 : (wq_popd + {3'd0, wq_rp_d});
         end
     end
 
@@ -996,13 +1050,14 @@ module tb_yxvp_bboard;
                  ax_lines, (ax_lines >= 720)?"OK":"BAD",
                  mutex_errs, pmu?"OK":"BAD",
                  disp_stall_w, pst?"OK":"BAD");
+        $display("GATE-WR1 eq_errs=%0d(want 0:%s)", wr1_eq_errs, (wr1_eq_errs == 0)?"OK":"BAD");
 `ifdef BBOARD_ETH
         $display("GATE-ETH ok=%0d(want %0d:%s) drop=%0d(want 0:%s) bytes=%0d(want %0d:%s)",
                  eth_ok_cnt, e_npkt, (eth_ok_cnt == e_npkt)?"OK":"BAD",
                  eth_drop_cnt, (eth_drop_cnt == 0)?"OK":"BAD",
                  eth_byte_cnt, slen, (eth_byte_cnt == slen)?"OK":"BAD");
 `endif
-        $display("=== TB-SUMMARY: %s ===", (pd && pf && pb && pg && ps && px && pm && pig && pce && pcp && phe && pax && pmu && pst && peth) ? "ALL PASS" : "FAIL");
+        $display("=== TB-SUMMARY: %s ===", (pd && pf && pb && pg && ps && px && pm && pig && pce && pcp && phe && pax && pmu && pst && peth && (wr1_eq_errs == 0)) ? "ALL PASS" : "FAIL");
         $display("DECFRAMES=%0d", dec_frames); $display("IXWR ivc=%0d gnc=%0d psc=%0d ldc=%0d fwc=%0d", ivc, gnc, psc, ldc, fwc); $display("GOLDEN=%0d", golden_errs);
         $display("CNT: frames=%0d bands=%0d scan_errs=%0d ax_errs=%0d ax_beats=%0d ax_lines=%0d disp_pass=%0d disp_stall=%0d vbl_loads=%0d stall2=%0d/%0d (%0d%%)",
                  frames_done, bands_scanned, scan_errs, ax_errs, ax_beats, ax_lines,

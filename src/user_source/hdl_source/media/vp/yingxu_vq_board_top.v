@@ -14,7 +14,7 @@
 // cp_dvld/cp_data/band_rd_* 输入口仅 SIM_ABSTRACT=1（抽象仿真）消费。
 // 帧缓冲走真实控制器（页模式流式，恰为其设计用途）。
 //
-// 扫描读双口（scan_ra/scan_rb）每拍取偶/奇两像素打包 32bit 字 → WR1 推数 1 字/拍
+// 扫描读单口（scan_ra）：行缓冲内部为 32bit 打包字，同步读出 → WR1 推数 1 字/拍
 // 与突发排空同速（不欠载，sanity 实测契约）。地址流水：LOAD 拍发首地址，PUSH 态
 // 每拍"推上一拍地址的数据 + 发下一地址"，恰好 256 拍推 256 字。
 module yingxu_vq_board_top #(
@@ -125,6 +125,7 @@ module yingxu_vq_board_top #(
     // ---- SIM_ABSTRACT=0：头解析/索引写/取带适配接线 ----
     wire        hdr_v, hdr_rdy;
     wire [7:0]  hdr_d;
+    wire        dec_rdy_w;
     wire        dec_v = SIM_ABSTRACT ? stream_valid : hdr_v;
     wire [7:0]  dec_d = SIM_ABSTRACT ? stream_data  : hdr_d;
 `ifdef USE_ETH
@@ -141,7 +142,6 @@ module yingxu_vq_board_top #(
     assign eth_rst_n = rst_n;
     assign eth_mdc   = 1'b1;
     assign eth_mdio  = 1'b1;
-    wire        dec_rdy_w;
     wire        hdr_book_we;
     wire [13:0] hdr_book_wa;
     wire [15:0] hdr_book_wd;
@@ -157,14 +157,17 @@ module yingxu_vq_board_top #(
     // ★ WR2 突发完成事件（CLK 域 1 拍）：seq_wr v3 组屏障的推进依据。
     //   mWR_DONE 为 SDR_CLK 域 1 拍脉冲，WR_MASK[1] 在突发期间保持——厂商
     //   控制器自身即用此组合判定 WR2 地址步进（Sdram_Control_4Port.v 同构）。
-    wire        wr2_done_w    = u_sdram.mWR_DONE & u_sdram.WR_MASK[1];
+    // ★ P5：控制器状态经 Sdram_Control_4Port_B 的 st_* 端口引出（原为层次引用，
+    //   TD 不可综合）。st_wr_done/st_wr_mask/st_in_req/st_out_valid 均为控制器
+    //   CLK(=clk100) 域信号，与使用它们的逻辑同域。
+    wire        wr2_done_w    = st_wr_done_w & st_wr_mask_w[1];
     wire [1:0]  ixwr_rdone_w;    // seq_wr 按窗完成标志 → fetch 屏障门
-    wire        wr2_busy_w  = (u_sdram.WR_MASK != 2'b00) || (u_sdram.mWR != 1'b0);
+    wire        wr2_busy_w  = (st_wr_mask_w != 2'b00) || (st_wr_w != 1'b0);
     wire        rd2_empty_w;
     wire [31:0] rd2_dat_w;
-    wire        rd2_we_w      = u_sdram.OUT_VALID & u_sdram.RD_MASK[1];
-    wire        rd2_bmask1_w  = u_sdram.RD_MASK[1];
-    wire        wr2_re_w      = u_sdram.IN_REQ & u_sdram.WR_MASK[1];
+    wire        rd2_we_w      = st_out_valid_w & st_rd_mask_w[1];
+    wire        rd2_bmask1_w  = st_rd_mask_w[1];
+    wire        wr2_re_w      = st_in_req_w & st_wr_mask_w[1];
     // ★ cp 读口体系模式供给线：fetch v5 经 RD2 分时服务 ixbuf 拷贝读（板上契约
     //   闭环——板上无顶层随机口，cp 读 = RD2 顺序流的一段分时复用）。模式 1 仍
     //   走顶层输入口（TB 随机口模型）。cp_rd/cp_addr 为 ixbuf 输出，两模式均
@@ -174,14 +177,15 @@ module yingxu_vq_board_top #(
     wire          wr_valid_w, swap_done_w;
     wire [AW-1:0] wr_addr_w, act_base;             // ixbuf 当前 active 区基址（= SDRAM 字地址）
     wire [15:0]   wr_data_w;
-    wire [20:0] rd2_max_w   = u_band.base_l + NB[20:0];   // 取带窗 = 渲染器锁存基址
+    wire [20:0] rd2_max_w   = band_base_w + NB[20:0];   // 取带窗 = 渲染器锁存基址
     wire        band_rd_req_w;   // band 的取带请求（两种模式都在内部）
-    // ★ 行缓冲扫描读地址（悬空修复）：sc_ra 是扫描写端自己的地址计数，
-    //   但 band 的 scan_ra/scan_rb 端口此前从未被驱动（悬空 Z → ln[Z]=X →
-    //   扫描推数全 X 的根因之一）。scan_rb=奇像素地址（ra+1），与 scan_ra
-    //   同拍双口读出，打包 {奇,偶} 32bit 字。
+    // ★ 行缓冲扫描读地址（悬空修复）：sc_ra 是扫描写端自己的地址计数。
+    //   命名保留"偶像素地址"语义（线性像素地址，步长 2），但行缓冲内部已是
+    //   32bit 打包字 —— band 侧取 scan_ra[13:1] 作字地址，单口同步读出
+    //   {奇,偶} 打包字（P5-P0：单读口才能映射 BRAM）。
+    reg  [13:0] sc_ra;            // 行缓冲读地址（线性像素地址，偶像素起步，步长 2）
+    wire [13:0] scan_ra_w;
     assign scan_ra_w = sc_ra;
-    assign scan_rb_w = sc_ra + 14'd1;
     // 模式复用：模式 1 保持原 WR2/RD2 停用接线（LENGTH=0，行为与已验证版本一致）
     // ★ 模式 0 WR2_LENGTH=128：seq_wr v3 组协议要求"触发阈值(占用≥128)=突发长度"，
     //   128 字组推满即停推→突发恰吞 128 字→FIFO 清 0 零滞留零欠载（NB=57600=128×450）
@@ -209,7 +213,7 @@ module yingxu_vq_board_top #(
         if (!rst_n) begin
             fetch_reload_r <= 1'b0;
         end else begin
-            fetch_reload_r <= SIM_ABSTRACT ? 1'b0 : u_band.frame_start;
+            fetch_reload_r <= SIM_ABSTRACT ? 1'b0 : band_fs_w;
         end
     // 抽象索引口（仅模式 1 对外呈现）
     assign ix_wr_valid = SIM_ABSTRACT ? wr_valid_w : 1'b0;
@@ -232,7 +236,7 @@ module yingxu_vq_board_top #(
     reg [15:0] rno_done;
     always @(posedge clk100 or negedge rst_n) begin
         if (!rst_n) rno_done <= 16'hffff;
-        else if (frame_done_vq) rno_done <= u_band.render_no;
+        else if (frame_done_vq) rno_done <= rendered_no;
     end
 
     yx_vp_ixbuf #(.NB(NB), .AW(AW)) u_ixbuf (
@@ -253,24 +257,26 @@ module yingxu_vq_board_top #(
     // ================= 条带渲染器 =================
     wire        band_done_w;
     wire [8:0]  band_no_w;
-    wire [13:0] scan_ra_w, scan_rb_w;
-    wire [15:0] scan_rd_w, scan_rd_b_w;
+    wire [31:0] scan_rd32_w;   // 行缓冲打包字 {奇像素, 偶像素}（同步读，1 拍延迟）
     wire        band_fs_w;     // band 帧启动脉冲（fetch reload 触发源）
+    wire [AW-1:0] band_base_w;   // band 本帧索引基址（= 原 u_band.base_l）
+    wire [1:0]  band_pend_cnt_w; // band 已渲染未 ack 带数（= 原 u_band.pend_cnt）
 
     yx_vp_band #(.W(W), .H(H), .CBSIZE(CBSIZE), .AW(AW)) u_band (
         .clk(clk100), .rst_n(rst_n),
         .swap_done(swap_done_w), .commit_no(commit_no), .act_base(act_base),
         .rd_req(band_rd_req_w), .rd_addr(band_rd_addr),
         .rd_dvld(band_dvld_mux), .rd_data(band_data_mux),
-        .scan_ra(scan_ra_w), .scan_rd(scan_rd_w),
-        .scan_rb(scan_rb_w), .scan_rd_b(scan_rd_b_w),
+        .scan_ra(scan_ra_w), .scan_rd32(scan_rd32_w),
         .book_we(SIM_ABSTRACT ? 1'b0 : hdr_book_we),
         .book_wa(SIM_ABSTRACT ? 14'd0 : hdr_book_wa),
         .book_wd(SIM_ABSTRACT ? 16'd0 : hdr_book_wd),
         .band_done(band_done_w), .render_no(rendered_no), .band_no(band_no_w),
-        .band_ack(scan_ack), .frame_done(frame_done_vq), .frame_start(band_fs_w)
+        .band_ack(scan_ack), .frame_done(frame_done_vq), .frame_start(band_fs_w),
+        // P5：原先用层次引用读的两个内部状态，现在走显式端口
+        .frame_base(band_base_w), .pend_cnt_o(band_pend_cnt_w)
     );
-    assign band_pend_cnt = u_band.pend_cnt;
+    assign band_pend_cnt = band_pend_cnt_w;
 
     // ================= 体系模式：头解析 + 索引写/取带适配 =================
     generate if (!SIM_ABSTRACT) begin : REAL_IX
@@ -338,7 +344,7 @@ module yingxu_vq_board_top #(
         .rd2_fifo_dat(rd2_dat_w), .rd2_empty(rd2_empty_w),
         .rd2_re(ixf_re_w), .rd2_addr(ixf_addr_w), .rd2_load(ixf_load_w),
         .rd2_we(rd2_we_w), .rd2_bmask1(rd2_bmask1_w),
-        .reload(fetch_reload_r), .reload_base(u_band.base_l),
+        .reload(fetch_reload_r), .reload_base(band_base_w),
         .region_done(ixwr_rdone_w)
     );
 
@@ -356,21 +362,33 @@ module yingxu_vq_board_top #(
     reg        sc_win, sc_pend_win; // ★ P3：带所属帧的写窗号（band_done 拍锁 render_no[0]）
     reg [11:0] sc_push;          // 带内已推字数 0..2560
     reg [2:0]  sc_st;            // 0=IDLE 1=LOAD 2=PUSH 3=FLUSH 4=DONE(裕量)
-    reg [13:0] sc_ra;            // 行缓冲读地址（偶像素；组合读=本拍地址本拍数据）
-    reg [31:0] sc_wdata;
+    // ★ P5-P0b：WR1_DATA 直连行缓冲寄存输出（wire，非寄存器），与旧版逐拍等价
+    wire [31:0] sc_wdata = scan_rd32_w;
+    // ★★ 写使能是寄存器（与已验证的 032049 版一致）：状态机在 PUSH 拍置 1，
+    //   下一拍 FIFO 才真正写入。这套时序已在 bboard_key/bboard_sys 双门禁
+    //   ALL PASS 过，勿再改相位或改成组合使能（实测会引入整带/周期性错位）。
     reg        wr1_load, wr1_en;
     reg [20:0] wr1_addr;
     reg [15:0] sc_drain;         // ★ 末突发写完裕量拍计数（256）
 
-    // WR1 FIFO 排空判据：rp 指针影子差分计数（pop 事件每拍 ≤1，mod 1024 减法
-    // 天然处理回绕；TB 同款层次路径 u_sdram.write_fifo1.logic_fifo.rp_bin）
-    reg [9:0]  wr1_rp_q;
-    reg [12:0] wr1_popd;         // 带内已落 SDRAM 字数（0..2560）
-    wire [9:0] wr1_rp_now = u_sdram.write_fifo1.logic_fifo.SAMEDOM.rp_bin;
-    wire [9:0] wr1_rp_d   = wr1_rp_now - wr1_rp_q;
+    // WR1 FIFO 排空判据：FIFO 读使能计数（每带 LOAD 拍清零，每次 FIFO pop 递增）。
+    // 原为读 FIFO rp 指针影子差分，但层次路径 u_sdram.write_fifo1.logic_fifo.SAMEDOM.rp_bin
+    // 穿透厂商 IP 内部（仿真行为模型可见，TD 综合黑盒报错 HDL-8007），改用读使能计数等价实现。
+    // FIFO pop = Sdram_Control_4Port 的 IN_REQ & WR_MASK[0]（write_fifo1 实例化参数 .re）。
+    // ★ 逐拍等价：原影子差分在 pop 沿的**下一拍**才累加（rp_q 滞后一拍），故 pop
+    //   再打一拍（wr1_pop_q）后计数。实测不打拍（提前 1 拍出 FLUSH）会改变 SDRAM
+    //   仲裁相位，bboard_sys 显示流出现整字错位（axerr=1603800），见 P5 文档。
+    wire        wr1_pop = st_in_req_w & st_wr_mask_w[0];
+    reg         wr1_pop_q;
+    reg  [12:0] wr1_popd;           // 带内已落 SDRAM 字数（0..2560）
 
+    // ★ 扫描读端口：行缓冲内部为 32bit 打包字 + 厂商 BRAM 原语，B 口读延迟 = 1 拍
+    //   （原语内部寄存地址）。因此推数时序与改造前的 reg 数组版本**完全一致**：
+    //   sc_ra 在 LOAD 拍预置为带内半区基址，首推落在 LOAD+1，第 k 拍推 ln[k]。
+    //   本控制器对推数相位极敏感（P5 文档已记两次整字错位），故此处不改相位。
     wire [13:0] sc_half_ofs = sc_cur[0] ? PIX_BAND[13:0] : 14'd0;
     wire        wr1_full_w;                 // ★ WR1 FIFO 背压：满时暂停推数（防 shim 丢字）
+    wire        win_free_w;                 // 防撕裂闸门（赋值见下方 wsh_sync 处）
     // ★ P3 写窗基址：帧窗 k%2（帧 k = render_no k；窗 k%2 与索引窗同号交替）
     wire [20:0] sc_win_base = sc_win ? (FB_BASE[20:0] + FB_TOTAL[20:0]) : FB_BASE[20:0];
 
@@ -379,19 +397,21 @@ module yingxu_vq_board_top #(
             sc_busy<=1'b0; sc_pend_v<=1'b0; sc_pend<=9'd0; sc_cur<=9'd0;
             sc_win<=1'b0; sc_pend_win<=1'b0;
             sc_push<=12'd0; sc_st<=3'd0;
-            sc_ra<=14'd0; sc_wdata<=32'd0;
+            sc_ra<=14'd0;
             wr1_load<=1'b0; wr1_en<=1'b0; wr1_addr<=21'd0; sc_drain<=16'd0;
             scan_done<=1'b0; scan_band_no<=9'd0; scan_ack<=1'b0;
-            wr1_rp_q<=10'd0; wr1_popd<=13'd0;
+            wr1_popd<=13'd0; wr1_pop_q<=1'b0;
         end else begin
             scan_done <= 1'b0;
             scan_ack  <= 1'b0;
             wr1_load  <= 1'b0;
             wr1_en    <= 1'b0;
 
-            // WR1 FIFO pop 影子计数（每带 LOAD 拍清零）
-            wr1_rp_q  <= wr1_rp_now;
-            wr1_popd  <= wr1_popd + {4'd0, wr1_rp_d};
+            // WR1 FIFO pop 计数（每拍累加；LOAD 态在下方 case 中清零——与原
+            // rp 影子差分的清零时刻一致，case 内赋值后写覆盖本行）
+            wr1_pop_q <= wr1_pop;
+            if (wr1_pop_q)
+                wr1_popd <= wr1_popd + 13'd1;
 
             // 新带到达：空闲即开扫，否则挂起（扫描恒快于渲染，1 级挂起足够）
             // ★ P3：band_done 拍锁 render_no[0]（带所属帧 → 写窗）；闸门扣住
@@ -399,12 +419,13 @@ module yingxu_vq_board_top #(
             if (band_done_w) begin
                 if (!sc_busy) begin
                     sc_cur  <= band_no_w; sc_busy <= 1'b1;
-                    sc_win  <= u_band.render_no[0];
+                    sc_win  <= rendered_no[0];
                     sc_push <= 12'd0;
+                    sc_ra   <= (band_no_w[0] ? PIX_BAND[13:0] : 14'd0); // 半区基址（LOAD 拍再用也无害）
                     sc_st   <= win_free_w ? 3'd1 : 3'd0;
                 end else if (!sc_pend_v) begin
                     sc_pend     <= band_no_w; sc_pend_v <= 1'b1;
-                    sc_pend_win <= u_band.render_no[0];
+                    sc_pend_win <= rendered_no[0];
                 end
             end
 
@@ -418,18 +439,25 @@ module yingxu_vq_board_top #(
                 wr1_popd  <= 13'd0;
                 sc_st     <= 3'd2;
             end
-            3'd2: begin // 流式推 2560 字（1 字/拍；行缓冲组合读=本拍地址本拍数据）
+            3'd2: begin // 流式推 2560 字（1 字/拍）
                 if (!wr1_full_w) begin
                     // ★ 无 wr2_aempty_w 门控：WR1 推数与 WR2 FIFO 占用无关；
                     //   WR1 背压由 wr1_full_w 承担（停推时 sc_ra 冻结、恢复无重复）
+                    // ★ 数据直连：WR1_DATA = 行缓冲寄存输出 = ln32[sc_ra-2 像素]。
+                    //   该 1 拍 BRAM 读延迟正好替代旧版 sc_wdata 寄存级，因此
+                    //   "首个 PUSH 落在 LOAD+1、第 k 拍推 ln[k]"与旧版**逐拍一致**
+                    //   （旧 sc_wdata(C) = 组合读(ra(C-1)) = ln32[ra(C-1)]，同式）。
+                    //   本控制器对推数相位极敏感（P5 文档已记一次整字错位），
+                    //   故此处刻意保持与基线同相位，勿再插入空拍。
+                    // ★ 写使能（寄存器）在 PUSH 拍置 1，下一拍真正入 FIFO；
+                    //   数据同拍由行缓冲寄存输出直连供上（wr1_en 与 sc_wdata 同拍对齐）。
                     wr1_en   <= 1'b1;
-                    sc_wdata <= {scan_rd_b_w, scan_rd_w};
                     sc_push  <= sc_push + 12'd1;
                     sc_ra    <= sc_ra + 14'd2;
                     if (sc_push == FB_WB - 1) sc_st <= 3'd3;
                 end
             end
-            3'd3: begin // FLUSH：等 2560 字全部落 SDRAM（rp 影子计数）
+            3'd3: begin // FLUSH：等 2560 字全部被 FIFO 弹出送往 SDRAM（pop 计数）
                 if (wr1_popd >= FB_WB[12:0]) begin
                     sc_drain <= 16'd256;      // 末突发写完裕量
                     sc_st    <= 3'd4;
@@ -447,6 +475,7 @@ module yingxu_vq_board_top #(
                     if (sc_pend_v) begin
                         sc_cur      <= sc_pend;
                         sc_win      <= sc_pend_win;   // ★ 挂起带的写窗随行
+                        sc_ra       <= (sc_pend[0] ? PIX_BAND[13:0] : 14'd0);
                         sc_pend_v   <= 1'b0;
                         sc_busy     <= 1'b1;
                         sc_st       <= win_free_w ? 3'd1 : 3'd0;
@@ -471,6 +500,11 @@ module yingxu_vq_board_top #(
         .clk1_out (pixel_clk_w),        // 73.33M 像素时钟
         .clk2_out (serial_clk_w)        // 366.67M 串行时钟（TD 加密核用）
     );
+    // ★ P5：不要自己再插 BUFG——TD 会为该时钟网自动插时钟缓冲；手工例化
+    //   BUFG_0 会与工具插的那只形成多驱动，TD 报 SYN-5066 并断开驱动源，
+    //   导致 rd1_clk 恒 0、整个像素域被当死逻辑清除（实测 b_pix_clk 端点=0）。
+    //   像素时钟在 timing_b.sdc 里用 create_clock 显式定义（TD 的
+    //   derive_pll_clocks 漏派生 C1）。
     // 像素域复位（高有效）：rst_n 低 + PLL 未锁，双拍同步
     reg [1:0] prst_ff;
     reg [1:0] plock_ff = 2'b00;
@@ -503,16 +537,21 @@ module yingxu_vq_board_top #(
         if (!rst_n) wsh_sync <= 2'b00;
         else        wsh_sync <= {wsh_sync[0], win_show};
     wire win_show_100 = wsh_sync[1];
-    wire win_free_w   = !first_win_done_w || (sc_win != win_show_100);
+    assign win_free_w = !first_win_done_w || (sc_win != win_show_100);
 
     // 扫出（时序+取数+AXIS；EMIT_HDMI=1 时 AXIS 入加密核）
+    // ★ P5：scanout 的 rd1_clk 是**输出**（= pixel_clk，送给 SDRAM 控制器 RD1 域）。
+    //   原接线把它接回 pixel_clk_w，与 PLL 输出构成多驱动网——仿真因两值相同看不
+    //   出来，TD 报 SYN-5066 并断开驱动源，rd1_clk 变常 0，整个像素域被当死逻辑
+    //   清除（实测 b_pix_clk 端点=0、u_scanout 从层次表消失）。单独一根线即可。
+    wire        rd1_clk_w;
     wire        rd1_en_w, rd1_load_w, rd1_empty_w, rd1_we_w, rd1_bmask0_w;
     wire [20:0] rd1_addr_w;
     wire [8:0]  rd1_len_w;
     wire [31:0] rd1_data_w;
     wire        video_ready_w;
-    assign rd1_we_w      = u_sdram.OUT_VALID & u_sdram.RD_MASK[0];
-    assign rd1_bmask0_w  = u_sdram.RD_MASK[0];
+    assign rd1_we_w      = st_out_valid_w & st_rd_mask_w[0];
+    assign rd1_bmask0_w  = st_rd_mask_w[0];
     yx_b_scanout #(
         .FB_WIN0  (FB_BASE[20:0]),
         .FB_TOTAL (FB_TOTAL[20:0])
@@ -530,7 +569,7 @@ module yingxu_vq_board_top #(
         .rd1_empty      (rd1_empty_w),
         .rd1_we         (rd1_we_w),
         .rd1_bmask0     (rd1_bmask0_w),
-        .rd1_clk        (pixel_clk_w),
+        .rd1_clk        (rd1_clk_w),
         .video_user     (video_user),
         .video_valid    (video_valid),
         .video_last     (video_last),
@@ -613,12 +652,21 @@ module yingxu_vq_board_top #(
     assign tmds_ddc_scl = 1'b0;
 `endif
 
-    // ================= vendor SDRAM 控制器 + 硬宏 =================
-    Sdram_Control_4Port u_sdram (
+    // ================= vendor SDRAM 控制器（板 B 派生副本）+ 硬宏 =================
+    // ★ P5：实例化 Sdram_Control_4Port_B（src/5640/sdram_ctrl_4p/b_board/）——
+    //   它 = 厂商原件 + P3 三处修补 + 状态输出口。原先本层用层次引用读
+    //   u_sdram.IN_REQ/WR_MASK/RD_MASK/mWR_DONE/OUT_VALID/mWR，TD 不支持层次
+    //   引用（最小用例实测 HDL-8007），故改为 st_* 端口；仿真与综合共用该文件。
+    //   A 板仍用厂商原件，不受影响。
+    wire        st_in_req_w, st_out_valid_w, st_wr_done_w, st_wr_w;
+    wire [1:0]  st_wr_mask_w, st_rd_mask_w;
+
+    Sdram_Control_4Port_B u_sdram (
         .REF_CLK(ref_clk), .RESET_N(rst_n), .CLK(clk100),
         .WR1_DATA(sc_wdata), .WR1(wr1_en), .WR1_ADDR(wr1_addr),
         // ★ P3：MAX 恒全域（双窗下 rWR1_MAX 复位锁存无法跟随窗切换——回卷
         //   由每带 LOAD 承担，窗尾溢出走 LOAD 纠偏，同 fetch v4 哲学）
+        // ★ P3：MAX 恒全域（双窗下 rWR1_MAX 复位锁存无法跟随窗切换——回卷
         .WR1_MAX_ADDR(21'h1FFFFF), .WR1_LENGTH(9'd256), .WR1_LOAD(wr1_load),
         .WR1_CLK(clk100), .WR1_FULL(wr1_full_w), .WR1_USE(),
         .WR2_DATA(wr2_data_u), .WR2(wr2_en_u), .WR2_ADDR(wr2_addr_u),
@@ -626,13 +674,16 @@ module yingxu_vq_board_top #(
         .WR2_CLK(clk100), .WR2_FULL(wr2_full_w), .WR2_USE(),
         .RD1_DATA(rd1_data_w), .RD1(rd1_en_w), .RD1_ADDR(rd1_addr_w),
         .RD1_MAX_ADDR(21'h1FFFFF), .RD1_LENGTH(rd1_len_w), .RD1_LOAD(rd1_load_w),
-        .RD1_CLK(pixel_clk_w), .RD1_EMPTY(rd1_empty_w), .RD1_USE(),
+        .RD1_CLK(rd1_clk_w), .RD1_EMPTY(rd1_empty_w), .RD1_USE(),
         .RD2_DATA(rd2_dat_w), .RD2(rd2_re_u), .RD2_ADDR(rd2_addr_u),
         .RD2_MAX_ADDR(rd2_max_u), .RD2_LENGTH(rd2_len_u), .RD2_LOAD(rd2_load_u),
         .RD2_CLK(clk100), .RD2_EMPTY(rd2_empty_w), .RD2_USE(),
         .SA(DRAM_ADDR), .BA(DRAM_BA), .CS_N(DRAM_CS_N), .CKE(DRAM_CKE),
         .RAS_N(DRAM_RAS_N), .CAS_N(DRAM_CAS_N), .WE_N(DRAM_WE_N),
         .DQ(DRAM_DQ), .DQM(DRAM_DQM), .SDR_CLK(DRAM_CLK),
+        .st_in_req(st_in_req_w), .st_out_valid(st_out_valid_w),
+        .st_wr_mask(st_wr_mask_w), .st_rd_mask(st_rd_mask_w),
+        .st_wr_done(st_wr_done_w), .st_wr(st_wr_w),
         .test_oe()
     );
 
