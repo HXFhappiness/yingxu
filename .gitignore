@@ -55,3 +55,6 @@ YX_交接包*/
 YX_美术资源包*/
 cleanup_backup_*/
 log/
+
+# ---- 厂商加密 IP（不公开）----
+*.enc.v
