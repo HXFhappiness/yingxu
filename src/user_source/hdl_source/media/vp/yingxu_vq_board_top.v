@@ -25,7 +25,13 @@ module yingxu_vq_board_top #(
     parameter NB     = (W/4)*(H/4),
     // 1=抽象口模式（既有仿真：流/索引 SDRAM 由 TB 侧承载）；0=体系模式：
     // 头解析+码本装载、索引顺序写（WR2）、取带读出（RD2）全部内部实例化
-    parameter SIM_ABSTRACT = 1
+    parameter SIM_ABSTRACT = 1,
+    // ---- 以太网入口（-DUSE_ETH 编译宏门控；见下）----
+    // 板级码流来源：RGMII PHY（AC601+AC201 与 A 板同构）。默认 0 = 由 stream_* 口
+    // 外部驱动（P4 验收基线）；TD 板级构建用 -DUSE_ETH 打开内部 yx_b_eth_rx。
+    parameter [47:0] LOCAL_MAC  = 48'h00_0a_35_02_00_01,
+    parameter [31:0] LOCAL_IP   = 32'hc0_a8_00_64,     // 192.168.0.100
+    parameter [15:0] LOCAL_PORT = 16'd5000
 )(
     input  wire        ref_clk,        // 50M 晶振（控制器内部 PLL 生成 100M）
     input  wire        rst_n,
@@ -34,6 +40,15 @@ module yingxu_vq_board_top #(
     input  wire        stream_valid,
     input  wire [7:0]  stream_data,
     output wire        stream_ready,
+
+    // ---- 以太网 PHY（RGMII；-DUSE_ETH 时使用，否则常数驱动/忽略）----
+    // ★ 只收不发：TX 需要 125M TX 时钟源（本板无），eth_gtxc/txd/txen 不引出。
+    input  wire        eth_rxc,
+    input  wire [3:0]  eth_rxd,
+    input  wire        eth_rxdv,
+    output wire        eth_rst_n,      // PHY 复位（低有效，跟随板级复位）
+    output wire        eth_mdc,        // 未实现 MDIO 配置：空闲高
+    output wire        eth_mdio,
 
     // ---- 索引缓冲 SDRAM 口（顶层引出，随机访问）----
     output wire          ix_wr_valid,
@@ -70,6 +85,16 @@ module yingxu_vq_board_top #(
     output wire        dbg_clk100,      // 内部 100M 逻辑域时钟（TB 用；板上为内部走线）
     output wire        dbg_pixel_clk,   // 73.33M 像素时钟（TB 对拍采样用）
 
+    // ---- HDMI TMDS/DDC 输出（P5；引脚号待 AC601 引脚表，见 timing_b.sdc）----
+    //   EMIT_HDMI=0（仿真）：TMDS 恒 0、DDC_SCL 恒 0、DDC_SDA 高阻。
+    //   EMIT_HDMI=1（TD）  ：AXIS → 加密核 → hdmi_phy_wrapper → 本组端口。
+    output wire        tmds_ch0_p,
+    output wire        tmds_ch1_p,
+    output wire        tmds_ch2_p,
+    output wire        tmds_clk_p,
+    output wire        tmds_ddc_scl,    // 观察项：当前 I_edid_read_trig 恒 0，不发起读
+    inout  wire        tmds_ddc_sda,
+
     // ---- SDRAM 引脚（TD 布线用；仿真中 sdram_ip 硬宏在顶层内部）----
     inout  wire [31:0] DRAM_DQ,
     output wire [10:0] DRAM_ADDR,
@@ -102,7 +127,20 @@ module yingxu_vq_board_top #(
     wire [7:0]  hdr_d;
     wire        dec_v = SIM_ABSTRACT ? stream_valid : hdr_v;
     wire [7:0]  dec_d = SIM_ABSTRACT ? stream_data  : hdr_d;
+`ifdef USE_ETH
+    // 板级：码流来自以太网，A→B 字节流端口不参与（保持 0，避免悬空）
+    assign stream_ready = 1'b0;
+`else
     assign stream_ready = SIM_ABSTRACT ? dec_rdy_w : hdr_rdy;
+`endif
+
+    // ---- PHY 控制（两种构建一致）----
+    // 复位跟随板级复位（低有效）；未实现 MDIO 配置，MDC/MDIO 空闲高。
+    // ★ 以太网 bring-up 缺口：RGMII PHY 的 RXC 延迟/接口模式通常需 MDIO 寄存器
+    //   配置（PHY 型号待确认），P5 首板上板时按 PHY 手册补 MDIO 写序列。
+    assign eth_rst_n = rst_n;
+    assign eth_mdc   = 1'b1;
+    assign eth_mdio  = 1'b1;
     wire        dec_rdy_w;
     wire        hdr_book_we;
     wire [13:0] hdr_book_wa;
@@ -237,9 +275,46 @@ module yingxu_vq_board_top #(
     // ================= 体系模式：头解析 + 索引写/取带适配 =================
     generate if (!SIM_ABSTRACT) begin : REAL_IX
 
+`ifdef USE_ETH
+    // ---- 板级以太网入口（RGMII 接收）→ hdr_parse 字节流 ----
+    // 只收不发：PHY 的 gtxc/txd/txen 需要 125M TX 时钟（本板无该时钟源），
+    // 不接入；以太网 bring-up（MDIO 配置/RXC delay）见 P5 文档。
+    wire        eth_sv;
+    wire [7:0]  eth_sd;
+    wire        eth_rdy;
+    yx_b_eth_rx #(
+        .USE_RGMII (1),
+        .FIFO_AW   (13)
+    ) u_ethrx (
+        .clk100       (clk100),
+        .rst_n        (rst_n),
+        .local_mac    (LOCAL_MAC),
+        .local_ip     (LOCAL_IP),
+        .local_port   (LOCAL_PORT),
+        .gmii_rx_clk  (1'b0),
+        .gmii_rxd     (8'd0),
+        .gmii_rxdv    (1'b0),
+        .rgmii_rx_clk (eth_rxc),
+        .rgmii_rxd    (eth_rxd),
+        .rgmii_rxdv   (eth_rxdv),
+        .stream_valid (eth_sv),
+        .stream_data  (eth_sd),
+        .stream_ready (eth_rdy),
+        .pkt_ok_cnt   (),
+        .pkt_drop_cnt (),
+        .byte_cnt     (),
+        .fifo_room    (),
+        .rx_clk125    ()
+    );
+`endif
+
     yx_b_hdr_parse #(.W(W), .H(H), .CBSIZE(CBSIZE)) u_hdr (
         .clk(clk100), .rst_n(rst_n),
+`ifdef USE_ETH
+        .in_valid(eth_sv), .in_data(eth_sd), .in_ready(eth_rdy),
+`else
         .in_valid(stream_valid), .in_data(stream_data), .in_ready(stream_ready),
+`endif
         .out_valid(hdr_v), .out_data(hdr_d), .out_ready(dec_rdy_w),
         .book_we(hdr_book_we), .book_wa(hdr_book_wa), .book_wd(hdr_book_wd),
         .hdr_ok(hdr_ok_w), .hdr_err(hdr_err_w)
@@ -466,8 +541,10 @@ module yingxu_vq_board_top #(
         .disp_stall     (disp_stall)
     );
 `ifdef EMIT_HDMI
-    // TD 构建：AXIS → 加密核 → PHY（iverilog 不编 .enc，仿真构建无此块）。
-    // TMDS 引脚端口随 P5 引脚表一并加入（现接内部 wire）。
+    // TD 构建：AXIS → 加密核 → PHY → 顶层 TMDS/DDC 端口。
+    // iverilog 不编 .enc，仿真构建走 else 分支（AXIS 已由顶层观测口引出）。
+    // ★ P5 骨架：端口/连线已完整（含 DDC），仅缺 AC601 引脚表与 timing_b.sdc
+    //   的引脚绑定；加密核 wrapper 需从安路 IP 库获取（不在本仓库）。
     wire core_ready_w, video_locked_w;
     wire [9:0] tmds_ch0_w, tmds_ch1_w, tmds_ch2_w, tmds_clk_w;
     hdmi_1_4b_transmitter_core_wrapper #(
@@ -505,12 +582,14 @@ module yingxu_vq_board_top #(
         .I_acr_cts          (20'd0),
         .I_acr_n            (20'd0),
         .O_video_locked     (video_locked_w),
+        .O_ddc_scl          (tmds_ddc_scl),
+        .IO_ddc_sda         (tmds_ddc_sda),
         .O_ch0_tmds_data    (tmds_ch0_w),
         .O_ch1_tmds_data    (tmds_ch1_w),
         .O_ch2_tmds_data    (tmds_ch2_w),
         .O_clk_tmds_data    (tmds_clk_w)
     );
-    hdmi_phy_wrapper u_hdmi_phy (
+    hdmi_phy_wrapper #(.DEVICE("EG")) u_hdmi_phy (
         .I_pixel_clk   (pixel_clk_w),
         .I_serial_clk  (serial_clk_w),
         .I_rst         (pixel_rst_w),
@@ -518,14 +597,20 @@ module yingxu_vq_board_top #(
         .I_tmds_channel_1   (tmds_ch1_w),
         .I_tmds_channel_2   (tmds_ch2_w),
         .I_tmds_channel_clk (tmds_clk_w),
-        .O_tmds_ch0_p       (tmds_ch0_p_w),
-        .O_tmds_ch1_p       (tmds_ch1_p_w),
-        .O_tmds_ch2_p       (tmds_ch2_p_w),
-        .O_tmds_clk_p       (tmds_clk_p_w)
+        .O_tmds_ch0_p       (tmds_ch0_p),
+        .O_tmds_ch1_p       (tmds_ch1_p),
+        .O_tmds_ch2_p       (tmds_ch2_p),
+        .O_tmds_clk_p       (tmds_clk_p)
     );
     assign video_ready_w = core_ready_w;
 `else
     assign video_ready_w = 1'b1;    // 仿真：ready 仅 informational（A 板语义）
+    // 仿真构建无 HDMI 核/PHY：TMDS 与 DDC_SCL 恒 0，DDC_SDA 保持高阻（不驱动）。
+    assign tmds_ch0_p   = 1'b0;
+    assign tmds_ch1_p   = 1'b0;
+    assign tmds_ch2_p   = 1'b0;
+    assign tmds_clk_p   = 1'b0;
+    assign tmds_ddc_scl = 1'b0;
 `endif
 
     // ================= vendor SDRAM 控制器 + 硬宏 =================
