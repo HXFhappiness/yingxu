@@ -1,0 +1,823 @@
+`timescale 1ns/1ps
+// tb_yxvp_bboard.v — 板 B SoC 集成验收 TB
+//
+// 链路：vp_720_5f.yxv2 字节流 → yingxu_vq_board_top（ixdec→ixbuf→band→扫描写端
+//       → vendor SDRAM 控制器+硬宏 → HDMI 扫出）
+// 索引缓冲 SDRAM 随机口接行为模型（写直入；读电平请求→次拍 dvld）。
+//
+// 断言：
+//   A1 扫描对拍：每带 scan_done 时，SDRAM 帧缓冲区 [b*2560,+2560) 与 band 行缓冲
+//      半区（2 像素/字打包）逐字一致；
+//   A2 不欠扫描：渲染器 pend_cnt==2 的滞留拍数占比受限于阈值（默认 5%）；
+//   A3 帧计数：frame_done_vq 次数 = 流内帧数；
+//   P3 显示判据：AXI-Stream 内容对拍（读对窗、流对序）+ 写读窗互斥 + RD1 供数。
+module tb_yxvp_bboard;
+`ifdef YXVP_W
+    parameter W = `YXVP_W;
+`else
+    parameter W = 1280;
+`endif
+`ifdef YXVP_H
+    parameter H = `YXVP_H;
+`else
+    parameter H = 720;
+`endif
+`ifdef YXVP_CBSIZE
+    parameter CBSIZE = `YXVP_CBSIZE;
+`else
+    parameter CBSIZE = 1024;
+`endif
+    localparam BH = H/4, FB_WB = 4*W/2, FB_TOTAL = BH*FB_WB;
+    localparam FBB = 2*(W/4)*(H/4);        // 帧缓冲基址 = 2×NB（与索引区不重叠）
+    localparam AW = ((2*(W/4)*(H/4)) > (1<<17)) ? 19 : 17;
+
+    reg ref_clk = 1'b0;
+    always #10 ref_clk = ~ref_clk;          // 50M
+    wire clk100;                             // 顶层内部 PLL
+                                             // 73.33M 像素时钟 dbg_pixel_clk（下）
+
+    reg rst_n = 1'b0;
+
+    // ---- 字节流 ----
+    reg        s_valid = 1'b0;
+    reg  [7:0] s_data  = 8'h00;
+    wire       s_ready;
+
+    // ---- 索引 SDRAM 行为模型 ----
+    // ★ SYS 模式（体系化）下 cp 拷贝读口已由 fetch v5 经 RD2 分时顺序承载
+    //   （板上契约闭环），本模型的 cp 服务分支停用；ixmem 仅保留两用：
+    //   a) WR2 镜像（下）= 索引窗金标供给源；b) band 抽象读（模式 1 用）。
+    wire        ix_wv; wire [AW-1:0] ix_wa; wire [15:0] ix_wd;
+    wire        cp_rd_w; wire [AW-1:0] cp_a_w; reg cp_dvld_r; reg [15:0] cp_d_r;
+    wire        breq_w; wire [AW-1:0] baddr_w; reg bdvld_r; reg [15:0] bd_d_r;
+    reg [15:0]  ixmem [0:(1<<AW)-1];
+
+    always @(posedge clk100 or negedge rst_n) begin
+        if (!rst_n) begin
+            cp_dvld_r <= 1'b0; bdvld_r <= 1'b0;
+        end else begin
+`ifdef BBOARD_SYS
+            cp_dvld_r <= 1'b0;          // 体系模式：cp 口由 fetch v5 承载，模型停用
+            cp_d_r    <= 16'h0000;
+`else
+            cp_dvld_r <= cp_rd_w;   cp_d_r  <= ixmem[cp_a_w];
+`endif
+            bdvld_r   <= breq_w;    bd_d_r  <= ixmem[baddr_w];
+            if (ix_wv) ixmem[ix_wa] <= ix_wd;
+        end
+    end
+
+    // ---- 模式 0 索引窗金标供给：把 WR2 稠密写流镜像进 ixmem ----
+    // 体系模式（SIM_ABSTRACT=0）下抽象写口 ix_wr_* 强制置 0，ixmem 仅由此镜像
+    // 供给。★ 自 fetch v5 起 cp 拷贝读改由 RD2 分时承载（真实 SDRAM 回路），
+    // ixmem 不再被 DUT 读取，只作 igold 对拍的镜像参考。KEY 流无 DELTA，
+    // 不触及 cp 口。wr2_load_u 与 wr2_en_u 分属不同状态，永不同拍。
+    reg [16:0] mir_cnt;
+    always @(posedge clk100 or negedge rst_n) begin
+        if (!rst_n) mir_cnt <= 17'd0;
+        else if (u_top.wr2_load_u) mir_cnt <= 17'd0;
+        else if (u_top.wr2_en_u) begin
+            ixmem[u_top.wr2_addr_u + mir_cnt] <= u_top.wr2_data_u[15:0];
+            mir_cnt <= mir_cnt + 17'd1;
+        end
+    end
+
+    // ---- 顶层 ----
+    wire [15:0] commit_no, rendered_no;
+    wire        frame_done_vq, scan_done, scan_ack;
+    wire [8:0]  scan_band_no;
+    wire [1:0]  pend_cnt;
+    wire        video_user_w, video_valid_w, video_last_w;
+    wire [23:0] video_data_w;
+    wire        win_show_w;
+    wire [15:0] disp_pass_w, disp_stall_w;
+    wire        pixel_clk_w;
+    wire [31:0] DRAM_DQ; wire [10:0] DRAM_ADDR; wire [1:0] DRAM_BA, DRAM_CS_N;
+    wire DRAM_CKE, DRAM_RAS_N, DRAM_CAS_N, DRAM_WE_N; wire [3:0] DRAM_DQM; wire DRAM_CLK;
+
+    yingxu_vq_board_top #(.W(W), .H(H), .CBSIZE(CBSIZE), .AW(AW)
+`ifdef BBOARD_SYS
+                          , .SIM_ABSTRACT(0)
+`endif
+                          ) u_top (
+        .ref_clk(ref_clk), .rst_n(rst_n),
+        .stream_valid(s_valid), .stream_data(s_data), .stream_ready(s_ready),
+        .ix_wr_valid(ix_wv), .ix_wr_addr(ix_wa), .ix_wr_data(ix_wd), .ix_wr_gnt(1'b1),
+        .cp_rd(cp_rd_w), .cp_addr(cp_a_w), .cp_dvld(cp_dvld_r), .cp_data(cp_d_r),
+        .band_rd_req(breq_w), .band_rd_addr(baddr_w),
+        .band_rd_dvld(bdvld_r), .band_rd_data(bd_d_r),
+        .video_user(video_user_w), .video_valid(video_valid_w),
+        .video_last(video_last_w), .video_data(video_data_w),
+        .win_show(win_show_w), .disp_pass(disp_pass_w), .disp_stall(disp_stall_w),
+        .commit_no(commit_no), .rendered_no(rendered_no),
+        .frame_done_vq(frame_done_vq), .scan_done(scan_done), .scan_band_no(scan_band_no),
+        .scan_ack(scan_ack),
+        .band_pend_cnt(pend_cnt),
+        .dbg_clk100(clk100), .dbg_pixel_clk(pixel_clk_w),
+        .DRAM_DQ(DRAM_DQ), .DRAM_ADDR(DRAM_ADDR), .DRAM_BA(DRAM_BA),
+        .DRAM_CS_N(DRAM_CS_N), .DRAM_CKE(DRAM_CKE), .DRAM_RAS_N(DRAM_RAS_N),
+        .DRAM_CAS_N(DRAM_CAS_N), .DRAM_WE_N(DRAM_WE_N), .DRAM_DQM(DRAM_DQM),
+        .DRAM_CLK(DRAM_CLK)
+    );
+
+    // ================= 断言状态 =================
+    integer scan_errs = 0, frames_done = 0, bands_scanned = 0;
+    integer stall2_cnt = 0, total_cnt = 0;
+    integer k, ofs, expw, gotw;
+    integer disp_pop_prev = 0, disp_samp = 0;   // （旧显示判据遗留名，退役）
+
+    // A1：scan_done 拍，帧缓冲区 vs 行缓冲半区逐字对拍（零延阻塞循环）
+    // SYS 模式追加金标对拍：+GOLDEN_FB 给出时用 gen_golden.py 期望值（真实流），
+    // 否则用合成流公式（KEY-only 入口）。
+    integer golden_errs = 0;
+    integer frm, pe, po, expf;
+    // ---- 文件金标（真实流）----
+    localparam NBW = (W/4)*(H/4);          // 每窗索引字数 = NB
+    reg [255:0] gidx_path, gfb_path;
+    reg [15:0] gidx_mem [0:5*NBW-1];
+    reg [31:0] gfb_mem  [0:5*FB_TOTAL-1];
+    integer gidx_on = 0, gfb_on = 0;
+    integer idx_golden_errs = 0;
+    integer win_wr_cnt0 = 0, win_wr_cnt1 = 0;
+    reg [1:0] rg_prev = 2'b00;
+    integer gi, gfi, gwbase;
+    // 分帧错误分布（YX6 排障）：igerr_cnt_f[f]=帧 f 索引窗错误数、首错偏移
+    integer igerr_cnt_f [0:5];
+    integer igerr_first_i [0:5];
+    integer gerr_cnt_f [0:5];
+    integer gerr_first_b [0:5];
+    // 收口判定用：各判据布尔结果 + X/Z 违例计数 + mem 落写检查
+    integer pd, pf, pb, pg, ps, px, xz_errs, pig, pce, pcp, phe, pax, pmu, pst, pm;
+    integer nx_idx, nx_fb, mx;
+    // Task1: u_ixwr 入口计数
+    integer ivc = 0, gnc = 0, ldc = 0, psc = 0, fwc = 0;
+    // H1/H2 判别探针（只测量，不影响判定）
+    integer cur_ba = 0, cur_row = 0, cur_col = 0, burst_cnt = 0, i_lin, wr_win = 0;
+    integer w_x_idx = 0, w_r_idx = 0, w_x_fb = 0, w_r_fb = 0;
+    integer x_i_a = -1, x_i_n = 0, x_f_a = -1, x_f_n = 0;
+    reg [31:0] s_i0 = 32'h0, s_i1 = 32'h0, s_i2 = 32'h0, s_i3 = 32'h0, s_i4 = 32'h0;
+    integer sa_i0 = -1, sa_i1 = -1, sa_i2 = -1, sa_i3 = -1, sa_i4 = -1;
+    reg [31:0] s_f0 = 32'h0, s_f1 = 32'h0, s_f2 = 32'h0, s_f3 = 32'h0, s_f4 = 32'h0;
+    integer sa_f0 = -1, sa_f1 = -1, sa_f2 = -1, sa_f3 = -1, sa_f4 = -1;
+    // H2: write_fifo pop 沿 do vs TB 侧推入影子队列
+    reg [31:0] q1 [0:1023];
+    reg [31:0] q2 [0:1023];
+    integer h1q = 0, t1q = 0, h2q = 0, t2q = 0;
+    integer p1r = 0, p2r = 0, x1c = 0, x2c = 0, m1c = 0, m2c = 0, u1c = 0, u2c = 0, n1c = 0, n2c = 0;
+    reg [31:0] got1 = 32'h0, got2 = 32'h0, mm1e = 32'h0, mm1g = 32'h0, mm2e = 32'h0, mm2g = 32'h0;
+    integer mm1s = -1, mm2s = -1;
+    integer px1c = 0, pr1c = 0, px2c = 0, pr2c = 0;
+    reg [31:0] pv1_0 = 32'h0, pv1_1 = 32'h0, pv1_2 = 32'h0;
+    reg [31:0] pv2_0 = 32'h0, pv2_1 = 32'h0, pv2_2 = 32'h0;
+    always @(posedge clk100) begin
+        if (rst_n && scan_done) begin
+            ofs = scan_band_no[0] ? 4*W : 0;
+            // ★ 帧号根修：比对带所属帧=渲染侧实际帧号（scan_done 拍 render_no
+            //   恒为该带所在帧——渲染带 k+1 同帧推进/帧尾 frame_wait 时不变）。
+            //   旧 bands_scanned/180 计数在比对滞后跨帧时与渲染帧号错位。
+            frm = u_top.u_band.render_no;
+            for (k = 0; k < FB_WB; k = k + 1) begin
+                expw = {u_top.u_band.ln[ofs + 2*k + 1], u_top.u_band.ln[ofs + 2*k]};
+                // ★ P3 双窗：带写入帧窗 frm%2（[FBB+win*FB_TOTAL, +FB_TOTAL)）
+                gotw = u_top.u_dram.sdram.mem[FBB + (frm % 2) * FB_TOTAL + scan_band_no * FB_WB + k];
+`ifdef BBOARD_SYS
+                if (gfb_on) begin
+                    // 真实流文件金标：gen_golden.py 期望值（帧 f 渲染窗 f%2 状态）
+                    expf = gfb_mem[frm*FB_TOTAL + scan_band_no*FB_WB + k];
+                    if (gotw !== expf) begin
+                        golden_errs = golden_errs + 1;
+                        gerr_cnt_f[frm] = gerr_cnt_f[frm] + 1;
+                        if (gerr_first_b[frm] < 0) gerr_first_b[frm] = scan_band_no;
+                        if (golden_errs <= 8)
+                            $display("GOLDEN-ERR b=%0d w=%0d sdram=%08h exp=%08h",
+                                     scan_band_no, k, gotw, expf);
+                    end
+                end else begin
+                // 合成流金标：带内像素 p=2k/2k+1，4×4 块二维映射：
+                //   blk = (band*4 + 行/4)*(W/4) + 列/4；块内字 j = (行%4)*4 + 列%4
+                //   像素 = cb[blkidx][j] = blkidx + j（合成码本 i+j）
+                pe = ((((scan_band_no*4 + (2*k)  /W) /4)*(W/4) + ((2*k)  %W)/4) * 11
+                      + frm*313) % CBSIZE + (((2*k)  /W)%4)*4 + ((2*k)  %W)%4;
+                po = ((((scan_band_no*4 + (2*k+1)/W) /4)*(W/4) + ((2*k+1)%W)/4) * 11
+                      + frm*313) % CBSIZE + (((2*k+1)/W)%4)*4 + ((2*k+1)%W)%4;
+                expf = {po[15:0], pe[15:0]};
+                if (gotw !== expf[31:0]) begin
+                    golden_errs = golden_errs + 1;
+                    if (golden_errs <= 8)
+                        $display("GOLDEN-ERR b=%0d w=%0d sdram=%08h exp=%08h",
+                                 scan_band_no, k, gotw, expf);
+                end
+                end
+                // 诊断采样（不影响判定）：真实带的前 2 字实际内容 vs 金标
+                if ((scan_band_no == 9'd40 || scan_band_no == 9'd400) && k < 2)
+                    $display("GSAMPLE b=%0d w=%0d sdram=%08h ln=%08h exp=%08h",
+                             scan_band_no, k, gotw, expw, expf);
+`endif
+                if (expw !== gotw) begin
+                    scan_errs = scan_errs + 1;
+                    if (scan_errs <= 8)
+                        $display("BSCAN-ERR b=%0d w=%0d sdram=%08h ln=%08h",
+                                 scan_band_no, k, gotw, expw);
+                end
+            end
+            bands_scanned = bands_scanned + 1;
+            if (scan_errs == 0 && (bands_scanned % 30 == 0))
+                $display("BSCAN ok bands=%0d (frame %0d)", bands_scanned, rendered_no);
+        end
+    end
+
+    // A2：渲染器满挂（pend_cnt==2）滞留占比
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            total_cnt = total_cnt + 1;
+            if (pend_cnt == 2'd2) stall2_cnt = stall2_cnt + 1;
+        end
+    end
+
+    // RD 路径观测：控制器 RD 突发数 + 显示待数据（RD FIFO 空）拍数
+    integer rd_bursts = 0, disp_empty_cnt = 0, dec_frames = 0;
+    reg [1:0] rd_mask_prev = 2'b00;
+    integer patch_cnt = 0;
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            if ((u_top.u_sdram.RD_MASK != 2'b00) && (rd_mask_prev == 2'b00))
+                rd_bursts = rd_bursts + 1;
+            rd_mask_prev <= u_top.u_sdram.RD_MASK;
+            if (u_top.rd1_empty_w) disp_empty_cnt = disp_empty_cnt + 1;
+            if (u_top.dec_fdone) dec_frames = dec_frames + 1;
+            // 补丁探针：前 8 个 (blk,idx)（期望 (0,0),(1,11),(2,22)...）
+            if (u_top.hdr_ok_w && u_top.ix_we && patch_cnt < 8) begin
+                patch_cnt = patch_cnt + 1;
+                $display("PATCH %0d: blk=%0d idx=%0d", patch_cnt, u_top.ix_blk, u_top.ix_idx);
+            end
+            // 字节流探针：入口 vs 解析器实际消费的前 12 字节
+            if (sent < 12 && s_ready) $display("FEED %0d: %02x", sent, s_data);
+        end
+    end
+    // 码本探针：hdr_ok 沿转储 book[0..7]（期望 0,1,2,3,4,5,6,7）
+    reg hdr_ok_r = 1'b0;
+    always @(posedge clk100) begin
+        if (rst_n && u_top.hdr_ok_w && !hdr_ok_r) begin
+            hdr_ok_r <= 1'b1;
+            $display("BOOK[0..7] = %0d %0d %0d %0d %0d %0d %0d %0d",
+                     u_top.u_band.book[0], u_top.u_band.book[1],
+                     u_top.u_band.book[2], u_top.u_band.book[3],
+                     u_top.u_band.book[4], u_top.u_band.book[5],
+                     u_top.u_band.book[6], u_top.u_band.book[7]);
+        end else begin
+            hdr_ok_r <= u_top.hdr_ok_w;
+        end
+    end
+
+    // 诊断（不影响判定）：SDRAM 引脚级命令探针 + H1 写窗归因
+    // 命令编码：ACTIVE=RAS0/CAS1/WE1  READ=RAS1/CAS0/WE1  WRITE=RAS1/CAS0/WE0
+    //           PRECHARGE=RAS0/CAS1/WE0  AUTO-REFRESH=RAS0/CAS0/WE1
+    // 地址换算：linear = ba*524288 + row*256 + col（11bit row × 8bit col × 4 bank）
+    //           linear < FBB(115200) = 索引区(WR2)，否则帧区(WR1)
+    integer sd_act = 0, sd_wr = 0, sd_rd = 0, sd_pre = 0, sd_ref = 0;
+    always @(posedge DRAM_CLK) begin
+        if (DRAM_CS_N[0] === 1'b0) begin
+            if (!DRAM_RAS_N && !DRAM_CAS_N && DRAM_WE_N) begin
+                sd_ref = sd_ref + 1;
+                wr_win = 0;
+            end else if (!DRAM_RAS_N && !DRAM_CAS_N && !DRAM_WE_N) begin
+                sd_pre = sd_pre + 1;
+                wr_win = 0;
+            end else if (!DRAM_RAS_N && DRAM_CAS_N && DRAM_WE_N) begin
+                sd_act = sd_act + 1;
+                cur_ba  = DRAM_BA;
+                cur_row = DRAM_ADDR;
+                wr_win  = 0;
+            end else if (DRAM_RAS_N && !DRAM_CAS_N && !DRAM_WE_N) begin
+                sd_wr = sd_wr + 1;
+                cur_col  = DRAM_ADDR % 256;
+                burst_cnt = 0;
+                wr_win   = 1;
+                if (sd_wr <= 4)
+                    $display("SDWR t=%0t ba=%0d sa=%03h dqm=%b dq=%08h",
+                             $time, DRAM_BA, DRAM_ADDR, DRAM_DQM, DRAM_DQ);
+            end else if (DRAM_RAS_N && !DRAM_CAS_N && DRAM_WE_N) begin
+                sd_rd = sd_rd + 1;
+                wr_win = 0;
+            end else begin
+                wr_win = 0;
+            end
+        end else if ((wr_win === 1) && (burst_cnt < 256)) begin
+            // 写数据拍：DQ 由控制器驱动，逐字归类到地址窗
+            burst_cnt = burst_cnt + 1;
+            i_lin  = cur_ba * 524288 + cur_row * 256 + cur_col;
+            cur_col = (cur_col + 1) % 256;
+            if (^DRAM_DQ === 1'bx) begin
+                if (i_lin < FBB) begin
+                    w_x_idx = w_x_idx + 1;
+                    if (x_i_a < 0) x_i_a = i_lin;
+                end else begin
+                    w_x_fb = w_x_fb + 1;
+                    if (x_f_a < 0) x_f_a = i_lin;
+                end
+            end else begin
+                if (i_lin < FBB) begin
+                    w_r_idx = w_r_idx + 1;
+                    if      (w_r_idx == 1) begin s_i0 = DRAM_DQ; sa_i0 = i_lin; end
+                    else if (w_r_idx == 2) begin s_i1 = DRAM_DQ; sa_i1 = i_lin; end
+                    else if (w_r_idx == 3) begin s_i2 = DRAM_DQ; sa_i2 = i_lin; end
+                    else if (w_r_idx == 4) begin s_i3 = DRAM_DQ; sa_i3 = i_lin; end
+                    else if (w_r_idx == 5) begin s_i4 = DRAM_DQ; sa_i4 = i_lin; end
+                end else begin
+                    w_r_fb = w_r_fb + 1;
+                    if      (w_r_fb == 1) begin s_f0 = DRAM_DQ; sa_f0 = i_lin; end
+                    else if (w_r_fb == 2) begin s_f1 = DRAM_DQ; sa_f1 = i_lin; end
+                    else if (w_r_fb == 3) begin s_f2 = DRAM_DQ; sa_f2 = i_lin; end
+                    else if (w_r_fb == 4) begin s_f3 = DRAM_DQ; sa_f3 = i_lin; end
+                    else if (w_r_fb == 5) begin s_f4 = DRAM_DQ; sa_f4 = i_lin; end
+                end
+            end
+        end
+    end
+
+    // Task1: u_ixwr 入口活动计数（valid/gnt/en/load/full）
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            if (u_top.wr_valid_w === 1'b1) ivc = ivc + 1;
+            if (u_top.ixwr_gnt_w === 1'b1) gnc = gnc + 1;
+            if (u_top.REAL_IX.u_ixwr.wr2_en === 1'b1) psc = psc + 1;
+            if (u_top.REAL_IX.u_ixwr.wr2_load === 1'b1) ldc = ldc + 1;
+            if (u_top.wr2_full_w === 1'b1) fwc = fwc + 1;
+        end
+    end
+
+    // CPSTAT：fetch v5 cp 口 RD2 分时服务观测（仅 SYS）。
+    //   deliv = cp_dvld 脉冲数（merge 实际收到的源字）——真实流精确期望
+    //   = ΣDELTA(NB-npatch) = 3*NBW-6588 = 166212（f1 D595/f2 D355/f4 D5638）；
+    //   loads = CP_LOAD 完成数（流启动；被抢占重入 +1）；
+    //   disc/stale = 补丁跳字的两种实现路径（和恒 = 补丁数，拆分随管线竞速浮动）。
+    integer cp_deliv = 0, cp_disc = 0, cp_stale = 0, cp_loads = 0;
+`ifdef BBOARD_SYS
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            if (u_top.REAL_IX.u_ixfetch.cp_dvld === 1'b1)
+                cp_deliv = cp_deliv + 1;
+            if (u_top.REAL_IX.u_ixfetch.rd2_re === 1'b1 &&
+                u_top.REAL_IX.u_ixfetch.cp_pop_disc === 1'b1)
+                cp_disc = cp_disc + 1;
+            if (u_top.REAL_IX.u_ixfetch.cp_w_v === 1'b1 &&
+                u_top.REAL_IX.u_ixfetch.cp_dvld === 1'b0 &&
+                u_top.REAL_IX.u_ixfetch.cp_w_a !== u_top.cp_addr)
+                cp_stale = cp_stale + 1;
+            if (u_top.REAL_IX.u_ixfetch.cp_on === 1'b1 &&
+                u_top.REAL_IX.u_ixfetch.cp_ld === 1'b1 &&
+                u_top.rd2_empty_w === 1'b1 && u_top.rd2_bmask1_w === 1'b0)
+                cp_loads = cp_loads + 1;
+        end
+    end
+`endif
+
+    // H2：write_fifo pop 沿 do 采样 vs TB 侧推入影子队列
+    // negedge 采样 = 沿前电平（FIFO 在 posedge 采样的正是该电平）；do 在 pop 沿更新，
+    // 下一个 negedge 读到的即该次弹出值。推入在 negedge 记录 = 下一沿落 FIFO 的值。
+    always @(negedge clk100) begin
+        if (p1r !== 0) begin
+            got1 = u_top.u_sdram.mDATAIN1;
+            n1c = n1c + 1;
+            if (^got1 === 1'bx) x1c = x1c + 1;
+            else if (h1q >= t1q) u1c = u1c + 1;
+            else if (got1 !== q1[h1q % 1024]) begin
+                m1c = m1c + 1;
+                if (m1c <= 3) begin mm1e = q1[h1q % 1024]; mm1g = got1; mm1s = h1q; end
+            end
+            if (h1q < t1q) h1q = h1q + 1;
+        end
+        if (p2r !== 0) begin
+            got2 = u_top.u_sdram.mDATAIN2;
+            n2c = n2c + 1;
+            if (^got2 === 1'bx) x2c = x2c + 1;
+            else if (h2q >= t2q) u2c = u2c + 1;
+            else if (got2 !== q2[h2q % 1024]) begin
+                m2c = m2c + 1;
+                if (m2c <= 3) begin mm2e = q2[h2q % 1024]; mm2g = got2; mm2s = h2q; end
+            end
+            if (h2q < t2q) h2q = h2q + 1;
+        end
+        p1r = (u_top.u_sdram.IN_REQ === 1'b1) && (u_top.u_sdram.WR_MASK[0] === 1'b1);
+        p2r = (u_top.u_sdram.IN_REQ === 1'b1) && (u_top.u_sdram.WR_MASK[1] === 1'b1);
+        if (u_top.wr1_en === 1'b1) begin
+            q1[t1q % 1024] = u_top.sc_wdata; t1q = t1q + 1;
+            if (^u_top.sc_wdata === 1'bx) px1c = px1c + 1; else pr1c = pr1c + 1;
+            if (pr1c == 1) pv1_0 = u_top.sc_wdata;
+            else if (pr1c == 2) pv1_1 = u_top.sc_wdata;
+            else if (pr1c == 3) pv1_2 = u_top.sc_wdata;
+        end
+        if (u_top.wr2_en_w === 1'b1) begin
+            q2[t2q % 1024] = u_top.wr2_data_w; t2q = t2q + 1;
+            if (^u_top.wr2_data_w === 1'bx) px2c = px2c + 1; else pr2c = pr2c + 1;
+            if (pr2c == 1) pv2_0 = u_top.wr2_data_w;
+            else if (pr2c == 2) pv2_1 = u_top.wr2_data_w;
+            else if (pr2c == 3) pv2_2 = u_top.wr2_data_w;
+        end
+    end
+
+    // ================= AXI-Stream 内容对拍（P3 显示判据）=================
+    // 像素域（dbg_pixel_clk）采样 video_*。显示遍 = "最后完成窗"的帧内容：
+    //   frm = 最近完成帧且窗号匹配（C=完成帧数；首窗完成前显示黑屏，不判）。
+    //   第 pass 内第 j 个 valid 拍 ↔ SDRAM 帧窗字 mem[FBB+win*FB_TOTAL+j/2]
+    //   的对应半字（窗内容正确性由 igold/A1+golden 覆盖；本判据管"读对窗、
+    //   流对序"——像素值与顺序逐拍全检）。
+    //   AX_OFF/AX_SWAP = 管线相位校准常量（首轮仿真实测回填；校准非放宽）。
+    // 写读窗互斥：写入期（sc_st 2..4）sc_win 必 ≠ 显示窗（100M 域断言）。
+    integer ax_errs = 0, ax_beats = 0, ax_lines = 0, ax_j = 0, ax_frm = -1;
+    integer ax_win = 0;           // 本帧锁存的显示窗（与 i_base 同步）
+    integer ax_base = 0;          // 本帧 DUT 实际读基址（判据基准）
+    integer mutex_errs = 0, vbl_loads = 0;
+    integer ax_clk_cnt = 0, ax_valid_cnt = 0, ax_user_cnt = 0;
+    reg [63:0] ax_first_user_t = 64'd0;
+    localparam AX_OFF = 0;    // 校准：A1 修复后 valid 与数据逐拍对齐（独立 TB best_sh=0），故为 0
+    localparam AX_SWAP = 0;   // 校准：0=拍偶→字[15:0]，1=互换
+    integer C;
+    integer gwd_i;
+    reg [15:0] gpx;
+    reg [23:0] gexp;
+    always @(posedge u_top.pixel_clk_w) begin
+        ax_clk_cnt = ax_clk_cnt + 1;
+        if (ax_clk_cnt <= 3)
+            $display("PCLK-EDGE %0t cnt=%0d valid=%b user=%b", $time, ax_clk_cnt,
+                     video_valid_w, video_user_w);
+        if (rst_n) begin
+            if (video_user_w) begin
+                ax_user_cnt = ax_user_cnt + 1;
+                if (ax_first_user_t == 64'd0) ax_first_user_t = $time;
+                C = bands_scanned / BH;               // 已完成帧数
+                // ★ 锁存本帧显示窗：DUT 的 i_base 只在 vblank（当前拍）更新，
+                //   若用实时 win_show 判据会在换窗时刻错位（实测首错正好落在
+                //   窗 0→1 切换点）。
+                ax_win = win_show_w;
+                // ★ 用 DUT 实际的读基址作判据基准（i_base 只在 vblank 更新，
+                //   而 win_show_req 可能在 vblank 后、user 前翻转 → 用 req 推断
+                //   窗号会与真实读地址不一致，实测首错正是帧末尾换窗时刻）。
+                ax_base = u_top.u_scanout.i_base_r;
+                if (C >= 1 && (ax_win == ((C-1) % 2)))      ax_frm = C-1;
+                else if (C >= 2 && (ax_win == ((C-2) % 2))) ax_frm = C-2;
+                else ax_frm = -1;                     // 黑屏期/异常：跳过
+                ax_j = 0;
+                $display("AXUSER t=%0t C=%0d win=%b base=%0d fwd=%b lded=%b",
+                         $time, C, ax_win, ax_base, u_top.first_win_done_w,
+                         u_top.u_scanout.loaded_w);
+            end
+            if (video_valid_w) begin
+                ax_valid_cnt = ax_valid_cnt + 1;
+                ax_beats = ax_beats + 1;
+                if (ax_frm >= 0 && ax_frm < 5 && (ax_j + AX_OFF) >= 0) begin
+                    gwd_i = ax_base + ((ax_j + AX_OFF) >> 1);
+                    gpx = (((ax_j + AX_OFF) & 1) ^ AX_SWAP) ? u_top.u_dram.sdram.mem[gwd_i][31:16]
+                                                            : u_top.u_dram.sdram.mem[gwd_i][15:0];
+                    // RGB565→RGB888 扩展（与 yx_b_scanout_play 同款）
+                    gexp = { gpx[15:11], gpx[15:13], gpx[10:5], gpx[10:9],
+                             gpx[4:0],   gpx[4:2] };
+                    if (video_data_w !== gexp) begin
+                        ax_errs = ax_errs + 1;
+                        if (ax_errs <= 8)
+                            $display("AXERR j=%0d frm=%0d win=%0d base=%0d got=%06h exp=%06h (wd=%08h@%0d) | sc_win=%0d sc_b=%0d sc_st=%0d bands=%0d fd=%0d req=%b",
+                                     ax_j, ax_frm, ax_win, ax_base, video_data_w, gexp,
+                                     u_top.u_dram.sdram.mem[gwd_i], gwd_i,
+                                     u_top.sc_win, scan_band_no, u_top.sc_st,
+                                     bands_scanned, frames_done, u_top.win_show_req_w);
+                    end
+                end
+                if (ax_frm >= 0 && ax_frm < 5 && (ax_j % 1280) < 2 && ax_lines < 12)
+                    $display("LINEHD t=%0t j=%0d got=%06h exp=%06h primed=%b pair=%08h ld=%b en=%b emp=%b",
+                             $time, ax_j, video_data_w, gexp,
+                             u_top.u_scanout.u_play.primed, u_top.u_scanout.u_play.pair,
+                             u_top.rd1_load_w, u_top.rd1_en_w, u_top.rd1_empty_w);
+                ax_j = ax_j + 1;
+            end
+            if (video_last_w && ax_frm >= 0)
+                ax_lines = ax_lines + 1;
+        end
+    end
+
+    // 写读地址区间互斥（精确版）+ vblank LOAD 计数（100M 域）
+    // 真正的冲突 = 控制器当前读地址（rRD1_ADDR）落在扫描写端正在写的带内。
+    // 用整个显示窗比较会误报（显示窗很大、写的是其中一带，但显示此刻并不读
+    // 那一带）——YX6 实测整窗比较报 9288 次而 ax_errs=0。
+    integer wr_lo, wr_hi, rd_lo, rd_hi;
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            wr_lo = (u_top.sc_win ? (FBB + FB_TOTAL) : FBB) + u_top.sc_cur * FB_WB;
+            wr_hi = wr_lo + FB_WB;
+            rd_lo = u_top.u_sdram.rRD1_ADDR;
+            rd_hi = rd_lo + 21'd256;      // 一次读突发
+            if (u_top.first_win_done_w && (u_top.sc_st >= 3'd2) && (u_top.sc_st <= 3'd4) &&
+                (wr_lo < rd_hi) && (rd_lo < wr_hi)) begin
+                mutex_errs = mutex_errs + 1;
+                if (mutex_errs <= 4)
+                    $display("MUTEX-ERR t=%0t wr=[%0d,%0d) rd=[%0d,%0d) st=%0d",
+                             $time, wr_lo, wr_hi, rd_lo, rd_hi, u_top.sc_st);
+            end
+            if (u_top.rd1_load_w) vbl_loads = vbl_loads + 1;
+        end
+    end
+
+    // ================= 索引窗文件金标（真实流）=================
+    // region_done[w] 上升沿 = 窗 w 已整窗落 SDRAM（seq_wr v3 组屏障保证）。
+    // 第 N 次写窗 w ↔ 帧 2*(N-1)+w（f0→w0、f1→w1、f2→w0、f3→w1、f4→w0）。
+`ifdef BBOARD_SYS
+    task igold_cmp;
+        input integer w;
+        integer loc;
+        begin
+            gfi = 2 * ((w == 0) ? win_wr_cnt0 : win_wr_cnt1) + w;
+            if (w == 0) win_wr_cnt0 = win_wr_cnt0 + 1; else win_wr_cnt1 = win_wr_cnt1 + 1;
+            gwbase = w * NBW;
+            loc = 0;
+            for (gi = 0; gi < NBW; gi = gi + 1) begin
+                if (u_top.u_dram.sdram.mem[gwbase + gi] !== {16'h0000, gidx_mem[gfi*NBW + gi]}) begin
+                    idx_golden_errs = idx_golden_errs + 1;
+                    loc = loc + 1;
+                    if (igerr_first_i[gfi] < 0) igerr_first_i[gfi] = gi;
+                    if (idx_golden_errs <= 8)
+                        $display("IGOLDEN-ERR f=%0d w=%0d i=%0d sdram=%08h exp=%04h",
+                                 gfi, w, gi, u_top.u_dram.sdram.mem[gwbase + gi],
+                                 gidx_mem[gfi*NBW + gi]);
+                end
+            end
+            igerr_cnt_f[gfi] = igerr_cnt_f[gfi] + loc;
+        end
+    endtask
+
+    always @(posedge clk100) begin
+        if (rst_n && gidx_on) begin
+            if (u_top.REAL_IX.u_ixwr.region_done[0] && !rg_prev[0]) igold_cmp(0);
+            if (u_top.REAL_IX.u_ixwr.region_done[1] && !rg_prev[1]) igold_cmp(1);
+            rg_prev <= u_top.REAL_IX.u_ixwr.region_done;
+        end
+    end
+`endif
+
+    // ================= 字节流发生器 =================
+    localparam SMAX = 4*1024*1024;
+    reg [7:0] smem [0:SMAX-1];
+    integer slen, soff, sent, payload_len, sf;
+    reg [255:0] path;
+    integer hdr_cb;
+
+    // ================= 主控 =================
+    integer wd = 12000000;
+    integer cyc = 0;
+    initial begin
+        if (!$value$plusargs("STREAM=%s", path)) begin $display("TB-ERR: +STREAM 必需"); $finish; end
+        if (!$value$plusargs("WD=%d", wd)) wd = 12000000;
+`ifdef BBOARD_SYS
+        // SYS 模式：整文件（含文件头/码本）经流口喂入，码本由头解析装载，BOOK 可省
+`endif
+        sf = $fopen(path, "rb");
+        if (sf == 0) begin $display("TB-ERR: 打不开 %s", path); $finish; end
+        slen = $fread(smem, sf);
+        $fclose(sf);
+        hdr_cb = smem[14] | (smem[15] << 8);
+        // 文件金标（真实流，gen_golden.py 生成）；未给参数 → 合成流公式路径
+        if ($value$plusargs("GOLDEN_IDX=%s", gidx_path)) begin
+            $readmemh(gidx_path, gidx_mem);
+            gidx_on = 1;
+        end
+        if ($value$plusargs("GOLDEN_FB=%s", gfb_path)) begin
+            $readmemh(gfb_path, gfb_mem);
+            gfb_on = 1;
+        end
+        for (k = 0; k < 6; k = k + 1) begin
+            igerr_cnt_f[k] = 0; igerr_first_i[k] = -1;
+            gerr_cnt_f[k] = 0; gerr_first_b[k] = -1;
+        end
+`ifdef BBOARD_SYS
+        soff = 0;
+`else
+        soff = 20 + hdr_cb*32;
+`endif
+        payload_len = slen - soff;
+        $display("TB: stream=%0dB cb=%0d payload=%0d", slen, hdr_cb, payload_len);
+
+        rst_n = 0; #40; @(posedge clk100); rst_n = 1;
+        wait (u_top.u_sdram.sdram_pll1.extlock === 1'b1);
+        #250000;   // INIT_PER=24000 clk（100M）+ 裕量
+        $display("INIT done t=%0t", $time);
+
+        // 推流：valid 高直至 ready 采样（带拍数上限，避免 accept 长期为低时死等）
+        sent = 0;
+        s_data = smem[soff];
+        s_valid = 1'b1;
+        while (sent < payload_len && cyc < wd) begin
+            @(posedge clk100);
+            cyc = cyc + 1;
+            if (s_ready) begin
+                sent = sent + 1;
+                if (sent < payload_len) s_data <= smem[soff + sent];
+                else s_valid <= 1'b0;
+            end
+            if (frame_done_vq) begin
+                frames_done = frames_done + 1;
+                $display("FRAME #%0d t=%0d bands=%0d errs=%0d stall2=%0d rd_b=%0d dispE=%0d win=%0d dp=%0d commit=%0d rno=%0d bst=%0d scb=%b",
+                         frames_done, cyc, bands_scanned, scan_errs, stall2_cnt,
+                         rd_bursts, disp_empty_cnt, u_top.win_show,
+                         u_top.disp_pass, commit_no, rendered_no,
+                         u_top.u_band.st, u_top.sc_busy);
+            end
+            if (cyc % 1000000 == 0) begin
+                $display("POLL t=%0d sent=%0d commit=%0d rno=%0d ixph=%0d act=%b busy=%b%b pf=%0d prno=%0d rdrq=%b | band: st=%0d b=%0d bx=%0d f=%b fw=%b pd=%0d | fet: dr=%b ov=%b cap=%b lr=%b emp=%b re=%b dvl=%b rl=%b bm1=%b we=%b ab=%0d | scan: st=%0d cur=%0d pv=%b push=%0d drn=%0d | ixwr: st=%0d gnt=%b pf_full=%b | ctl: msk=%b mwr=%b ST=%0d ack=%b rpd=%b rreq=%b exw=%b exr=%b dwa=%b dra=%b | w2f: full=%b occ=%0d af=%b wp=%0d rp=%0d rst=%b cw=%b | f1: AE=%0d occ=%0d wp=%0d rp=%0d | rd1f: af=%b emp=%b wb=%0d rbw=%0d ld=%b ldX=%b afX=%b w1=%b r1=%b | ixw2: st=%0d vld=%b gnt=%b en=%b ld=%b full=%b dc=%0d win=%b wn=%b | cnt: ivc=%0d gnc=%0d ldc=%0d psc=%0d fwc=%0d",
+                         cyc, sent, commit_no, u_top.rno_done, u_top.u_ixbuf.phase,
+                         u_top.u_ixbuf.act, u_top.u_ixbuf.busy[1], u_top.u_ixbuf.busy[0],
+                         u_top.u_ixbuf.pf_cnt, u_top.u_ixbuf.prev_rno,
+                         u_top.band_rd_req_w,
+                         u_top.u_band.st, u_top.u_band.band, u_top.u_band.bx,
+                         u_top.u_band.fetch_r, u_top.u_band.frame_wait,
+                         u_top.u_band.pend_cnt,
+                         u_top.REAL_IX.u_ixfetch.drain, u_top.REAL_IX.u_ixfetch.out_v,
+                         u_top.REAL_IX.u_ixfetch.cap, u_top.REAL_IX.u_ixfetch.load_r,
+                         u_top.rd2_empty_w, u_top.ixf_re_w, u_top.ixf_dvld_w,
+                         u_top.fetch_reload_r, u_top.rd2_bmask1_w, u_top.rd2_we_w,
+                         u_top.act_base,
+                         u_top.sc_st, u_top.sc_cur, u_top.sc_pend_v, u_top.sc_push,
+                         u_top.sc_drain,
+                         u_top.REAL_IX.u_ixwr.st, u_top.REAL_IX.u_ixwr.wr_gnt,
+                         u_top.REAL_IX.u_ixwr.wr2_full,
+                         u_top.u_sdram.WR_MASK, u_top.u_sdram.mWR,
+                         u_top.u_sdram.ST, u_top.u_sdram.CMDACK,
+                         u_top.u_sdram.command1.rp_done, u_top.u_sdram.control1.REF_REQ,
+                         u_top.u_sdram.command1.ex_write, u_top.u_sdram.command1.ex_read,
+                         u_top.u_sdram.command1.do_writea, u_top.u_sdram.command1.do_reada,
+                         u_top.wr2_full_w, u_top.u_sdram.write_fifo2.logic_fifo.SAMEDOM.occ,
+                         u_top.u_sdram.write_fifo2.logic_fifo.afull_flag,
+                         u_top.u_sdram.write_fifo2.logic_fifo.SAMEDOM.wp_bin,
+                         u_top.u_sdram.write_fifo2.logic_fifo.SAMEDOM.rp_bin,
+                         u_top.u_sdram.write_fifo2.logic_fifo.rst,
+                         u_top.u_sdram.write_fifo2.logic_fifo.clkw,
+                         u_top.u_sdram.write_fifo1.logic_fifo.AE,
+                         u_top.u_sdram.write_fifo1.logic_fifo.SAMEDOM.occ,
+                         u_top.u_sdram.write_fifo1.logic_fifo.SAMEDOM.wp_bin,
+                         u_top.u_sdram.write_fifo1.logic_fifo.SAMEDOM.rp_bin,
+                         u_top.u_sdram.rd1_afull_w, u_top.rd1_empty_w,
+                         u_top.u_sdram.read_fifo1.logic_fifo.ASYNDOM.wbin,
+                         u_top.u_sdram.read_fifo1.logic_fifo.ASYNDOM.rbin_w,
+                         u_top.rd1_load_w, (^u_top.rd1_load_w === 1'bx),
+                         (^u_top.u_sdram.rd1_afull_w === 1'bx),
+                         (^u_top.u_sdram.read_fifo1.logic_fifo.ASYNDOM.wgray === 1'bx),
+                         (^u_top.u_sdram.read_fifo1.logic_fifo.ASYNDOM.rgray === 1'bx),
+                         u_top.REAL_IX.u_ixwr.st,
+                         u_top.wr_valid_w,
+                         u_top.ixwr_gnt_w,
+                         u_top.REAL_IX.u_ixwr.wr2_en,
+                         u_top.REAL_IX.u_ixwr.wr2_load,
+                         u_top.wr2_full_w,
+                         u_top.REAL_IX.u_ixwr.drain_cnt,
+                         u_top.REAL_IX.u_ixwr.win,
+                         u_top.REAL_IX.u_ixwr.win_next,
+                         ivc, gnc, ldc, psc, fwc);
+`ifdef BBOARD_SYS
+                $display("POLLCP t=%0d on=%b ld=%b pv=%b pos=%0d req=%b wa=%0d wv=%b dv=%b qt=%b | dlv=%0d dsc=%0d stl=%0d lds=%0d",
+                         cyc,
+                         u_top.REAL_IX.u_ixfetch.cp_on,
+                         u_top.REAL_IX.u_ixfetch.cp_ld,
+                         u_top.REAL_IX.u_ixfetch.cp_pos_v,
+                         u_top.REAL_IX.u_ixfetch.cp_pos,
+                         cp_rd_w, u_top.cp_addr,
+                         u_top.REAL_IX.u_ixfetch.cp_w_v,
+                         u_top.REAL_IX.u_ixfetch.cp_dvld,
+                         u_top.REAL_IX.u_ixfetch.cp_quiet,
+                         cp_deliv, cp_disc, cp_stale, cp_loads);
+`endif
+            end
+        end
+        s_valid <= 1'b0;
+
+        // 等渲染/扫描收尾 + 显示至少一整有效遍（P3：AXIS 对拍覆盖 720 行）
+        // ★ 收尾条件：等 5 帧渲染完成（frames_done*BH），并保证显示已覆盖
+        //   至少 720 行有效遍；不能用 ax_lines 单独触发（会早退，实测只跑 3 帧）
+        while (cyc < wd && (frames_done < 5 || bands_scanned < 5*BH || ax_lines < 720)) begin
+            @(posedge clk100); cyc = cyc + 1;
+            if (frame_done_vq) begin
+                frames_done = frames_done + 1;
+                $display("FRAME #%0d t=%0d bands=%0d errs=%0d rd_b=%0d dispE=%0d win=%0d dp=%0d commit=%0d rno=%0d bst=%0d",
+                         frames_done, cyc, bands_scanned, scan_errs, rd_bursts,
+                         disp_empty_cnt, u_top.win_show, u_top.disp_pass,
+                         commit_no, rendered_no, u_top.u_band.st);
+            end
+        end
+        #100000;
+
+        // 诊断（不影响判定）：SDRAM 行为模型 mem 落写检查
+        begin : mem_probe
+            nx_idx = 0; nx_fb = 0;
+            for (mx = 0; mx < FBB; mx = mx + 1)
+                if (^u_top.u_dram.sdram.mem[mx] !== 1'bx) nx_idx = nx_idx + 1;
+            // ★ P3 双窗：帧缓冲 = 两个帧窗 [FBB, FBB+2*FB_TOTAL)
+            for (mx = FBB; mx < FBB + 2*FB_TOTAL; mx = mx + 1)
+                if (^u_top.u_dram.sdram.mem[mx] !== 1'bx) nx_fb = nx_fb + 1;
+            $display("MEMCHK idx_nonX=%0d/%0d fb_nonX=%0d/%0d m0=%08h m1=%08h m2=%08h",
+                     nx_idx, FBB, nx_fb, 2*FB_TOTAL,
+                     u_top.u_dram.sdram.mem[0], u_top.u_dram.sdram.mem[1],
+                     u_top.u_dram.sdram.mem[2]);
+            $display("SDCMD act=%0d wr=%0d rd=%0d pre=%0d ref=%0d",
+                     sd_act, sd_wr, sd_rd, sd_pre, sd_ref);
+            $display("WRWIN idx: beats=%0d X=%0d real=%0d firstX@linear=%0d",
+                     w_x_idx + w_r_idx, w_x_idx, w_r_idx, x_i_a);
+            $display("WRIDX-S a=%0d v=%08h | a=%0d v=%08h | a=%0d v=%08h | a=%0d v=%08h | a=%0d v=%08h",
+                     sa_i0, s_i0, sa_i1, s_i1, sa_i2, s_i2, sa_i3, s_i3, sa_i4, s_i4);
+            $display("WRWIN fb: beats=%0d X=%0d real=%0d firstX@linear=%0d",
+                     w_x_fb + w_r_fb, w_x_fb, w_r_fb, x_f_a);
+            $display("WRFB-S a=%0d v=%08h | a=%0d v=%08h | a=%0d v=%08h | a=%0d v=%08h | a=%0d v=%08h",
+                     sa_f0, s_f0, sa_f1, s_f1, sa_f2, s_f2, sa_f3, s_f3, sa_f4, s_f4);
+            $display("FIFOPOP wr1: pops=%0d doX=%0d mismatch=%0d underrun=%0d mm(seq=%0d exp=%08h got=%08h)",
+                     n1c, x1c, m1c, u1c, mm1s, mm1e, mm1g);
+            $display("FIFOPOP wr2: pops=%0d doX=%0d mismatch=%0d underrun=%0d mm(seq=%0d exp=%08h got=%08h)",
+                     n2c, x2c, m2c, u2c, mm2s, mm2e, mm2g);
+            $display("PUSHSTAT wr1: pushes=%0d X=%0d real=%0d first3_real=%08h,%08h,%08h",
+                     t1q, px1c, pr1c, pv1_0, pv1_1, pv1_2);
+            $display("PUSHSTAT wr2: pushes=%0d X=%0d real=%0d first3_real=%08h,%08h,%08h",
+                     t2q, px2c, pr2c, pv2_0, pv2_1, pv2_2);
+            $display("CPSTAT deliv=%0d disc=%0d stale=%0d loads=%0d (disc=补丁跳字+对齐首段丢弃，后者=LOAD地址 mod64)",
+                     cp_deliv, cp_disc, cp_stale, cp_loads);
+            $display("IGERR-DIST f0=%0d(first i=%0d) f1=%0d(i=%0d) f2=%0d(i=%0d) f3=%0d(i=%0d) f4=%0d(i=%0d)",
+                     igerr_cnt_f[0], igerr_first_i[0], igerr_cnt_f[1], igerr_first_i[1],
+                     igerr_cnt_f[2], igerr_first_i[2], igerr_cnt_f[3], igerr_first_i[3],
+                     igerr_cnt_f[4], igerr_first_i[4]);
+            $display("GERR-DIST f0=%0d(first b=%0d) f1=%0d(b=%0d) f2=%0d(b=%0d) f3=%0d(b=%0d) f4=%0d(b=%0d)",
+                     gerr_cnt_f[0], gerr_first_b[0], gerr_cnt_f[1], gerr_first_b[1],
+                     gerr_cnt_f[2], gerr_first_b[2], gerr_cnt_f[3], gerr_first_b[3],
+                     gerr_cnt_f[4], gerr_first_b[4]);
+        end
+
+        // ---- 收口判定 1：关键输出 X/Z 检查（归约异或，任一位 x/z 即检出）----
+        xz_errs = 0;
+        if (^commit_no === 1'bx)    begin xz_errs = xz_errs + 1; $display("XZ commit_no");    end
+        if (^rendered_no === 1'bx)  begin xz_errs = xz_errs + 1; $display("XZ rendered_no");  end
+        if (^disp_pass_w === 1'bx)  begin xz_errs = xz_errs + 1; $display("XZ disp_pass");   end
+        if (^disp_stall_w === 1'bx) begin xz_errs = xz_errs + 1; $display("XZ disp_stall");  end
+        if (^win_show_w === 1'bx)   begin xz_errs = xz_errs + 1; $display("XZ win_show");    end
+        if (^scan_band_no === 1'bx) begin xz_errs = xz_errs + 1; $display("XZ scan_band_no"); end
+        if (^pend_cnt === 1'bx)     begin xz_errs = xz_errs + 1; $display("XZ pend_cnt");     end
+        if ((frame_done_vq === 1'bx) || (scan_done === 1'bx) || (scan_ack === 1'bx)) begin
+            xz_errs = xz_errs + 1; $display("XZ handshake");
+        end
+
+        // ---- 收口判定 2：逐条判据打印实际值（FAIL 可定位到条）----
+        // 判据严格强于旧版（旧版仅 scan_errs==0 && disp_errs==0 && frames_done>=5）
+        pd = (dec_frames    == 5);
+        pf = (frames_done   == 5);
+        pb = (bands_scanned == 5*BH);   // 720p: 5*180 = 900
+        pg = (golden_errs   == 0);
+        ps = (scan_errs     == 0);
+        px = (xz_errs       == 0);
+        // mem 落写门禁（补 X===X 盲区）：索引区/帧区任一为全 X 即 BAD
+        pm = (nx_idx > 0) && (nx_fb > 0);
+        // 索引窗文件金标（真实流）+ 合并流越位违例计数
+        pig = (gidx_on == 0) || (idx_golden_errs == 0);
+        pce = (u_top.u_ixbuf.cp_err == 0);
+        // cp 分时服务精确计数（fetch v5 契约闭环验收，真实流专属）：
+        //   交付 = ΣDELTA(NB-npatch) = 3*NBW-6588（f1 D595/f2 D355/f4 D5638）。
+        //   重 LOAD 次数依赖运行期抢占时序（帧尾空闲窗被新帧 SWAP 打断 →
+        //   重入重 LOAD），不做精确门禁，仅作观测。
+        pcp = (gidx_on == 0) || (cp_deliv == 3*NBW - 6588);
+        // 首帧 KEY 强制校验收口（hdr_parse f0_chk；模式 1 无 hdr_parse → 悬空 Z 视为通过）
+        phe = (u_top.hdr_err_w !== 1'b1);
+        // P3 显示判据：AXIS 内容对拍 + 覆盖 ≥1 有效遍 + 写读窗互斥 + RD1 供数
+        pax = (ax_errs == 0) && (ax_lines >= 720);
+        pmu = (mutex_errs == 0);
+        // disp_stall 含消隐期冲洗（正常），且已被 skid 吸收——ax_errs=0 是
+        // 更强的逐像素证据，故 stall 仅作观测，不进 AND 链。
+        pst = 1'b1;
+        $display("GATE dec_frames=%0d(want 5:%s) frames_done=%0d(want 5:%s) bands=%0d(want %0d:%s) golden=%0d(want 0:%s) scan=%0d(want 0:%s) xz=%0d(want 0:%s) mem=%0d/%0d(want >0:%s) igold=%0d(want 0:%s) cperr=%0d(want 0:%s) cpdeliv=%0d(want %0d:%s) cploads=%0d hdrerr=%0d(want 0:%s) axerr=%0d(want 0:%s) axlines=%0d(want >=720:%s) mutex=%0d(want 0:%s) dstall=%0d(want 0:%s)",
+                 dec_frames, pd?"OK":"BAD", frames_done, pf?"OK":"BAD",
+                 bands_scanned, 5*BH, pb?"OK":"BAD",
+                 golden_errs, pg?"OK":"BAD",
+                 scan_errs, ps?"OK":"BAD",
+                 xz_errs, px?"OK":"BAD",
+                 nx_idx, nx_fb, pm?"OK":"BAD",
+                 idx_golden_errs, pig?"OK":"BAD",
+                 u_top.u_ixbuf.cp_err, pce?"OK":"BAD",
+                 cp_deliv, 3*NBW - 6588, pcp?"OK":"BAD",
+                 cp_loads,
+                 u_top.hdr_err_w, phe?"OK":"BAD",
+                 ax_errs, pax?"OK":"BAD",
+                 ax_lines, (ax_lines >= 720)?"OK":"BAD",
+                 mutex_errs, pmu?"OK":"BAD",
+                 disp_stall_w, pst?"OK":"BAD");
+        $display("=== TB-SUMMARY: %s ===", (pd && pf && pb && pg && ps && px && pm && pig && pce && pcp && phe && pax && pmu && pst) ? "ALL PASS" : "FAIL");
+        $display("DECFRAMES=%0d", dec_frames); $display("IXWR ivc=%0d gnc=%0d psc=%0d ldc=%0d fwc=%0d", ivc, gnc, psc, ldc, fwc); $display("GOLDEN=%0d", golden_errs);
+        $display("CNT: frames=%0d bands=%0d scan_errs=%0d ax_errs=%0d ax_beats=%0d ax_lines=%0d disp_pass=%0d disp_stall=%0d vbl_loads=%0d stall2=%0d/%0d (%0d%%)",
+                 frames_done, bands_scanned, scan_errs, ax_errs, ax_beats, ax_lines,
+                 disp_pass_w, disp_stall_w, vbl_loads,
+                 stall2_cnt, total_cnt, (stall2_cnt*100)/(total_cnt>0?total_cnt:1));
+        $display("AXDBG clk_cnt=%0d valid_cnt=%0d user_cnt=%0d first_user_t=%0t frm=%0d",
+                 ax_clk_cnt, ax_valid_cnt, ax_user_cnt, ax_first_user_t, ax_frm);
+        $finish;
+    end
+
+    // 看门狗
+    integer c100 = 0;
+    always @(posedge clk100) c100 = c100 + 1;
+    initial begin
+        #(wd * 20 + 5000000);
+        $display("=== WATCHDOG: frames=%0d bands=%0d scan_errs=%0d ===", frames_done, bands_scanned, scan_errs);
+        $display("DIAG: clk100_edges=%0d extlock=%b rst_n=%b", c100,
+                 u_top.u_sdram.sdram_pll1.extlock, rst_n);
+        $display("=== TB-SUMMARY: FAIL (watchdog) ===");
+        $finish;
+    end
+endmodule

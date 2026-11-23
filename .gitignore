@@ -28,3 +28,30 @@ __pycache__/
 Thumbs.db
 .recent_user_depot.ini
 *.lnk
+
+# ---- B 板 VQ 子系统：仿真 / 综合产物 ----
+*.qor
+*.bid
+*.dmp
+td_*.log
+td_*.logw
+*.logw
+_Runs/
+*-Runs/
+
+# ---- 一次性排障脚本（保留 run_sim.ps1 / gen_golden.py）----
+tools/sim/probe_*.py
+tools/sim/patch_*.py
+tools/sim/sweep*.py
+tools/sim/grep_so*.py
+tools/sim/extract_*.py
+tools/sim/solve_lag.py
+tools/sim/head_tail.py
+tools/sim/enc_check.py
+tools/sim/strip_bom.py
+
+# ---- 交接包 / 备份 / 临时 ----
+YX_交接包*/
+YX_美术资源包*/
+cleanup_backup_*/
+log/
