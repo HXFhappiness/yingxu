@@ -49,7 +49,7 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'mdio')]
+    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'mdio', 'phy_init')]
     [string]$Entry
 )
 
@@ -195,6 +195,18 @@ $Entries['mdio'] = @{
     Sources  = @(
         'tb\tb_mdio.v',
         "$VP\yx_b_mdio.v"
+    )
+}
+
+# ---- 入口 7: phy_init（RTL8211F 上电配置序列独立验收，秒级）----
+# PHY 模型带寄存器文件：验证序列顺序、bit3 清零、其他位不破坏、未响应时跳过写。
+$Entries['phy_init'] = @{
+    Defines  = @()
+    PlusArgs = @()
+    Sources  = @(
+        'tb\tb_phy_init.v',
+        "$VP\yx_b_mdio.v",
+        "$VP\yx_b_phy_init.v"
     )
 }
 
