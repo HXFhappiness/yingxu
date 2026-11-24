@@ -115,6 +115,10 @@ $Entries['bboard_sys'] = @{
         "$VP\yx_b_ix_fetch.v",
         "$VP\yx_b_scanout.v",
         "$VP\yx_b_scanout_play.v",
+        # ★ P5：PHY 上电配置（MDIO 主机 + RTL8211F 序列）——顶层无条件实例化，
+        #   仿真里 eth_mdio 由 TB 挂 PULLUP，序列走"PHY 未响应 → 跳过写"分支。
+        "$VP\yx_b_mdio.v",
+        "$VP\yx_b_phy_init.v",
         'src\user_source\hdl_source\video_source_test.v',
         "$BSHM\EG_LOGIC_FIFO.v",
         "$BSHM\EG_LOGIC_BRAM.v",

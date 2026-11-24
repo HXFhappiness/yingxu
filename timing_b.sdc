@@ -110,7 +110,23 @@ set_clock_groups -name b_cdc_eth_others -asynchronous \
     -group [get_clocks {*u_hdmi_pll*pll_inst*clkc[1]}] \
     -group [get_clocks {b_ref_clk_50m}]
 
-# 3.4 PHY 控制引脚（eth_rst_n / eth_mdc / eth_mdio）：纯静态电平，无需时序约束。
+# 3.4 PHY 控制引脚（eth_rst_n / eth_mdc / eth_mdio）
+#   eth_rst_n : 纯静态电平，无需约束。
+#   eth_mdc   : yx_b_mdio 输出，2.5MHz（半周期 20 clk @100MHz = 200ns），由 clk100
+#               域寄存器直接驱动，TD 按 clk100 自动分析（裕量 20 个周期）。
+#   eth_mdio  : ★ P5 起为三态（原为恒 1 静态电平）。Clause 22 读操作由 PHY 在
+#               MDC **下降沿**驱动、FPGA 在 **上升沿**采样 —— 采样点距数据翻转
+#               200ns（= 20 个 clk100 周期），相对 RGMII 的 4ns 数据眼是 50 倍裕量。
+#               约束按"参考沿 = MDC 下降沿，PHY 输出在其后 5~195ns 内有效"写：
+#               真实 Tco 量级 1~10ns，上界 195ns 取得很松（采样沿在 200ns 处）。
+#               ★ 为什么 -min 不取真实值（~1ns）：TD 的输入保持模型是
+#                 hold_slack = input_delay_min + clk_min − (clk_max + hold)，
+#                 要求 input_delay_min ≥ 2.837ns（与 §3.1 RGMII 同一模型）。
+#                 取 5.000 既满足模型、又落在物理窗口（0~200ns）之内。
+#               ⚠ 待下次 TD 运行核对本段是否按预期通过（P5 只做仿真，未跑 STA）。
+create_clock -name b_mdio_virtual -period 400.000
+set_input_delay -clock b_mdio_virtual -max 195.000 [get_ports {eth_mdio}]
+set_input_delay -clock b_mdio_virtual -min   5.000 [get_ports {eth_mdio}]
 
 # -----------------------------------------------------------------------------
 # 4. SDRAM 引脚（沿用 A 板做法：不设 output delay，控制器内部时序保证）

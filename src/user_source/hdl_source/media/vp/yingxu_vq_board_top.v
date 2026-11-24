@@ -47,8 +47,8 @@ module yingxu_vq_board_top #(
     input  wire [3:0]  eth_rxd,
     input  wire        eth_rxdv,
     output wire        eth_rst_n,      // PHY 复位（低有效，跟随板级复位）
-    output wire        eth_mdc,        // 未实现 MDIO 配置：空闲高
-    output wire        eth_mdio,
+    output wire        eth_mdc,        // Clause 22 MDIO 时钟（yx_b_mdio 驱动）
+    inout  wire        eth_mdio,       // Clause 22 MDIO 数据（三态；板上 PULLUP）
 
     // ---- 索引缓冲 SDRAM 口（顶层引出，随机访问）----
     output wire          ix_wr_valid,
@@ -136,12 +136,44 @@ module yingxu_vq_board_top #(
 `endif
 
     // ---- PHY 控制（两种构建一致）----
-    // 复位跟随板级复位（低有效）；未实现 MDIO 配置，MDC/MDIO 空闲高。
-    // ★ 以太网 bring-up 缺口：RGMII PHY 的 RXC 延迟/接口模式通常需 MDIO 寄存器
-    //   配置（PHY 型号待确认），P5 首板上板时按 PHY 手册补 MDIO 写序列。
+    // 复位跟随板级复位（低有效）。
+    // ★ P5：PHY = RTL8211F-CG（U14）。其 RGMII RX 内部延时 strap = RXD0，本板被
+    //   4.7K 上拉到 ETH_DVDDH；若该 strap 语义为"使能"，PHY 会给 RXC 再加 ~2ns，
+    //   采样点 T+5.705ns 落到 4ns 数据眼（[T+1.075, T+5.075]）之外。上电后用
+    //   MDIO 把扩展页 0xd08 / 寄存器 0x15 的 bit3 清掉（详见 yx_b_phy_init.v 与
+    //   docs/YX_BBOARD_P5_PHY1_20261124.md §3）。
+    // ★ MDIO 时钟域 = clk100（来自 Sdram_PLL，只依赖板载 50M 晶振）——**不依赖
+    //   PHY 的 RXC**，即使 PHY 上电后 RXC 未就绪也能完成配置。
     assign eth_rst_n = rst_n;
-    assign eth_mdc   = 1'b1;
-    assign eth_mdio  = 1'b1;
+
+    wire        mdio_req_w, mdio_wr_w, mdio_done_w, mdio_busy_w;
+    wire [4:0]  mdio_rega_w;
+    wire [15:0] mdio_wdata_w, mdio_rdata_w;
+    wire        mdio_oe_w, mdio_o_w;
+    wire [15:0] phy_rxcr_w;          // 读回的 RXCR 原值（0xffff = PHY 未响应）
+    wire        phy_cfg_done_w, phy_cfg_skip_w;
+
+    yx_b_mdio #(.PHY_ADDR(5'd1), .HALF_DIV(8'd20)) u_mdio (
+        .clk(clk100), .rst_n(rst_n),
+        .req(mdio_req_w), .wr(mdio_wr_w), .reg_a(mdio_rega_w), .wdata(mdio_wdata_w),
+        .rdata(mdio_rdata_w), .done(mdio_done_w), .busy(mdio_busy_w),
+        .mdc(eth_mdc), .mdio_oe(mdio_oe_w), .mdio_o(mdio_o_w), .mdio_i(eth_mdio)
+    );
+
+    // PHY_INIT_WAIT = 100ms @100MHz：复位释放后等 PHY 内部初始化完成再发 MDIO。
+    //   （RTL8211F 复位脚要求 ≥10ms，之后还需内部 PLL/自协商初始化时间；本设计
+    //     的视频通路不依赖该配置，等久一点无代价。）
+    yx_b_phy_init #(
+        .PHY_ADDR(5'd1), .PHY_INIT_WAIT(24'd10_000_000)
+    ) u_phyinit (
+        .clk(clk100), .rst_n(rst_n),
+        .req(mdio_req_w), .wr(mdio_wr_w), .reg_a(mdio_rega_w), .wdata(mdio_wdata_w),
+        .rdata(mdio_rdata_w), .done(mdio_done_w), .busy(mdio_busy_w),
+        .rxcr_r(phy_rxcr_w), .cfg_done(phy_cfg_done_w), .cfg_skip(phy_cfg_skip_w)
+    );
+
+    // MDIO 三态：oe=0 时释放总线（板上 PULLUP 拉高；读操作的 TA/数据相位由 PHY 驱动）
+    assign eth_mdio = mdio_oe_w ? mdio_o_w : 1'bz;
     wire        hdr_book_we;
     wire [13:0] hdr_book_wa;
     wire [15:0] hdr_book_wd;

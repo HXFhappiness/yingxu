@@ -24,7 +24,7 @@ module yingxu_vq_board_b #(
     input  wire       eth_rxdv,
     output wire       eth_rst_n,
     output wire       eth_mdc,
-    output wire       eth_mdio,
+    inout  wire       eth_mdio,
     // HDMI TMDS
     // ★ 不含 DDC：AC201 的 HDMI 口 DDC 未接到 FPGA（引脚信息表 HDMI 段只有
     //   TMDS 四对差分，见 D:\pin_table.txt:95-103；A 板 design_top_wrapper 也

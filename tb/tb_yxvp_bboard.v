@@ -100,6 +100,11 @@ module tb_yxvp_bboard;
     wire        pixel_clk_w;
     wire [31:0] DRAM_DQ; wire [10:0] DRAM_ADDR; wire [1:0] DRAM_BA, DRAM_CS_N;
     wire DRAM_CKE, DRAM_RAS_N, DRAM_CAS_N, DRAM_WE_N; wire [3:0] DRAM_DQM; wire DRAM_CLK;
+    // ★ P5：顶层 eth_mdio 已改为三态（Clause 22 MDIO）。仿真里不挂 PHY 模型，
+    //   按板上做法给一根 PULLUP —— 主机释放总线时读到全 1，yx_b_phy_init 会走
+    //   "PHY 未响应 → 跳过写"分支，结果确定（否则读到 Z，rdata 变 X）。
+    wire eth_mdio_w;
+    pullup (eth_mdio_w);
 
     yingxu_vq_board_top #(.W(W), .H(H), .CBSIZE(CBSIZE), .AW(AW)
 `ifdef BBOARD_SYS
@@ -120,6 +125,7 @@ module tb_yxvp_bboard;
         .scan_ack(scan_ack),
         .band_pend_cnt(pend_cnt),
         .dbg_clk100(clk100), .dbg_pixel_clk(pixel_clk_w),
+        .eth_mdio(eth_mdio_w),
         .DRAM_DQ(DRAM_DQ), .DRAM_ADDR(DRAM_ADDR), .DRAM_BA(DRAM_BA),
         .DRAM_CS_N(DRAM_CS_N), .DRAM_CKE(DRAM_CKE), .DRAM_RAS_N(DRAM_RAS_N),
         .DRAM_CAS_N(DRAM_CAS_N), .DRAM_WE_N(DRAM_WE_N), .DRAM_DQM(DRAM_DQM),
