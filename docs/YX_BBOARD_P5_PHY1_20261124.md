@@ -149,16 +149,61 @@ Slack           : −3.237ns
 
 ### 硬件事实（本轮新查到）
 
-从 AC201 原理图 `C:\Users\HXF\Desktop\YX-tool\07_1GbNET.SchDoc` 提取到：
+**PHY = RTL8211F-CG**（U14，QFN-40）。从 AC201 原理图
+`C:\Users\HXF\Desktop\YX-tool\07_1GbNET.SchDoc` 提取：
 
 ```
-LibReference=RTL8211FDI   Comment=RTL8211F-CG   Designator=U14   封装 QFN-40
-引脚（strap 复用）：RXD0/RXDLY(25)  RXD1/TXDLY(24)  RXD2/PLLOF(23)  RXD3/PHYAD0(22)
+LibReference=RTL8211FDI   Comment=RTL8211F-CG   Designator=U14
+strap 复用引脚：RXD0/RXDLY(25)  RXD1/TXDLY(24)  RXD2/PLLOF(23)  RXD3/PHYAD0(22)
 ```
 
-**PHY = RTL8211F-CG**。它的 RGMII RX 延时由 `RXD0/RXDLY` 上电 strap 决定
-（也可经 MDIO 扩展寄存器改）。**上板前必须确认该 strap 为"延时关闭"**，
-否则本设计会采错位。
+追线结果（解析 Altium 记录 + 追 wire 端点）：
+
+- PHY 的 RXD0–3 引脚（X=520）向左连到 X=390，网络标签 `ETH_RX_DATA0-3` 挂在这些线上；
+- X=350–390 之间有 4 个 4.7K 电阻（R49–R52），左端经 X=330 竖直连线接到
+  **`ETH_DVDDH`**（PHY 的 3.3V I/O 电源）；
+- 另有 2 个电阻（R60/R59）上拉到 `VDD3.3`，对应 `ETH_RX_CLK`/`ETH_RX_DV`；
+- **TX 侧（Y=760–820）没有任何上拉电阻**。
+
+→ **四个 strap 引脚全部被 4.7K 上拉 = 1**。
+
+### RTL8211F 的 RGMII 延时寄存器（来自 Linux 内核驱动，权威）
+
+`drivers/net/phy/realtek/realtek_main.c`：
+
+| 项 | 值 |
+|---|---|
+| 扩展页 | `RTL8211F_RGMII_PAGE = 0xd08` |
+| RX 延时 | 页 0xd08 / 寄存器 `RTL8211F_RXCR = 0x15` / `RTL8211F_RX_DELAY = BIT(3)` |
+| TX 延时 | 页 0xd08 / 寄存器 `RTL8211F_TXCR = 0x11` / `RTL8211F_TX_DELAY = BIT(8)` |
+| strap | 内核注释明确：**`pin-strapping RXD0`** 决定 RX 延时、`RXD1` 决定 TX 延时 |
+| 极性 | 驱动在 `PHY_INTERFACE_MODE_RGMII`（无延时）写 `val_rxdly = 0`，在 `RGMII_RXID` 写 1 → **bit=1 = 延时使能（2ns）** |
+
+### 风险与反向证据
+
+**风险**：若 `RXD0` 上拉 = 使能 2ns RX 延时，则
+
+```
+采样时刻（IDDR 时钟脚）= T + 2(PHY) + 3.705(FPGA 插入延时) = T + 5.705ns
+数据眼（IDDR 数据脚）  = [T+1.075, T+5.075]        ← 4ns 眼宽
+→ 采样点落在眼外 0.63ns，采到下一位，上板功能失败
+```
+
+**反向证据（重要）**：厂商自己的参考设计（同一块 AC201、同一个 strap）用
+`RXC → PLL(125M→125M, 0°) → BUFG → IDDR` 采样——**比我们的 BUFG 还多一级 PLL**，
+采样延时只会更大。若 RXDLY 使能，厂商的示例也会失败。
+
+→ 因此**更可能 RXDLY 实际是关闭的**（即该 strap 的"上拉"含义与寄存器 bit 相反，
+或 RTL8211F 的 strap 内部有反相）。**但这必须用 datasheet 确认，不能靠推断**。
+
+**确认方法**（任选其一，都很快）：
+1. 查 RTL8211F-CG datasheet 里 RXD0/RXDLY strap 的极性说明；
+2. 上板后用 MDIO 读页 `0xd08` 寄存器 `0x15` 的 bit3（需要先实现 MDIO）；
+3. 上板实测 RXC 与 RXD 的相位关系（示波器）。
+
+**若确认 RXDLY 使能**：唯一可行修法是**实现 MDIO 主机**，启动时写
+页 0xd08 / 寄存器 0x15 清 bit3。寄存器信息已在上面，可直接用。
+（这也顺带补上 P5 文档 §10 里"MDIO 未实现"的缺口。）
 
 ### 厂商参考设计怎么做的（本轮新查到，很关键）
 
