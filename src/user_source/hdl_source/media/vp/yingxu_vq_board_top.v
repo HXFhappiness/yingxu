@@ -189,23 +189,30 @@ module yingxu_vq_board_top #(
     // "PHY 没起来 / MDIO 序列没生效 / RGMII 时序不对 / 码流没到"。
     // 这 4 盏灯把最关键的四个事实直接摆出来：
     //   led[0] = phy_cfg_done    MDIO 配置序列已跑完
-    //   led[1] = phy_cfg_skip    PHY 无响应（读回 0xffff）或无需改，序列跳过
+    //   led[1] = phy_cfg_skip    仅当 PHY 无响应（读回 0xffff）时置 1。
+    //                           注意没有"无需改"路径：序列无条件清 bit3，
+    //                           原本为 0 时也走完整写流程，cfg_skip 仍为 0。
     //   led[2] = phy_rxcr_w[3]  **清除前**的 RXCR bit3 —— 即 RGMII RX 延时使能位，
-    //                           把"strap 到底使能还是关闭"从推断变成实测
+    //                           把"strap 到底使能还是关闭"从推断变成实测。
+    //                           ⚠ cfg_skip=1 时该位恒为 1（0xffff 的 bit3），
+    //                             属假阳性 —— 判读时先看 led[1]。
     //   led[3] = 心跳            clk100 分频（~1.5Hz），证明时钟/配置在跑
     // 极性：参数 LED_ACTIVE_LOW（默认 0 = 驱动 1 点亮）。
-    localparam [23:0] LED_HB_DIV = 24'd33_000_000;   // 100MHz → 约 0.66s 翻转（1.5Hz 周期）
-    reg [23:0] led_hb_cnt;
+    // ★ 位宽必须 ≥25：33,000,000 > 2^24−1 = 16,777,215。初版写成 [23:0] 时
+    //   24'd33_000_000 被 iverilog/TD **静默截断**成 16,222,784，心跳变 ~3.08Hz
+    //   （iverilog 只给一句 "Numeric constant truncated"，不挡编译，容易漏）。
+    localparam [24:0] LED_HB_DIV = 25'd33_000_000;   // 100MHz → 每 0.33s 翻转 → 1.5Hz 周期
+    reg [24:0] led_hb_cnt;
     reg        led_hb;
     always @(posedge clk100 or negedge rst_n) begin
         if (!rst_n) begin
-            led_hb_cnt <= 24'd0;
+            led_hb_cnt <= 25'd0;
             led_hb     <= 1'b0;
-        end else if (led_hb_cnt == LED_HB_DIV - 24'd1) begin
-            led_hb_cnt <= 24'd0;
+        end else if (led_hb_cnt == LED_HB_DIV - 25'd1) begin
+            led_hb_cnt <= 25'd0;
             led_hb     <= ~led_hb;
         end else begin
-            led_hb_cnt <= led_hb_cnt + 24'd1;
+            led_hb_cnt <= led_hb_cnt + 25'd1;
         end
     end
 
