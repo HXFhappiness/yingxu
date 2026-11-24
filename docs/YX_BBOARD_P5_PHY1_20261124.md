@@ -160,16 +160,42 @@ LibReference=RTL8211FDI   Comment=RTL8211F-CG   Designator=U14   封装 QFN-40
 （也可经 MDIO 扩展寄存器改）。**上板前必须确认该 strap 为"延时关闭"**，
 否则本设计会采错位。
 
+### 厂商参考设计怎么做的（本轮新查到，很关键）
+
+本地就有厂商的 **AC201 以太网回环参考设计**：
+`C:\Users\HXF\Desktop\YX-tool\AC201_AL_board_test\`
+
+| 事实 | 证据 |
+|---|---|
+| 我们用的 `eth_udp_rx_gmii.v` 与厂商**逐字节相同** | `diff` 无差异 |
+| 厂商的 RGMII 采样时钟来自 **PLL**（125M→125M，**0° 相移**），不是 BUFG | `src/eth_udp_loopback_rgmii.v:85-90`：`pll pll(.clk0_out(rgmii_rx_clk), .refclk(rgmii_rx_clk_i))`；`al_ip/pll/pll.ipc` 里 `input_frequency=125MHz`、`clock_frequency=125MHz`、`phase_shift=0deg` |
+| 厂商的 `timing.sdc` **只有 HDMI 两个时钟**，RGMII 完全无约束 | `cat timing.sdc` |
+| 厂商实现后的时序报告里**只有 50MHz 一个时钟**（`DeriveClock`） | `AC201_AL_board_test_Runs/phy_1/final_timing.rpt` 的 Clock Summary |
+
+**结论：厂商自己也不做 RGMII 输入时序分析。** 他们的 SWNS +7.608ns 是 50MHz 域的，
+以太网域从未被约束过。
+
+这解释了为什么 TD 自带模板里的 RGMII 示例是"虚拟时钟 + PLL 90° 相移"的通用写法——
+那是给"用 PLL 做相移采样"的设计用的，**与本板厂商参考设计并不一致**。
+
+**对我们的意义**：不存在"厂商验证过的 RGMII 约束"可参照。我们的 hold 违例是
+"比厂商多做了分析"的结果——分析本身是负责任的，但**约束值目前是占位值**
+（0.5/−0.4 来自 TD 模板，不是 RTL8211F 手册），且 TD 的判据在此拓扑下不可满足。
+
 ### 建议修法（需设计决策，按推荐度排序）
 
-1. **确认 RXDLY strap 关闭**，接受"采样点 66%、STA 报 hold 违例"的现状，
-   并在文档里写明这是 TD 判据与拓扑的模型冲突（物理能工作）。
-   —— 零改动，但 STA 报告不干净。
-2. **加 eth 专用 PLL**（EG4S20 共 4 个，已用 2 个），用受控相移时钟采样，
-   让采样相位不再依赖布线延时。需要新 IP + 重新验证；且**相移方向必须
-   让 TD 判据通过**（需实测确认，不能想当然）。
-3. **用 IDELAY 延长数据路径**（若 EG4 的 IOB 支持），使数据路径 ≥ 时钟路径。
-   这是 Xilinx 系 RGMII 的标准做法，但需先确认 EG4 原语支持。
+1. **确认 `RXD0/RXDLY` strap 的真实含义**（阻塞上板，见上）。这是唯一可能
+   导致"功能失败"的点，优先级高于 STA 报告是否干净。
+2. **RGMII 约束的取舍**（三选一）：
+   - **保留约束 + 文档写明**（推荐）：STA 报告保留 10 条 hold 违例，
+     文档说明这是"占位约束值 + TD 判据与拓扑的模型冲突"，并列出待办
+     （拿到 RTL8211F 手册后按实测重定窗口）。**不隐藏问题。**
+   - 照厂商做法去掉 RGMII input delay 约束：报告干净，但等于**放弃**这项分析，
+     且 TD 会报 "no input delay" 警告。仅在明确记录"待 PHY 手册"时才是诚实的。
+   - 加 eth PLL（照厂商用 0° 或按需相移）：结构上与厂商一致，但**不解决**
+     TD 判据（判据要求数据路径 ≥ 时钟路径，PLL 只改变时钟路径长短）。
+3. 核心 VQ 设计（100M/73.3M/366.7M/50M 域）**已经干净**：setup +368ps、0 违例，
+   LUT 4089 (20.86%)、BRAM 53/64。剩余违例只在以太网域。
 
 ### 厂商模板的关键差异
 
