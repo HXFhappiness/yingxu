@@ -25,13 +25,16 @@ module yingxu_vq_board_b #(
     output wire       eth_rst_n,
     output wire       eth_mdc,
     output wire       eth_mdio,
-    // HDMI TMDS + DDC
+    // HDMI TMDS
+    // ★ 不含 DDC：AC201 的 HDMI 口 DDC 未接到 FPGA（引脚信息表 HDMI 段只有
+    //   TMDS 四对差分，见 D:\pin_table.txt:95-103；A 板 design_top_wrapper 也
+    //   同样不把 DDC 引出顶层）。把 DDC 引成顶层端口又无管脚可约束，会触发
+    //   BIT-8123 "unconstrained io" 挡死 bitgen。当前 I_edid_read_trig 恒 0，
+    //   DDC 在核内部悬空即可；将来真要读 EDID，先确认硬件改版有这两根线。
     output wire       tmds_ch0_p,
     output wire       tmds_ch1_p,
     output wire       tmds_ch2_p,
-    output wire       tmds_clk_p,
-    output wire       tmds_ddc_scl,
-    inout  wire       tmds_ddc_sda
+    output wire       tmds_clk_p
 );
 
 `ifndef USE_ETH
@@ -90,8 +93,9 @@ module yingxu_vq_board_b #(
         .tmds_ch1_p    (tmds_ch1_p),
         .tmds_ch2_p    (tmds_ch2_p),
         .tmds_clk_p    (tmds_clk_p),
-        .tmds_ddc_scl  (tmds_ddc_scl),
-        .tmds_ddc_sda  (tmds_ddc_sda),
+        // DDC 不引出（见端口注释）：顶层内部悬空，与 A 板 design_top_wrapper 同做法
+        .tmds_ddc_scl  (),
+        .tmds_ddc_sda  (),
         .DRAM_DQ       (),
         .DRAM_ADDR     (),
         .DRAM_BA       (),

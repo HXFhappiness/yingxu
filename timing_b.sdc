@@ -78,16 +78,26 @@ set_clock_groups -name b_cdc_serial_others -asynchronous \
 # -----------------------------------------------------------------------------
 # 3. 以太网域（RGMII 125M，PHY 提供 eth_rxc；只收不发）
 # -----------------------------------------------------------------------------
-# 3.1 RGMII 接收：源同步 DDR。数据与 rxc 由同一 PHY 发出，板级走线延迟决定
-#     采样窗口；先给占位值（2.0/0.5ns），**上板后按 PHY 手册与实测校准**。
-set_input_delay -clock b_eth_rxc_125m -max 2.000 [get_ports {eth_rxd[*]}]
-set_input_delay -clock b_eth_rxc_125m -min 0.500 [get_ports {eth_rxd[*]}]
-set_input_delay -clock b_eth_rxc_125m -clock_fall -max 2.000 -add_delay [get_ports {eth_rxd[*]}]
-set_input_delay -clock b_eth_rxc_125m -clock_fall -min 0.500 -add_delay [get_ports {eth_rxd[*]}]
-set_input_delay -clock b_eth_rxc_125m -max 2.000 [get_ports {eth_rxdv}]
-set_input_delay -clock b_eth_rxc_125m -min 0.500 [get_ports {eth_rxdv}]
-set_input_delay -clock b_eth_rxc_125m -clock_fall -max 2.000 -add_delay [get_ports {eth_rxdv}]
-set_input_delay -clock b_eth_rxc_125m -clock_fall -min 0.500 -add_delay [get_ports {eth_rxdv}]
+# 3.1 RGMII 接收：DDR 源同步，数据直接进 IDDR（rgmii_to_gmii.v）。
+#     ★★ 按厂商模板（TD 安装目录 template/Timing-Constraints/Input-Delay-Constraints/
+#        set_input_delay.sdc 的 "RGMII network port" 示例）：
+#        · 用**虚拟时钟**做 input delay 的参考，而不是端口时钟本身。用端口时钟做
+#          参考时，TD 会把 FPGA 内部时钟插入延时（实测 RXC 到 IOB 3.705ns：
+#          PAD 1.831 + 普通布线 1.874）算进捕获沿，hold 需求被推到 2.837ns，
+#          而数据路径只有 1.075ns —— 必然违例且无法通过调整数值解决。
+#        · 数据窗口取厂商值：max 0.5 / min −0.4（min 为负是正常的：数据与时钟
+#          边沿对齐，±0.5ns 为板级偏斜）。
+#     ★ 厂商模板另用 PLL 的 90° 相移时钟做数据中心对齐采样；本设计 IDDR 直接用
+#       RXC，是否需要在 PHY 侧开 RXC 内部延时，**上板按 PHY 手册确认**。
+create_clock -name b_eth_virtual_125m -period 8.000
+set_input_delay -clock b_eth_virtual_125m -max 0.500 [get_ports {eth_rxd[*]}]
+set_input_delay -clock b_eth_virtual_125m -min -0.400 [get_ports {eth_rxd[*]}]
+set_input_delay -clock b_eth_virtual_125m -clock_fall -max 0.500 -add_delay [get_ports {eth_rxd[*]}]
+set_input_delay -clock b_eth_virtual_125m -clock_fall -min -0.400 -add_delay [get_ports {eth_rxd[*]}]
+set_input_delay -clock b_eth_virtual_125m -max 0.500 [get_ports {eth_rxdv}]
+set_input_delay -clock b_eth_virtual_125m -min -0.400 [get_ports {eth_rxdv}]
+set_input_delay -clock b_eth_virtual_125m -clock_fall -max 0.500 -add_delay [get_ports {eth_rxdv}]
+set_input_delay -clock b_eth_virtual_125m -clock_fall -min -0.400 -add_delay [get_ports {eth_rxdv}]
 
 # 3.2 125M ↔ 100M（SDRAM/视频逻辑域）：yx_b_eth_rx 异步字节 FIFO 承担跨域
 set_clock_groups -name b_cdc_eth_sdram -asynchronous \
