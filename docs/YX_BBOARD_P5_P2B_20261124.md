@@ -115,12 +115,17 @@ P&R 后大概率收敛。若仍需强制清零，正解是在 `hdr_parse → ixd
 register slice（skid），但那会把 `ready` 反向路径加一级，存在"打地鼠"风险，
 故本轮不做。
 
-## 6. 验证
+## 6. 验证（本轮门禁，两入口判据独立）
 
-见 `YX_BBOARD_P5_P0P1_20261124.md` §6 的门禁口径（两入口判据独立）。
-本轮改动涉及 DELTA 走查、以太网字节 FIFO 占用判定、流握手，**必须两入口都过**：
-- `bboard_key`（合成 KEY-only 码流）：走不到 `S_MAP`/`S_WALK`，主要覆盖 FIFO 与扫描路径；
-- `bboard_sys`（真实 720p×5 帧，含 DELTA）：**唯一覆盖新走查逻辑的入口**。
+| 入口 | 结果 | 关键判据 |
+|---|---|---|
+| `bboard_key`（合成 KEY-only 码流） | **ALL PASS** | `pushes=2304000 X=0`、`pops=2304000 mismatch=0 underrun=0`、`golden=0`、`scan_errs=0`、`ax_errs=0`、`bands=900`、`frames=5` |
+| `bboard_sys`（真实 720p×5 帧，含 3 个 DELTA 帧） | **ALL PASS** | `scan_errs=0`、`ax_errs=0`、`ax_beats=4507871`、`ax_lines=3521`、`disp_pass=6`、`GATE` 全 OK（`golden=0 xz=0 igold=0 cperr=0 cperr=0`） |
+
+> `bboard_key` 走不到 `S_MAP`/`S_WALK`，只能说明以太网 FIFO 那几处格雷判定改动没问题；
+> **两拍走查由 `bboard_sys` 覆盖并通过**（3 个 DELTA 帧的 bitmap 写入 + 变更块走查 +
+> 补丁索引取用全部逐字对拍）。`ax_beats` 与 P0/P1 轮的 4501760 有微小差异属正常
+> （走查时长变化导致显示流拍点位移，判据是帧数/行数/逐字对拍，不是这个绝对数）。
 
 > 注意：`tb_yxvp_ixpipe.v`（P1/P2 时期的独立回归）也例化了 `yx_vp_ixdec`，
 > 现在编译它**必须带上** `tb/bshims/EG_LOGIC_BRAM.v`（以及 `EG_LOGIC_FIFO.v`），
