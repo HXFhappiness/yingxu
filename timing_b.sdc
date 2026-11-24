@@ -117,16 +117,22 @@ set_clock_groups -name b_cdc_eth_others -asynchronous \
 #   eth_mdio  : ★ P5 起为三态（原为恒 1 静态电平）。Clause 22 读操作由 PHY 在
 #               MDC **下降沿**驱动、FPGA 在 **上升沿**采样 —— 采样点距数据翻转
 #               200ns（= 20 个 clk100 周期），相对 RGMII 的 4ns 数据眼是 50 倍裕量。
-#               约束按"参考沿 = MDC 下降沿，PHY 输出在其后 5~195ns 内有效"写：
-#               真实 Tco 量级 1~10ns，上界 195ns 取得很松（采样沿在 200ns 处）。
-#               ★ 为什么 -min 不取真实值（~1ns）：TD 的输入保持模型是
-#                 hold_slack = input_delay_min + clk_min − (clk_max + hold)，
-#                 要求 input_delay_min ≥ 2.837ns（与 §3.1 RGMII 同一模型）。
-#                 取 5.000 既满足模型、又落在物理窗口（0~200ns）之内。
-#               ⚠ 待下次 TD 运行核对本段是否按预期通过（P5 只做仿真，未跑 STA）。
-create_clock -name b_mdio_virtual -period 400.000
-set_input_delay -clock b_mdio_virtual -max 195.000 [get_ports {eth_mdio}]
-set_input_delay -clock b_mdio_virtual -min   5.000 [get_ports {eth_mdio}]
+#
+#   ★★ 约束写法（实测踩过）：TD 的输入路径 Budget 取的是**捕获时钟的周期**，
+#      与虚拟时钟的 period 无关。首版按"参考沿=MDC 下降沿、数据在其后 195ns 内
+#      有效"写（-max 195.000），报告里 Budget = 10.000ns
+#      { clk0 rising@10.000 - b_mdio_virtual rising@0.000 }，
+#      于是 SWNS = -182.966ns（195 - 10 量级），把本来干净的 100M 域拖出违例。
+#      正确做法：把 MDIO 建模成"PHY 在 clk0 沿后 4.0~4.5ns 输出、FPGA 在下一个
+#      clk0 沿（10ns 后）捕获"—— 这是**保守**抽象：真实数据在捕获沿前 200ns 就已
+#      稳定（模型只给 5.5ns 窗口，保守约 36 倍）。
+#      -min 取 4.0 而非更小值：TD 的输入保持模型是
+#        hold_slack = input_delay_min + clk_min − (clk_max + hold)，
+#        要求 input_delay_min ≥ 2.837ns（与 §3.1 RGMII 同一模型）。
+#      实测（2026-11-24，非工程流 route 后）：本段 SWNS=0.000 / HWNS=0.000。
+create_clock -name b_mdio_virtual -period 10.000
+set_input_delay -clock b_mdio_virtual -max 4.500 [get_ports {eth_mdio}]
+set_input_delay -clock b_mdio_virtual -min 4.000 [get_ports {eth_mdio}]
 
 # -----------------------------------------------------------------------------
 # 4. SDRAM 引脚（沿用 A 板做法：不设 output delay，控制器内部时序保证）

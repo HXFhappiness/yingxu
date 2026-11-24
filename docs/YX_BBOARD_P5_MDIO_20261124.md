@@ -209,7 +209,9 @@ pullup (eth_mdio_w);
 原注释"PHY 控制引脚（eth_rst_n / eth_mdc / eth_mdio）：纯静态电平，无需时序约束"
 **已作废**——`eth_mdio` 现在是三态动态信号。
 
-新约束按"参考沿 = MDC 下降沿，PHY 输出在其后 5~195ns 内有效"写：
+### 6.1 ★ 首版约束写错了，TD 实跑抓出来
+
+首版按"参考沿 = MDC 下降沿，PHY 输出在其后 5~195ns 内有效"写：
 
 ```tcl
 create_clock -name b_mdio_virtual -period 400.000
@@ -217,15 +219,51 @@ set_input_delay -clock b_mdio_virtual -max 195.000 [get_ports {eth_mdio}]
 set_input_delay -clock b_mdio_virtual -min   5.000 [get_ports {eth_mdio}]
 ```
 
-物理依据：Clause 22 读操作由 PHY 在 MDC **下降沿**驱动、FPGA 在 **上升沿**采样 ——
-采样点距数据翻转 200ns（= 20 个 clk100 周期），相对 RGMII 的 4ns 数据眼是 50 倍裕量。
+TD 报告里 Budget 是 **捕获时钟的周期**，与虚拟时钟 period 无关：
 
-**为什么 `-min` 不取真实值（~1ns）**：TD 的输入保持模型是
+```
+Slack        : -182.966ns
+Begin Point  : eth_mdio (b_mdio_virtual { rise@0.000  fall@200.000  period=400.000 })
+End Point    : u_top/u_mdio/rdata_reg[0].d[0] (clk0 { rise@0.000  fall@5.000  period=10.000 })
+Budget       : 10.000ns { clk0 rising@10.000ns - b_mdio_virtual rising@0.000ns }
+input  D14   195.000
+```
+
+→ `195 − 10 ≈ 185`，把**本来干净的 100M 域**拖出 SWNS = −182.966ns。
+（教训：虚拟时钟的 period 只影响它自己，输入路径的预算由捕获时钟决定。）
+
+### 6.2 正确写法
+
+```tcl
+create_clock -name b_mdio_virtual -period 10.000
+set_input_delay -clock b_mdio_virtual -max 4.500 [get_ports {eth_mdio}]
+set_input_delay -clock b_mdio_virtual -min 4.000 [get_ports {eth_mdio}]
+```
+
+把 MDIO 建模成"PHY 在 clk0 沿后 4.0~4.5ns 输出、FPGA 在下一个 clk0 沿（10ns 后）
+捕获"。这是**保守**抽象：真实数据在捕获沿前 200ns 就已稳定，模型只给 5.5ns 窗口，
+保守约 36 倍。
+
+`-min` 取 4.0 而非更小值：TD 的输入保持模型是
 `hold_slack = input_delay_min + clk_min − (clk_max + hold)`，要求
-`input_delay_min ≥ 2.837ns`（与 §3.1 RGMII 同一模型）。取 5.000 既满足模型、
-又落在物理窗口（0~200ns）之内。
+`input_delay_min ≥ 2.837ns`（与 §3.1 RGMII 同一模型）。
 
-> ⚠ 本段**尚未经 TD 运行核对**（P5 只做仿真）。下次跑 TD 时先看这条是否按预期通过。
+### 6.3 TD 实跑结果（2026-11-24，非工程流 route 后）
+
+| 项 | 结果 |
+|---|---|
+| `eth_mdio` setup | **+7.099ns** |
+| `eth_mdio` hold | **+0.240ns** |
+| clk0（100M） | SWNS 0.000 / HWNS 0.000 |
+| clk1（73.3M） | SWNS 0.000 / HWNS 0.000 |
+| clk7（`b_mdio_virtual`） | SWNS 0.000 / HWNS 0.000 |
+| clk2（`b_eth_rxc_125m`） | HWNS −3.237 / HTNS −30.468 —— **已知 RGMII hold，未变** |
+
+全局 SWNS 从 −182.966ns 回到 **0.000ns**。全部 10 条负 slack 路径都是
+`eth_rxd[*]`/`eth_rxdv`（−2.903~−3.237ns），与改动前完全一致，无新增。
+
+资源：LUT 4091 → **4235**（+144，+0.74%）；BRAM 53 不变；IO 15 不变。
+
 
 ---
 
@@ -235,23 +273,70 @@ set_input_delay -clock b_mdio_virtual -min   5.000 [get_ports {eth_mdio}]
 |---|---|
 | `mdio` | **ALL PASS** `checks=7 errs=0` |
 | `phy_init` | **ALL PASS** `checks=11 errs=0` |
-| `bboard_sys_eth`（全链路） | 见 §7.1 |
+| `eth_rx` | **ALL PASS** |
+| `bboard_sys_eth`（全链路） | **ALL PASS** `ETH ok=292 drop=0 bytes=297989`（精确匹配） |
+| `bboard_sys`（全链路） | **ALL PASS** `ax_errs=0 axlines=3521 cpdeliv=166212` |
+| `bboard_key`（KEY 合成流） | **ALL PASS** `ax_errs=0 axlines=2728` |
+| TD 非工程流 route | 见 §6.3（SWNS 0.000，仅剩已知 RGMII hold） |
 
-### 7.1 全链路回归
+### 7.1 零扰动的硬证据
 
-顶层集成后重跑 `bboard_sys_eth`（判据与 `bboard_sys` 一致 + 传输层零丢包）——
-用来证明新增的 MDIO 逻辑对数据通路零扰动。
+顶层 MCU/MDIO 逻辑与数据通路无任何共享信号，但"无共享信号"只是设计意图，
+不是证据。这里做了**逐行对拍**：本次 `bboard_sys_eth` 产生的 52 个
+`POLL`/`POLLCP` 观测点（每 250k 拍一次），与上一次 PASS 运行的同一批观测点
+**逐字节完全相同**（`diff` 输出 0 行）。
 
-（结果见提交信息 / `out/sim/bboard_sys_eth_*_sim.log` 的 `VERDICT` 行。）
+```
+prev lines: 64  cur lines: 52
+diff lines: 0
+```
+
+即 MDIO 集成对 100M/73.3M/366.7M/50M 四个域的状态演化**零影响**。
 
 ---
 
-## 8. 遗留
+## 8. ★ 遗留项已消解：`RXD0/RXDLY` strap 极性不再是阻塞项
 
-1. **`RXD0/RXDLY` strap 的极性仍需原理图确认**（阻塞上板）。本序列是"无条件清 bit3"，
-   若 strap 语义恰好是"延时关闭"，写回同值无副作用（幂等）；但若原理图显示该脚
-   **下拉**（即默认关闭），则本序列是多余的保险，不影响功能。
-2. **SDC §3.4 待 TD 核对**（见 §6 末）。
-3. `PHY_INIT_WAIT = 100ms` 是保守取值，未按 RTL8211F 数据手册精确核算。
-4. 上电后**没有读回校验**：序列跑完不检查 `cfg_done/cfg_skip` 的最终状态（无空闲引脚
-   可观测）。若将来有遥测通道，建议把 `rxcr_r` 与 `cfg_skip` 引出来。
+上一份文档（`YX_BBOARD_P5_PHY1_20261124.md` §3）把"确认 `RXD0/RXDLY` strap 极性"
+列为阻塞上板的前提。本轮实现 MDIO 后，这个问题**消失**了——不是查到了答案，
+而是**答案不再重要**：
+
+Linux 内核 `rtl8211f_config_rgmii_delay()`（`drivers/net/phy/realtek/realtek_main.c`）
+把接口模式映射到该位，并且是**读-改-写**：
+
+| 接口模式 | TXCR bit8 | RXCR bit3 |
+|---|---|---|
+| `RGMII`（无延时） | 0 | **0** |
+| `RGMII_RXID`（RX 延时） | 0 | **1**（`RTL8211F_RX_DELAY`） |
+| `RGMII_TXID`（TX 延时） | 1 | 0 |
+| `RGMII_ID`（双向延时） | 1 | 1 |
+
+读改写目标：页 `0xd08` / 寄存器 `0x15` / mask `BIT(3)`。
+
+→ **bit3 = 1 就是"RX 延时使能"，bit3 = 0 就是"关闭"**，语义确定。
+strap 只决定该位的**初始值**，不改变语义。我们的序列写 `rxcr_r & ~BIT(3)`，
+**无条件把延时关掉**：
+
+- strap 原本 = 1（延时开）→ 序列改为 0 → 修好了，正是我们要的；
+- strap 原本 = 0（延时关）→ 写回同值 → **幂等**，无副作用。
+
+两种情况下结果都是"延时关闭"，所以不需要知道 strap 极性。
+
+> 这也是上一份文档 §3 结论"唯一可行修法是实现 MDIO 主机"的兑现。
+
+---
+
+## 9. 仍然遗留
+
+1. **`PHY_INIT_WAIT = 100ms` 是保守取值**，未按 RTL8211F 数据手册精确核算。
+   （RTL8211F 复位脚要求 ≥10ms，之后还需内部 PLL 初始化；视频通路不依赖该配置。）
+2. **序列跑完无读回校验**：`rxcr_r` / `cfg_skip` / `cfg_done` 目前只在顶层内部，
+   没有空闲引脚引出。若将来有遥测通道（UART/以太网上报），建议把这三位报出去，
+   上板时可直接确认"延时确实被关掉了"。
+3. **RGMII 输入 hold（−3.237ns / 10 端点）仍在**——与 MDIO 无关，是
+   `YX_BBOARD_P5_PHY1_20261124.md` §3 的拓扑/判据冲突（TD 判据要求
+   `input_delay ≥ 2.837ns`，物理不可满足）。本轮未动。
+4. `eth_mdio` 的 hold 裕量只有 **+0.240ns**（见 §6.3）。这是 TD 把 PLL 插入延时
+   算进保持判据造成的模型artifact；物理上数据在采样沿前 200ns 就稳定，真实裕量
+   极大。若后续 TD 版本改判据，这个数会变化，不必照此调参。
+
