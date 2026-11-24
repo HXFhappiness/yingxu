@@ -31,7 +31,12 @@ module yingxu_vq_board_top #(
     // 外部驱动（P4 验收基线）；TD 板级构建用 -DUSE_ETH 打开内部 yx_b_eth_rx。
     parameter [47:0] LOCAL_MAC  = 48'h00_0a_35_02_00_01,
     parameter [31:0] LOCAL_IP   = 32'hc0_a8_00_64,     // 192.168.0.100
-    parameter [15:0] LOCAL_PORT = 16'd5000
+    parameter [15:0] LOCAL_PORT = 16'd5000,
+    // ---- 状态指示灯极性 ----
+    // B 板 4 个用户 LED（AC201：LED0..3 = M12/R16/R15/T15）在原理图上未标注驱动
+    // 极性（引脚直驱 or 经三极管），无法从 RTL 侧判定。默认"驱动 1 = 点亮"；
+    // 若上板发现全反（例如心跳灯常亮不闪），把本参数置 1 即可整体反转。
+    parameter LED_ACTIVE_LOW = 1'b0
 )(
     input  wire        ref_clk,        // 50M 晶振（控制器内部 PLL 生成 100M）
     input  wire        rst_n,
@@ -84,6 +89,10 @@ module yingxu_vq_board_top #(
     output wire [1:0]  band_pend_cnt,   // 渲染器未 ack 带数（欠扫描观测）
     output wire        dbg_clk100,      // 内部 100M 逻辑域时钟（TB 用；板上为内部走线）
     output wire        dbg_pixel_clk,   // 73.33M 像素时钟（TB 对拍采样用）
+
+    // ---- 板级状态指示灯（B 板 4 个用户 LED；P5 板级可观测性）----
+    //   位定义见下方 LED 逻辑处。极性由参数 LED_ACTIVE_LOW 控制。
+    output wire [3:0]  o_led,
 
     // ---- HDMI TMDS/DDC 输出（P5；引脚号待 AC601 引脚表，见 timing_b.sdc）----
     //   EMIT_HDMI=0（仿真）：TMDS 恒 0、DDC_SCL 恒 0、DDC_SDA 高阻。
@@ -174,6 +183,34 @@ module yingxu_vq_board_top #(
 
     // MDIO 三态：oe=0 时释放总线（板上 PULLUP 拉高；读操作的 TA/数据相位由 PHY 驱动）
     assign eth_mdio = mdio_oe_w ? mdio_o_w : 1'bz;
+
+    // ================= 板级状态指示灯（4 个用户 LED）=================
+    // 为什么需要它：B 板此前是"哑板"——上板后若收不到包，无法区分
+    // "PHY 没起来 / MDIO 序列没生效 / RGMII 时序不对 / 码流没到"。
+    // 这 4 盏灯把最关键的四个事实直接摆出来：
+    //   led[0] = phy_cfg_done    MDIO 配置序列已跑完
+    //   led[1] = phy_cfg_skip    PHY 无响应（读回 0xffff）或无需改，序列跳过
+    //   led[2] = phy_rxcr_w[3]  **清除前**的 RXCR bit3 —— 即 RGMII RX 延时使能位，
+    //                           把"strap 到底使能还是关闭"从推断变成实测
+    //   led[3] = 心跳            clk100 分频（~1.5Hz），证明时钟/配置在跑
+    // 极性：参数 LED_ACTIVE_LOW（默认 0 = 驱动 1 点亮）。
+    localparam [23:0] LED_HB_DIV = 24'd33_000_000;   // 100MHz → 约 0.66s 翻转（1.5Hz 周期）
+    reg [23:0] led_hb_cnt;
+    reg        led_hb;
+    always @(posedge clk100 or negedge rst_n) begin
+        if (!rst_n) begin
+            led_hb_cnt <= 24'd0;
+            led_hb     <= 1'b0;
+        end else if (led_hb_cnt == LED_HB_DIV - 24'd1) begin
+            led_hb_cnt <= 24'd0;
+            led_hb     <= ~led_hb;
+        end else begin
+            led_hb_cnt <= led_hb_cnt + 24'd1;
+        end
+    end
+
+    wire [3:0] led_raw = {led_hb, phy_rxcr_w[3], phy_cfg_skip_w, phy_cfg_done_w};
+    assign o_led = LED_ACTIVE_LOW ? ~led_raw : led_raw;
     wire        hdr_book_we;
     wire [13:0] hdr_book_wa;
     wire [15:0] hdr_book_wd;

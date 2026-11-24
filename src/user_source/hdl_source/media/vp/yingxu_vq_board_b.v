@@ -34,7 +34,11 @@ module yingxu_vq_board_b #(
     output wire       tmds_ch0_p,
     output wire       tmds_ch1_p,
     output wire       tmds_ch2_p,
-    output wire       tmds_clk_p
+    output wire       tmds_clk_p,
+    // 板级状态指示灯（AC201 用户 LED：LED0..3 = M12/R16/R15/T15）
+    //   [0] phy_cfg_done  [1] phy_cfg_skip  [2] rxcr_r[3]（清除前值）  [3] clk100 心跳
+    //   极性由 yingxu_vq_board_top 的 LED_ACTIVE_LOW 参数控制。
+    output wire [3:0] led
 );
 
 `ifndef USE_ETH
@@ -93,6 +97,8 @@ module yingxu_vq_board_b #(
         .tmds_ch1_p    (tmds_ch1_p),
         .tmds_ch2_p    (tmds_ch2_p),
         .tmds_clk_p    (tmds_clk_p),
+        // 板级状态灯（PHY 配置三位 + 心跳）
+        .o_led         (led),
         // DDC 不引出（见端口注释）：顶层内部悬空，与 A 板 design_top_wrapper 同做法
         .tmds_ddc_scl  (),
         .tmds_ddc_sda  (),

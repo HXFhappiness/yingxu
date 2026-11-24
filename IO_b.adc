@@ -38,3 +38,14 @@ set_pin_assignment	{ eth_rxdv }	{ LOCATION = E12; IOSTANDARD = LVCMOS33; PULLTYP
 set_pin_assignment	{ eth_rst_n }	{ LOCATION = C15; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
 set_pin_assignment	{ eth_mdc }	{ LOCATION = C16; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = PULLUP; }
 set_pin_assignment	{ eth_mdio }	{ LOCATION = D14; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = PULLUP; }
+
+# ---- 板级状态指示灯（AC201 用户 LED0..3 → M12/R16/R15/T15）----
+#   位定义：led[0]=phy_cfg_done   led[1]=phy_cfg_skip
+#           led[2]=rxcr_r[3]（MDIO 清除前的 RGMII RX 延时使能位）
+#           led[3]=clk100 心跳（~1.5Hz）
+#   极性：RTL 侧由 LED_ACTIVE_LOW 参数控制（默认 1=点亮）；此处不设 PULL，
+#   避免与 RTL 驱动冲突。
+set_pin_assignment	{ led[0] }	{ LOCATION = M12; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment	{ led[1] }	{ LOCATION = R16; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment	{ led[2] }	{ LOCATION = R15; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment	{ led[3] }	{ LOCATION = T15; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
