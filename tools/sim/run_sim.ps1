@@ -49,7 +49,7 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth')]
+    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'mdio')]
     [string]$Entry
 )
 
@@ -184,6 +184,17 @@ $Entries['bboard_sys_eth'] = @{
         # 注：BUFG_0.v 已在 bboard_sys 源单里（P5 给 RXC 加 BUFG 用），此处不再重复
         #     —— 重复会让 iverilog 报 "BUFG_0 has already been declared"。
         "$BSHM\IDDR_0.v"
+    )
+}
+
+# ---- 入口 6: mdio（Clause 22 MDIO 主机独立验收，秒级）----
+# 含 PHY 行为模型：验证帧格式逐位、读写往返、TA 释放总线。
+$Entries['mdio'] = @{
+    Defines  = @()
+    PlusArgs = @()
+    Sources  = @(
+        'tb\tb_mdio.v',
+        "$VP\yx_b_mdio.v"
     )
 }
 
