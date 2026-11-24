@@ -284,12 +284,20 @@ module yx_b_eth_rx #(
 
     assign desc_pop = (st == S_IDLE) && desc_v;
 
-    assign stream_valid = (st == S_SEND) && byte_v && (rem != 15'd0);
+    // ★ P2b：`rem != 0` 比较已去掉 —— 在 S_SEND/S_DROP 里它**恒为真**
+    //   （进态时 rem ≥ 1；递减到 1 的那一拍同时转回 S_IDLE），保留只会把
+    //   15 位计数器串进 `rem → stream_valid → u_ixdec/state` 这条跨模块长路径
+    //   （−463 ps）。语义逐拍等价。
+    //   ★ 试过把 stream_valid/data 再寄存一拍以断开 `st_reg → ixdec/state`
+    //   （−212 ps），但那会破坏 FWFT 对齐（sd_r 锁到刚弹出的旧字节），
+    //   要修必须加 skid 缓冲；该路径的 net 占 65%，属布局可收敛的量级，
+    //   故保持组合直连。
+    assign stream_valid = (st == S_SEND) && byte_v;
     assign stream_data  = byte_d;
 
     // 弹字节：发送态在握手成功时弹；丢弃态无条件弹
-    assign byte_pop = (st == S_SEND) ? (byte_v && stream_ready && (rem != 15'd0)) :
-                      (st == S_DROP) ? (byte_v && (rem != 15'd0)) : 1'b0;
+    assign byte_pop = (st == S_SEND) ? (byte_v && stream_ready) :
+                      (st == S_DROP) ?  byte_v : 1'b0;
 
     always @(posedge clk100 or posedge rd_rst) begin
         if (rd_rst) begin
@@ -381,13 +389,29 @@ module yx_b_afifo #(
 
     reg [WIDTH-1:0] mem [0:DEPTH-1];
 
-    function [PT-1:0] g2b;
+    // 格雷→二进制**两级流水**（原 13 级串行 XOR 在 100MHz 域实测 −337 ps）。
+    //   低半段用"上一拍的高半结果 + 同一拍的格雷低半快照(g_lo_q)"配种，拼接自洽；
+    //   代价是占用估算多滞后 1 拍 → 更保守（full 更早），方向安全。
+    //   ★ 注意：**不要**改成"平衡前缀树"写法 —— TD elaborate 会报 HDL-8007
+    //   （part-select direction / 局部 reg 位宽推断错）并把本模块判成黑盒。
+    localparam PH = PT/2;
+    function [PT-1:PH] g2b_hi;
         input [PT-1:0] g;
         integer i;
         begin
-            g2b[PT-1] = g[PT-1];
-            for (i = PT-2; i >= 0; i = i - 1)
-                g2b[i] = g2b[i+1] ^ g[i];
+            g2b_hi[PT-1] = g[PT-1];
+            for (i = PT-2; i >= PH; i = i - 1)
+                g2b_hi[i] = g2b_hi[i+1] ^ g[i];
+        end
+    endfunction
+    function [PH-1:0] g2b_lo;
+        input [PH-1:0] gl;
+        input          seed;                    // = bin[PH]（高半最低位）
+        integer i;
+        begin
+            g2b_lo[PH-1] = seed ^ gl[PH-1];
+            for (i = PH-2; i >= 0; i = i - 1)
+                g2b_lo[i] = g2b_lo[i+1] ^ gl[i];
         end
     endfunction
 
@@ -395,35 +419,42 @@ module yx_b_afifo #(
     reg  [PT-1:0] wbin, wgray;
     reg  [AW-1:0] wptr;
     reg  [PT-1:0] rgray_w1, rgray_w2;
-    // ★ 格雷→二进制单独打一拍：g2b 是 PT-1 级串行 XOR（14 位 → 13 级），
-    //   原来与"减法算占用 + 比较出 full"串成一条 11.3ns 路径，125MHz（8ns）
-    //   下违例 -3.4ns（实测 u_bfifo/rgray_w2 → skip_pkt，ADDER=5）。
-    //   多打一拍照样安全：rbin_w 更滞后 → 占用只会估得更大 → full 更早，
-    //   方向保守（与"读指针同步滞后"同一性质），不会溢出。
-    reg  [PT-1:0] rbin_w_q;
-    wire [PT-1:0] rbin_w = g2b(rgray_w2);
+    reg  [PT-1:PH] rbin_whi;      // 高半段（寄存）
+    reg  [PH-1:0]  g_lo_q;        // 与 rbin_whi 同拍的格雷低半快照
+    reg  [PT-1:0]  rbin_w_q;      // 拼好的二进制读指针（= 上一拍 rgray_w2 的转换）
     wire [PT-1:0] wbin_nxt = wbin + 1'b1;
     wire [PT-1:0] wgray_nxt = wbin_nxt ^ (wbin_nxt >> 1);
 
     assign wr_occ  = wbin - rbin_w_q;
-    assign wr_full = (wr_occ >= DEPTH[PT-1:0]);
+    // ★ P2b：full 用经典格雷判定（wgray == 读指针格雷"高两位取反"），
+    //   不再走 g2b+减法+比较。等价性：占用 == DEPTH ⟺ 两个 PT 位格雷指针
+    //   仅最高两位互为反相。方向同样保守（同步后的读指针滞后 → 更早 full）。
+    assign wr_full = (wgray == {~rgray_w2[PT-1:PT-2], rgray_w2[PT-3:0]});
 
     // ---------------- 读域 ----------------
     reg  [PT-1:0] rbin, rgray;
     reg  [AW-1:0] rptr;
     reg  [PT-1:0] wgray_r1, wgray_r2;
-    wire [PT-1:0] wbin_r = g2b(wgray_r2);
-    wire [PT-1:0] occ_r  = wbin_r - rbin;
     wire [PT-1:0] rbin_nxt = rbin + 1'b1;
     wire [PT-1:0] rgray_nxt = rbin_nxt ^ (rbin_nxt >> 1);
     wire [AW-1:0] rptr_nxt = rptr + 1'b1;
+
+    // ★★ P2b：读侧**完全不需要**格雷→二进制转换。占用的三个用法都等价于
+    //   格雷指针比较（格雷码是双射）：
+    //     occ == 0  ⟺ wgray_r2 == rgray
+    //     occ != 0  ⟺ wgray_r2 != rgray
+    //     occ >  1  ⟺ wgray_r2 != rgray_nxt   （弹出一个后仍非空）
+    //   原实现是 g2b（13 级串行 XOR）+ 减法 + 比较，实测
+    //   u_bfifo/wgray_r2 → dvalid_r −198 ps，是全设计最后两条违例之一。
+    wire rd_zero  = (wgray_r2 == rgray);
+    wire rd_more  = (wgray_r2 != rgray_nxt);   // 弹出后仍非空（= occ > 1）
 
     reg [WIDTH-1:0] dout_r;
     reg             dvalid_r;
 
     assign rd_data  = dout_r;
     assign rd_valid = dvalid_r;
-    assign rd_empty = (occ_r == {PT{1'b0}}) && !dvalid_r;
+    assign rd_empty = rd_zero && !dvalid_r;
 
     // ★ 存储读地址（唯一）：消费拍预取下一字，其余拍保持当前字。
     //   = pop ? rptr+1 : rptr —— 写成加法正好省掉一个地址多路器。
@@ -437,11 +468,16 @@ module yx_b_afifo #(
             wptr <= {AW{1'b0}};
             rgray_w1 <= {PT{1'b0}};
             rgray_w2 <= {PT{1'b0}};
+            rbin_whi <= {(PT-PH){1'b0}};
+            g_lo_q   <= {PH{1'b0}};
             rbin_w_q <= {PT{1'b0}};
         end else begin
             rgray_w1 <= rgray;
             rgray_w2 <= rgray_w1;
-            rbin_w_q <= g2b(rgray_w2);
+            // 两级 g2b 流水（见上）：高半寄存；低半用同拍低半快照 + 高半结果配种
+            rbin_whi <= g2b_hi(rgray_w2);
+            g_lo_q   <= rgray_w2[PH-1:0];
+            rbin_w_q <= {rbin_whi, g2b_lo(g_lo_q, rbin_whi[PH])};
             if (wr_en && !wr_full) begin
                 mem[wptr] <= wr_data;
                 wptr  <= wptr + 1'b1;
@@ -476,9 +512,9 @@ module yx_b_afifo #(
                 rbin  <= rbin_nxt;
                 rgray <= rgray_nxt;
                 rptr  <= rptr_nxt;
-                dvalid_r <= (occ_r > {{(PT-1){1'b0}}, 1'b1});
+                dvalid_r <= rd_more;
             end else if (!dvalid_r) begin
-                dvalid_r <= (occ_r != {PT{1'b0}});
+                dvalid_r <= !rd_zero;
             end
         end
     end

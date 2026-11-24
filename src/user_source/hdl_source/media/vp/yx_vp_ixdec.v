@@ -45,14 +45,20 @@ module yx_vp_ixdec #(
 
     // FSM
     localparam S_HDR0 = 4'd0, S_HDR1 = 4'd1, S_HDR2 = 4'd2, S_HDR3 = 4'd3, S_HDR4 = 4'd4,
-               S_KEY  = 4'd5, S_MAP  = 4'd6, S_WALK = 4'd7, S_DIDX = 4'd8, S_FD = 4'd9;
+               S_KEY  = 4'd5, S_MAP  = 4'd6, S_WALK = 4'd7, S_DIDX = 4'd8, S_FD = 4'd9,
+               S_WALKR = 4'd10;
 
-    // ★ P5：改变块位图。原来声明成 131072 位（1 bit × 128K），但真实索引范围
-    //   只有 NB 个块：写侧 mcnt*8+k（mcnt < MB=NB/8）→ 最大 NB-1；读侧 blk < NB。
-    //   多出来的 7 万多 bit 在 TD 里被算成"BRAM 需求"，把总需求推过 64 块的限，
-    //   导致 TD 把 `ln`（行缓冲）降级成分布式 RAM（SYN-2599），反过来吃掉两万
-    //   LUT。按真实范围声明即可，功能零变化。
-    reg map_ram [0:NB-1];
+    // ★★ P2b：改变块位图从 LUT 分布式 RAM 改成厂商 32Kb BRAM 原语。
+    //   为什么必须改：map_ram 是 57,600×1bit，原来是 **组合读**（`if (map_ram[blk])`
+    //   同拍决策），TD 只能建在 LUT 里，综合后 `u_ixdec` 8,249 LUT 且成为全设计
+    //   唯一时序违例族：`rem_reg → map_ram_syn_*.e[0]` −1,031 ps（1,033 条端点）。
+    //   BRAM 读必然 1 拍延迟，故把走查拆成"读 / 决策"两拍（S_WALKR → S_WALK）：
+    //   blk 在两拍内不变 → dob 天然对应 blk；且 q_room 不足停顿拍地址也不变，
+    //   数据保持稳定，无需额外的命中锁存。代价：走查 2 拍/块，
+    //   57600 块 = 115,200 拍 ≈ 1.15 ms/帧（DELTA 帧），帧预算 33 ms 下可忽略。
+    //   位图打包成 8 bit/字（每字 8 个块，块 8m+i ↔ 字节 m 的 bit(7-i)），
+    //   7200 字 → 8192×8 深度 → 2 块 32Kb（bram32k 尚余 8 块）。
+    //   ★ 例化放在下面寄存器声明之后（wire 引用 state/blk/mcnt）。
 
     reg [3:0]  state;
     reg        kind_r;
@@ -116,6 +122,36 @@ module yx_vp_ixdec #(
     assign ix_we  = out_v;
     assign ix_blk = out_d[26:10];
     assign ix_idx = out_d[9:0];
+
+    // ---- P2b：改变块位图（8 bit/字 × 8192 → 厂商 32Kb 原语，2 块）----
+    // 写：S_MAP 每字节直写（块 8m+i ↔ 字节 m 的 bit(7-i)）
+    // 读：B 口同步读，1 拍延迟 → S_WALKR 呈现地址、S_WALK 用数据决策
+    wire [7:0]  map_dob;
+    wire        map_we   = (state == S_MAP) && stream_valid;   // S_MAP 下 get == stream_valid
+    wire [12:0] map_a    = blk[15:3];                // 块 → 字节地址（7200 < 8192）
+    wire        map_bite = map_dob[~blk[2:0]];       // 块在字节内的位（MSB-first）
+    EG_LOGIC_BRAM #(
+        .DATA_WIDTH_A (8),
+        .DATA_WIDTH_B (8),
+        .ADDR_WIDTH_A (13),
+        .ADDR_WIDTH_B (13),
+        .BYTE_ENABLE  (0),
+        .MODE         ("DP"),
+        .REGMODE_A    ("NOREG"),
+        .REGMODE_B    ("NOREG"),
+        .WRITEMODE_A  ("NORMAL"),
+        .WRITEMODE_B  ("NORMAL"),
+        .RESETMODE    ("ASYNC"),
+        .INIT_FILE    ("NONE"),
+        .FILL_ALL     ("NONE"),
+        .IMPLEMENT    ("32K")
+    ) u_map (
+        .dia (stream_data), .addra (mcnt[12:0]), .cea (1'b1), .wea (map_we),
+        .clka(clk),         .rsta  (1'b0),       .bea (1'b1),
+        .dib (8'd0),        .addrb (map_a),      .ceb (1'b1), .oceb(1'b1),
+        .clkb(clk),         .web   (1'b0),       .rstb(1'b0), .beb (1'b1),
+        .doa (),            .dob   (map_dob)
+    );
     assign frame_key = ~kind_r;     // 1=KEY（kind 字节 0=KEY 1=DELTA）
     assign frame_kind = kind_r;     // ★ 此前漏驱动恒为 Z，DELTA 宣布永远失效
 
@@ -179,36 +215,34 @@ module yx_vp_ixdec #(
                 end
             end
 
-            // ---- DELTA：先收 bitmap（字节内 MSB-first → 块 8m+i）----
+            // ---- DELTA：先收 bitmap（字节内 MSB-first → 块 8m+i ↔ bit(7-i)）----
+            // 直接按字节写入 u_map（bit(7-i) 的打包规则由 map_ram 的读侧还原）
             S_MAP: if (get) begin
-                map_ram[mcnt*8 + 0] <= stream_data[7];
-                map_ram[mcnt*8 + 1] <= stream_data[6];
-                map_ram[mcnt*8 + 2] <= stream_data[5];
-                map_ram[mcnt*8 + 3] <= stream_data[4];
-                map_ram[mcnt*8 + 4] <= stream_data[3];
-                map_ram[mcnt*8 + 5] <= stream_data[2];
-                map_ram[mcnt*8 + 6] <= stream_data[1];
-                map_ram[mcnt*8 + 7] <= stream_data[0];
                 if (mcnt == MB - 1) begin
                     mcnt  <= 15'd0;
-                    state <= S_WALK;
+                    state <= S_WALKR;        // ★ 先过"读"拍（BRAM 1 拍延迟）
                 end else
                     mcnt <= mcnt + 15'd1;
             end
 
-            // ---- DELTA：走查位图；变化块在 skid 有空位时才取索引 ----
+            // ---- DELTA：读拍（blk 保持不变，让 u_map 的 dob 对应 blk）----
+            S_WALKR: state <= S_WALK;
+
+            // ---- DELTA：决策拍（此时 map_bite 对应 blk）；变化块在 skid 有空位时才取索引 ----
             S_WALK: begin
-                if (map_ram[blk]) begin
+                if (map_bite) begin
                     if (q_room) begin
                         bcnt  <= 3'd0;
                         state <= S_DIDX;
                     end
-                    // 无空位：原地等（不吞字节）
+                    // 无空位：原地等（不吞字节）。blk 不变 → dob 保持 → 决策不变
                 end else begin
                     if (blk == NB - 1) begin
                         state <= S_FD;
-                    end else
-                        blk <= blk + 17'd1;
+                    end else begin
+                        blk   <= blk + 17'd1;
+                        state <= S_WALKR;        // ★ 回到读拍
+                    end
                 end
             end
 
@@ -223,14 +257,14 @@ module yx_vp_ixdec #(
                         em_idx <= {stream_data[IW-9:0], ilo};
                         bcnt   <= 3'd0;              // ★ 同 S_KEY：发射后复位字节相位
                         blk    <= blk + 17'd1;
-                        state  <= (blk == NB - 1) ? S_FD : S_WALK;
+                        state  <= (blk == NB - 1) ? S_FD : S_WALKR;
                     end
                 end else begin
                     fsm_we <= 1'b1;
                     em_blk <= blk;
                     em_idx <= stream_data[IW-1:0];
                     blk    <= blk + 17'd1;
-                    state  <= (blk == NB - 1) ? S_FD : S_WALK;
+                    state  <= (blk == NB - 1) ? S_FD : S_WALKR;
                 end
             end
 
