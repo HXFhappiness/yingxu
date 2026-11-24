@@ -167,7 +167,8 @@ $Entries['eth_rx'] = @{
         'src\crc32_d8.v',
         'src\rgmii_to_gmii.v',
         "$BSHM\BUFG_0.v",
-        "$BSHM\IDDR_0.v"
+        "$BSHM\IDDR_0.v",
+        "$BSHM\EG_LOGIC_IDELAY.v"
     )
 }
 
@@ -187,7 +188,9 @@ $Entries['bboard_sys_eth'] = @{
         'src\rgmii_to_gmii.v',
         # 注：BUFG_0.v 已在 bboard_sys 源单里（P5 给 RXC 加 BUFG 用），此处不再重复
         #     —— 重复会让 iverilog 报 "BUFG_0 has already been declared"。
-        "$BSHM\IDDR_0.v"
+        "$BSHM\IDDR_0.v",
+        # ★ P6：rgmii_to_gmii 里 RGMII RX 数据路径加了 EG_LOGIC_IDELAY（直通 shim）
+        "$BSHM\EG_LOGIC_IDELAY.v"
     )
 }
 
