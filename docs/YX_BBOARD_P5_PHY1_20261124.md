@@ -18,7 +18,7 @@
 **place 干净通过（0 违例）**，说明布局可行；违例全部在布线后出现，
 且**全部集中在 125M 以太网域**（100M / 73.3M / 366.7M 域余量充足）。
 
-## 2. 违例一：`ip_checksum` 的 9 操作数加法链（setup，−563ps）
+## 2. 违例一：`ip_checksum` 的 9 操作数加法链（setup，−563ps）——**已修**
 
 ```
 Begin: u_ethrx/u_mac/rx_ip_frag_offset_reg[1]
@@ -38,10 +38,42 @@ suma <= {IP_ver,IP_hdr_len,IP_tos}+IP_total_len+IP_id+
 TD 把它综合成 **7 级线性 ADDER 链**（报告里 `add0_syn_884→885→870→871→
 872→867→861→862`，用 fco/fci 串起来），而不是平衡树。
 
-**可行性**：`cal_en` 是 IP 头解析到第 19 拍发出的单拍脉冲，而 9 个操作数
-在解析过程中逐字段锁存、到第 19 拍全部稳定；`ip_header_check_ok` 的采样点
-在 `cnt_udp_header==2`（约 3 拍后）。**因此有 3 拍余量可做流水**。
-把求和拆成"平衡树 + 一级寄存"即可把 7 级压到 4 级。
+### 修法：分级求和（不是简单加流水级）
+
+**时序账**（来自 `eth_udp_rx_gmii.v` 的解析时序，决定了不能随便加流水）：
+
+- IP 头字段在 `cnt_ip_header = 0..19` 逐字节锁存，第 19 拍全部稳定；
+- `ip_checksum_cal_en` 是"第 19 拍之后那一拍"的单拍脉冲；
+- 下游 `ip_header_check_ok` 在 `cnt_udp_header == 2` 采样 —— **cal_en 后只剩 2 拍**；
+- 原实现里 `suma` 在 cal_en 拍后一拍有效。
+
+所以**必须保持 `suma` 的产出时刻不变**，只能把"早稳定字段"提前算好：
+
+| 分组 | 内容 | 稳定时刻 | 级数 |
+|---|---|---|---|
+| `p1a` | `{ver,hdr_len,tos}`+`total_len`+`id` | cnt 5 前 | 2 |
+| `p1b` | `{rsv,df,mf,frag}`+`{ttl,protocol}` | cnt 9 前 | 1 |
+| `p1_r` | `p1a_r + p1b_r` | — | 1 |
+| `p2a` | `src_ip` 高低半 | cnt 15 前 | 1 |
+| `p2b` | `dst_ip[31:16]` | cnt 16 前 | 1 |
+| `p2_r` | `p2a_r + p2b_r` | — | 1 |
+| `suma` | `p1_r + p2_r + dst_ip[15:0]` | cal_en 拍 | 2 |
+
+**最大逻辑级数 7 → 2**，`suma` 仍在 cal_en 拍后一拍有效（与原实现同拍），
+功能完全等价。
+
+### 验证结果
+
+| 指标 | 修前 | 修后 |
+|---|---:|---:|
+| Setup WNS | −563 ps | **+368 ps** |
+| Setup 违例端点 | 7 | **0** |
+| `#lut` | 4085 (20.84%) | 4089 (20.86%) |
+
+- `eth_rx` 专用 TB：**ALL PASS**（`ok=290 drop=1 byte_cnt=295941` 精确匹配；
+  drop 是 TB 故意构造的坏 CRC 包）。**IP 校验和路径确实被覆盖**——若算错，
+  厂商核会在 `cnt_udp_header==2` 丢弃整包，290 个包不可能全过。
+- `bboard_sys_eth` 全链路：见 §6 回归表。
 
 **风险提示**：交接稿称 `ip_checksum` 是"A 板共用代码，改了要连带重验 A 板"。
 **经核实此说法不成立**：A 板综合源单 `AC201_AL_board_test.al` 中
@@ -69,7 +101,7 @@ Slack           : −3.237ns
 而数据路径只有 1.075ns。DDR 位周期只有 4ns，采样点落在数据眼 66% 处
 （余量 1.37ns/2.63ns，物理上能工作，但不居中，且 STA 模型判为 hold 违例）。
 
-### 已试过的两种修法（都没解决）
+### 已试过的三种修法（都没解决）
 
 1. **给 RXC 加 BUFG**（照厂商参考设计
    `ip/depot/OneG_Ethernet_Subsystem_1.0/.../rgmii_interface.v:212-217` 的
@@ -82,6 +114,62 @@ Slack           : −3.237ns
    + `set_input_delay -max 0.5 / -min -0.4 -clock virtual_clk_c`）——
    TD 仍把真实时钟的插入延时算进捕获沿，hold 反而从 −2.337 变成 −3.237
    （正好等于 min 从 0.5 改到 −0.4 的 0.9ns 差值）。
+3. **决定性实验**：把 input delay 临时设成物理上不可能的值
+   （`-min 3.000 -max 3.500`）→ **HWNS 从 −3.237 变成 +0.024，违例全消失**
+   （SWNS +377ps）。这钉死了 TD 的判据公式：
+
+   ```
+   hold_slack = input_delay_min + data_path(1.075) − (clock_insertion(3.705) + hold(0.207))
+   ```
+
+   即 **TD 要求 `input_delay_min ≥ 2.837ns`**。
+
+### 为什么这个判据物理上不可满足
+
+`input_delay` 的物理含义是"数据相对时钟沿在引脚处的到达时刻"。RGMII 的
+数据与时钟由 PHY 同源发出，只有两种可能：
+
+| PHY 配置 | 引脚处关系 | input_delay |
+|---|---|---|
+| RXDLY=0（不加延时） | 数据与时钟沿**对齐** | ≈ 0（±板级偏斜 0.5） |
+| RXDLY=1（加 ~2ns） | 数据比时钟沿**早** ~2ns | ≈ −2 |
+
+**两种都到不了 +2.837ns**。TD 的判据等价于要求"数据路径比时钟路径长
+2.837ns"，而源同步输入的时钟走时钟树、必然比数据路径长——这是拓扑决定的，
+不是调数值能解决的。
+
+### 物理上到底能不能工作
+
+采样点 = 时钟插入延时(3.705) − 数据路径(1.075) = **2.63ns**，
+落在 4ns 数据眼的 **66%** 处（最坏情况按 input_delay=−0.4 算是 3.03ns / 76%）。
+余量：到下一次数据变化还有 0.97~1.37ns。**能工作，但偏晚、不居中。**
+
+**关键前提**：这要求 **PHY 的 RXDLY 关闭**。若 RXDLY 开启（RXC 再延后
+~2ns），采样点变成 4.63ns > 4ns 数据眼 → **采到下一位，功能失败**。
+
+### 硬件事实（本轮新查到）
+
+从 AC201 原理图 `C:\Users\HXF\Desktop\YX-tool\07_1GbNET.SchDoc` 提取到：
+
+```
+LibReference=RTL8211FDI   Comment=RTL8211F-CG   Designator=U14   封装 QFN-40
+引脚（strap 复用）：RXD0/RXDLY(25)  RXD1/TXDLY(24)  RXD2/PLLOF(23)  RXD3/PHYAD0(22)
+```
+
+**PHY = RTL8211F-CG**。它的 RGMII RX 延时由 `RXD0/RXDLY` 上电 strap 决定
+（也可经 MDIO 扩展寄存器改）。**上板前必须确认该 strap 为"延时关闭"**，
+否则本设计会采错位。
+
+### 建议修法（需设计决策，按推荐度排序）
+
+1. **确认 RXDLY strap 关闭**，接受"采样点 66%、STA 报 hold 违例"的现状，
+   并在文档里写明这是 TD 判据与拓扑的模型冲突（物理能工作）。
+   —— 零改动，但 STA 报告不干净。
+2. **加 eth 专用 PLL**（EG4S20 共 4 个，已用 2 个），用受控相移时钟采样，
+   让采样相位不再依赖布线延时。需要新 IP + 重新验证；且**相移方向必须
+   让 TD 判据通过**（需实测确认，不能想当然）。
+3. **用 IDELAY 延长数据路径**（若 EG4 的 IOB 支持），使数据路径 ≥ 时钟路径。
+   这是 Xilinx 系 RGMII 的标准做法，但需先确认 EG4 原语支持。
 
 ### 厂商模板的关键差异
 
@@ -145,19 +233,45 @@ phy_1**，要么改 run 配置，要么直接 import_db 出报告。
 
 | 文件 | 改动 | 依据 |
 |---|---|---|
+| `src/ip_checksum.v` | 9 操作数单拍求和 → 分级求和（7 级 → 2 级） | 修 setup −563ps / 7 端点；见 §2 |
 | `media/vp/yingxu_vq_board_b.v` | 去掉 `tmds_ddc_scl/sda` 顶层端口（内部悬空） | 引脚表无 DDC；A 板同做法；修 BIT-8123 |
 | `src/rgmii_to_gmii.v` | RXC 加 `BUFG_0` 后再给 IDDR 采样 | 厂商参考设计同构；**未解决 hold，但结构正确** |
 | `timing_b.sdc` | RGMII input delay 改虚拟时钟参考 + 厂商值 0.5/−0.4 | TD 自带 RGMII 模板 |
+| `tools/sim/run_sim.ps1` | ①`bboard_sys_eth` 去掉重复的 `BUFG_0.v`（我早前给 `bboard_sys` 加过，两处撞车 → iverilog "already declared"）；②`bboard_sys_eth` 补 `YINGXU_SIM` 宏（否则 RD1 FIFO 不走 CDC 分支，TB 的 `ASYNDOM.*` 探针绑不上） | 这两个是我引入的回归，已修 |
 
-仿真验证：`eth_rx` **ALL PASS**（BUFG 改动不影响功能）。
+仿真验证：
+
+| 入口 | 结果 |
+|---|---|
+| `eth_rx`（专用 TB） | **ALL PASS** — `ok=290 drop=1 byte_cnt=295941` 精确匹配 |
+| `bboard_sys_eth`（全链路） | 见下方 §6.1 |
+
+### 6.1 全链路回归
+
+`bboard_sys_eth` 在改 `ip_checksum` 后重跑（判据与 `bboard_sys` 一致 + 传输层零丢包）：
+
+```
+GATE-ETH ok=292(want 292: OK) drop=0(want 0: OK) bytes=297989(want 297989: OK)
+=== TB-SUMMARY: ALL PASS ===
+CNT: frames=5 bands=900 scan_errs=0 ax_errs=0 ax_lines=2801 ...
+```
+
+**IP 校验和路径确实被覆盖**：若算错，厂商核会在 `cnt_udp_header==2` 丢弃整包，
+292 个包不可能全过、字节数也不可能精确匹配。
 
 ## 7. 下一步建议（按优先级）
 
-1. **RGMII 采样相位**（阻塞上板）：加 eth PLL 输出 90° 相移时钟，
-   或确认 PHY RXC 延时档位。这是 hold 违例的唯一正解。
-2. **`ip_checksum` 加法链**：改平衡树 + 一级寄存（有 3 拍余量，安全）。
-   改完需跑 `eth_rx` + `bboard_sys_eth` 双回归。
-3. 上述两项修完再跑 `phy_1`（用 `p5_route_rpt.tcl` 出报告），
-   目标 route 后 WNS ≥ 0。
-4. 交接稿里"`ip_checksum` 是 A 板共用代码"的说法**已证伪**，
-   建议同步更正到 HANDOFF，避免后续会话误判可改动范围。
+1. **确认 RTL8211F 的 `RXD0/RXDLY` strap 为"延时关闭"**（阻塞上板）。
+   这是 §3 里所有分析的前提；若 strap 是"延时开启"，采样点会落到数据眼外，
+   **功能直接失败**。查 AC201 原理图 `07_1GbNET.SchDoc` 里 U14 该脚的上下拉。
+2. **RGMII hold 的取舍**（需设计决策，三选一，见 §3 末）：
+   - 接受现状（物理能工作，STA 报违例）+ 文档写明是判据/拓扑模型冲突；
+   - 加 eth PLL 用受控相移采样（需新 IP + 实测确认相移方向）；
+   - 用 IDELAY 延长数据路径（需先确认 EG4 IOB 是否支持）。
+3. **更正 HANDOFF 两处**：
+   - "`ip_checksum` 是 A 板共用代码"**已证伪**（A 板源单出现次数为 0）；
+   - 补记"`phy_1` 的 run 流程默认带 bitgen，**不要用 `launch_runs` 跑 phy_1**"
+     （见 §5），route 后报告一律走 `import_db ..._pr.db`。
+4. 核心 VQ 设计（100M/73.3M/366.7M/50M 域）**已经干净**：
+   setup WNS +368ps、0 违例；资源 LUT 4089 (20.86%)、BRAM 53/64。
+   剩余违例只在以太网域，且已定位到具体原因。

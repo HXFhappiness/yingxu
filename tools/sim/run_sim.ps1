@@ -171,7 +171,7 @@ $Entries['eth_rx'] = @{
 # 判据与 bboard_sys 完全一致（golden/igold/axerr/…）+ 传输层零丢包。
 # WD 16M：以太网按消费能力节流，总拍数略高于文件直推。
 $Entries['bboard_sys_eth'] = @{
-    Defines  = @('BBOARD_SYS', 'BBOARD_ETH')
+    Defines  = @('BBOARD_SYS', 'BBOARD_ETH', 'YINGXU_SIM')
     Stream   = 'out\vp_720_5f.yxv2'
     Golden   = $true
     PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=16000000')
@@ -181,7 +181,8 @@ $Entries['bboard_sys_eth'] = @{
         'src\ip_checksum.v',
         'src\crc32_d8.v',
         'src\rgmii_to_gmii.v',
-        "$BSHM\BUFG_0.v",
+        # 注：BUFG_0.v 已在 bboard_sys 源单里（P5 给 RXC 加 BUFG 用），此处不再重复
+        #     —— 重复会让 iverilog 报 "BUFG_0 has already been declared"。
         "$BSHM\IDDR_0.v"
     )
 }
