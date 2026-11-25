@@ -155,6 +155,32 @@ module tb_yxvp_bboard;
     wire [15:0] eth_ok_cnt, eth_drop_cnt, eth_room;
     wire [31:0] eth_byte_cnt;
 
+    // ★ 吞吐压力模式（+NOSTALL）：跳过 FIFO room 节流，按 GMII 线速不间断灌包。
+    //
+    //   为什么需要：默认测试里发送进程有一句
+    //       while (eth_room < (e_len + 128)) @(negedge gmii_clk);
+    //   即 **TB 会等 FIFO 有空位才发**。所以默认门禁的 drop=0 / bytes 精确匹配
+    //   只证明"在 TB 配合的节奏下不丢包"，**没有证明设计能承受不配合的真实主机**。
+    //
+    //   压力模式只判两件事（不判解码正确性——人为不节流必然整包丢弃，
+    //   码流不完整，金标/逐带对拍判据在这里不适用，不是放宽判据而是换判据）：
+    //     1. 过载确实发生（drop > 0），否则说明没测到饱和点，测量无效；
+    //     2. 设计仍在推进（delivered > 0）且正常 $finish —— 没有死锁。
+    reg     nostall = 1'b0;
+    integer st_cyc = 0;                 // clk100 周期计数（速率分母）
+    reg     st_pend = 1'b0;
+    // ★ 速率必须在**发送窗口内**测：TB 用线速把 slen 字节发完只需约
+    //   slen/125MBps ≈ 24 万拍，而主流程要跑满 wd（数百万拍）。若用整段
+    //   st_cyc 当分母，后面无负载的空转期会把速率稀释十几倍。
+    //   所以在 eth_tx_done 那一刻快照「窗口周期数 + 已交付字节」。
+    integer st_cyc_tx = 0;              // 发送窗口内的 clk100 周期数
+    integer st_byte_tx = 0;             // 发送窗口内已交付字节
+    real    st_rate = 0.0;              // 压力模式：发送窗口内的交付速率 MB/s
+    real    st_rate_off = 0.0;          // 压力模式：发送窗口内的提供速率 MB/s
+    reg     pstress = 1'b0;
+    initial nostall = $test$plusargs("NOSTALL") ? 1'b1 : 1'b0;
+    always @(posedge clk100) if (st_pend) st_cyc <= st_cyc + 1;
+
     assign s_valid = eth_sv;
     assign s_data  = eth_sd;
 
@@ -276,26 +302,32 @@ module tb_yxvp_bboard;
     integer e_npkt, e_pi, e_off, e_len;
 
     // 发送进程：等顶层 INIT 完成（LOAD 不落控制器 POR 窗）后按 FIFO room 节流
+    //   （+NOSTALL 时**不节流**，按线速灌满，用于测饱和/丢包，见上方声明处注释）
     initial begin : ethsrc
         wait (init_done === 1'b1);
         repeat (100) @(negedge gmii_clk);
         e_npkt = (slen + 1023) / 1024;
+        st_pend = 1'b1;                       // 开始计周期（速率分母）
         for (e_pi = 0; e_pi < e_npkt; e_pi = e_pi + 1) begin
             e_off = e_pi * 1024;
             e_len = (e_off + 1024 <= slen) ? 1024 : (slen - e_off);
-            while (eth_room < (e_len + 128)) @(negedge gmii_clk);
+            while (!nostall && (eth_room < (e_len + 128))) @(negedge gmii_clk);
             e_send_pkt(e_off, e_len);
             if (e_pi % 64 == 0 || e_pi == e_npkt-1)
                 $display("ETHPKT %0d/%0d off=%0d len=%0d ok=%0d drop=%0d",
                          e_pi, e_npkt-1, e_off, e_len, eth_ok_cnt, eth_drop_cnt);
         end
         eth_tx_done = 1'b1;
-        $display("ETHTX done pkts=%0d bytes=%0d", e_npkt, slen);
+        st_cyc_tx   = st_cyc;              // ★ 快照：窗口周期数（速率分母）
+        st_byte_tx  = eth_byte_cnt;        // ★ 快照：窗口内已交付字节（分子）
+        $display("ETHTX done pkts=%0d bytes=%0d nostall=%b win_clk=%0d delivered_in_win=%0d",
+                 e_npkt, slen, nostall, st_cyc_tx, st_byte_tx);
     end
 `endif
 
     // ================= 断言状态 =================
     integer scan_errs = 0, frames_done = 0, bands_scanned = 0;    integer stall2_cnt = 0, total_cnt = 0;
+    reg     pfinal = 1'b0;              // 最终 PASS 判据（压力模式与默认模式共用一条 TB-SUMMARY）
     integer k, ofs, expw, gotw;
     integer disp_pop_prev = 0, disp_samp = 0;   // （旧显示判据遗留名，退役）
 
@@ -1062,8 +1094,38 @@ module tb_yxvp_bboard;
                  eth_ok_cnt, e_npkt, (eth_ok_cnt == e_npkt)?"OK":"BAD",
                  eth_drop_cnt, (eth_drop_cnt == 0)?"OK":"BAD",
                  eth_byte_cnt, slen, (eth_byte_cnt == slen)?"OK":"BAD");
+        // ★ 压力分支必须留在本 `ifdef BBOARD_ETH` 内：它引用的 nostall / eth_* /
+        //   e_npkt / slen 都只在 ETH 构建里声明。初版把 `if (nostall)` 写到了
+        //   `endif` 之后，导致 bboard_sys / bboard_key 编译报
+        //   "Unable to bind wire/reg/memory `nostall'"（实测 2026-11-25）。
+        //   结构：ETH 构建走 if/else；非 ETH 构建只有 else 那条 pfinal 赋值。
+        if (nostall) begin
+            // ---- 压力模式（+NOSTALL）：换判据，不判解码正确性 ----
+            //   不节流必然整包丢弃 → 码流不完整 → 解码/金标/逐带对拍判据在此不适用。
+            //   （这是**换判据**，不是放宽判据：默认入口的判据一个字没动。）
+            //   只判两件事：
+            //     1. drop > 0 —— 过载确实发生，否则没测到饱和点，测量无效；
+            //     2. delivered > 0 —— 设计仍能把数据推出去。若超载就卡死（FIFO 满导致
+            //        下游状态机不推进），这里会是 0 或整个仿真超时。
+            //   ★ 速率用**发送窗口**（st_cyc_tx / st_byte_tx），不用整段 st_cyc：
+            //     否则随后的空转期会把速率稀释十几倍，得到一个毫无意义的小数。
+            st_rate     = (st_byte_tx * 100.0) / ((st_cyc_tx > 0) ? st_cyc_tx : 1);  // = MB/s
+            st_rate_off = (slen       * 100.0) / ((st_cyc_tx > 0) ? st_cyc_tx : 1);
+            pstress = (eth_drop_cnt > 0) && (eth_byte_cnt > 0);
+            // ★ 注意 offered 不是 125MB/s（GMII 线速）：tb 的 e_send_pkt 为了算 FCS
+            //   先把载荷走一遍（@(posedge gmii_clk)），再走一遍真正发送，所以每个包
+            //   花约两倍 gmii 周期 —— 实际 offered ≈ 59MB/s。写成常量 125 会误导。
+            $display("GATE-STRESS offered=%0.2f_MBps pkts_ok=%0d/%0d dropped=%0d delivered=%0d/%0d (%0d%%)",
+                     st_rate_off, eth_ok_cnt, e_npkt, eth_drop_cnt, eth_byte_cnt, slen,
+                     (eth_byte_cnt*100)/((slen>0)?slen:1));
+            $display("GATE-RATE win_clk=%0d delivered_in_win=%0d of %0d bytes -> window_rate=%0.2f_MBps",
+                     st_cyc_tx, st_byte_tx, slen, st_rate);
+            pfinal = pstress;          // 结果交给下面唯一那条 TB-SUMMARY
+        end else
 `endif
-        $display("=== TB-SUMMARY: %s ===", (pd && pf && pb && pg && ps && px && pm && pig && pce && pcp && phe && pax && pmu && pst && peth && (wr1_eq_errs == 0)) ? "ALL PASS" : "FAIL");
+            pfinal = (pd && pf && pb && pg && ps && px && pm && pig && pce && pcp &&
+                      phe && pax && pmu && pst && peth && (wr1_eq_errs == 0));
+        $display("=== TB-SUMMARY: %s ===", pfinal ? "ALL PASS" : "FAIL");
         $display("DECFRAMES=%0d", dec_frames); $display("IXWR ivc=%0d gnc=%0d psc=%0d ldc=%0d fwc=%0d", ivc, gnc, psc, ldc, fwc); $display("GOLDEN=%0d", golden_errs);
         $display("CNT: frames=%0d bands=%0d scan_errs=%0d ax_errs=%0d ax_beats=%0d ax_lines=%0d disp_pass=%0d disp_stall=%0d vbl_loads=%0d stall2=%0d/%0d (%0d%%)",
                  frames_done, bands_scanned, scan_errs, ax_errs, ax_beats, ax_lines,

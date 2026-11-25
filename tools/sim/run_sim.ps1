@@ -49,7 +49,7 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'mdio', 'phy_init')]
+    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'eth_stress', 'mdio', 'phy_init')]
     [string]$Entry
 )
 
@@ -192,6 +192,26 @@ $Entries['bboard_sys_eth'] = @{
         # ★ P6：rgmii_to_gmii 里 RGMII RX 数据路径加了 EG_LOGIC_IDELAY（直通 shim）
         "$BSHM\EG_LOGIC_IDELAY.v"
     )
+}
+
+# ---- 入口 5b: eth_stress（吞吐压力：不节流按线速灌包，测饱和点与可持续吞吐）----
+# ★ 为什么需要：默认入口的发送进程有一句 `while (eth_room < len+128) ...`，
+#   即 **TB 会等 FIFO 有空位才发**。所以 bboard_sys_eth 的 drop=0 / bytes 精确
+#   匹配只证明"在 TB 配合的节奏下不丢包"，**没有证明设计能承受不配合的真实主机**。
+#   这里用 +NOSTALL 关掉节流，按 GMII 线速（125 MB/s）不间断灌，看设计能吃掉多少。
+#
+# ★ 判据是**换**不是放宽：不节流必然整包丢弃、码流不完整，所以解码/金标/逐带
+#   对拍判据在此不适用（TB 内已按 nostall 分支切换，默认入口的判据一个字没动）。
+#   压力模式只判两件事，见 tb_yxvp_bboard.v 的注释。
+#
+# Golden=$false：压力模式不判金标，省掉 gen_golden 的时间。
+# WD 3M：发送窗口约 24 万拍（298KB ÷ 125MB/s），其余留给渲染收尾。
+$Entries['eth_stress'] = @{
+    Defines  = @('BBOARD_SYS', 'BBOARD_ETH', 'YINGXU_SIM')
+    Stream   = 'out\vp_720_5f.yxv2'
+    Golden   = $false
+    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=3000000', '+NOSTALL')
+    Sources  = $Entries['bboard_sys_eth'].Sources
 }
 
 # ---- 入口 6: mdio（Clause 22 MDIO 主机独立验收，秒级）----
