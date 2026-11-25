@@ -541,6 +541,34 @@ module tb_yxvp_bboard;
         end
     end
 
+    // ---- S_WALK 子情况拆分（判定 7.8M 拍到底卡在哪）----
+    //   变块只占 7.6%（DIDX 13,176 / WALKR 172,800），却占了 7.8M 拍 —— 与
+    //   "S_KEY 写 57,600 字只用 405,545 拍" 矛盾，必须拆开看，别在错误前提上改 RTL。
+    integer dw_walk_wait = 0;    // S_WALK 且 map_bite 且 !q_room（等 skid 腾位）
+    integer dw_walk_didx = 0;    // S_WALK 且 map_bite 且 q_room（转 DIDX）
+    integer dw_walk_next = 0;    // S_WALK 且 !map_bite（未变块，下一块）
+    integer dw_map1 = 0;         // map_bite 为 1 的总拍数
+    // ix_rdy = ix_acc_phase && pf_room && !busy[act^1]（yx_vp_ixbuf.v:120）
+    //   走查停顿时拆开这三项，定位 skid 排不出去的真正原因
+    integer iw_phase = 0;        // 阶段不对（不在接收相）
+    integer iw_pfroom = 0;       // 补丁 FIFO 满
+    integer iw_busy = 0;         // 另一个索引缓冲正忙
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            if (u_top.u_ixdec.map_bite) dw_map1 = dw_map1 + 1;
+            if (u_top.u_ixdec.state == 4'd7) begin
+                if (!u_top.u_ixdec.map_bite)                       dw_walk_next = dw_walk_next + 1;
+                else if (u_top.u_ixdec.q_room)                     dw_walk_didx = dw_walk_didx + 1;
+                else begin
+                    dw_walk_wait = dw_walk_wait + 1;
+                    if (!u_top.u_ixbuf.ix_acc_phase)               iw_phase = iw_phase + 1;
+                    else if (!u_top.u_ixbuf.pf_room)               iw_pfroom = iw_pfroom + 1;
+                    else if (u_top.u_ixbuf.busy[u_top.u_ixbuf.act ^ 1'b1]) iw_busy = iw_busy + 1;
+                end
+            end
+        end
+    end
+
     always @(posedge clk100) begin
         if (rst_n && band_idle_w) begin
             di_tot = di_tot + 1;
@@ -1253,6 +1281,15 @@ module tb_yxvp_bboard;
                  (dx_st[5]*100)/((duty_tot>0)?duty_tot:1), (dx_st[6]*100)/((duty_tot>0)?duty_tot:1),
                  (dx_st[7]*100)/((duty_tot>0)?duty_tot:1), (dx_st[8]*100)/((duty_tot>0)?duty_tot:1),
                  (dx_st[9]*100)/((duty_tot>0)?duty_tot:1), (dx_st[10]*100)/((duty_tot>0)?duty_tot:1));
+        // ---- S_WALK 子情况（walk_next 应为每块 1 拍；walk_wait 才是真停滞）----
+        $display("DUTY-WALK walk_next=%0d(%0d%%) walk_didx=%0d(%0d%%) walk_wait=%0d(%0d%%) map1=%0d",
+                 dw_walk_next, (dw_walk_next*100)/((duty_tot>0)?duty_tot:1),
+                 dw_walk_didx, (dw_walk_didx*100)/((duty_tot>0)?duty_tot:1),
+                 dw_walk_wait, (dw_walk_wait*100)/((duty_tot>0)?duty_tot:1), dw_map1);
+        $display("DUTY-WAIT phase=%0d(%0d%%) pfroom=%0d(%0d%%) busy_other=%0d(%0d%%) (of walk_wait=%0d)",
+                 iw_phase, (iw_phase*100)/((dw_walk_wait>0)?dw_walk_wait:1),
+                 iw_pfroom, (iw_pfroom*100)/((dw_walk_wait>0)?dw_walk_wait:1),
+                 iw_busy, (iw_busy*100)/((dw_walk_wait>0)?dw_walk_wait:1), dw_walk_wait);
         $display("AXDBG clk_cnt=%0d valid_cnt=%0d user_cnt=%0d first_user_t=%0t frm=%0d",
                  ax_clk_cnt, ax_valid_cnt, ax_user_cnt, ax_first_user_t, ax_frm);
         $finish;

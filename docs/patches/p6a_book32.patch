@@ -1,0 +1,197 @@
+diff --git a/src/user_source/hdl_source/media/vp/yx_vp_band.v b/src/user_source/hdl_source/media/vp/yx_vp_band.v
+index 8d599af..cd5b35b 100644
+--- a/src/user_source/hdl_source/media/vp/yx_vp_band.v
++++ b/src/user_source/hdl_source/media/vp/yx_vp_band.v
+@@ -73,17 +73,32 @@ module yx_vp_band #(
+     localparam BH = H/4;
+ 
+     // ---- 码本（同步读 BRAM；外加写口供板上头解析装载）----
+-    reg [15:0] book [0:16*CBSIZE-1];
+-    reg [13:0] book_ra;
+-    reg [15:0] book_rdata;
++    // ★★ P6（2026-11-25）：从 16 位/字 改为 **32 位/字（一字装 2 个像素）**。
++    //
++    //   为什么：渲染写循环原来是"每拍读 1 个像素 → 16 拍/块"，而 720p@60 的帧预算
++    //   只有 1.667M 拍，实测渲染器忙时 1.35M/帧（占预算 81%），其中写行缓冲 0.92M
++    //   （57,600 块 × 16 拍）是大头。改成 32 位读后每拍出 2 个像素 → **8 拍/块**，
++    //   渲染器忙时降到约 0.89M/帧（预算的 53%），给解码侧留出抖动余量。
++    //
++    //   为什么不用"BRAM 双口读 2 个地址"：book 需要 1 个写口（码本上传）+ 2 个读口
++    //   = 3 个访问，而 EG_LOGIC_BRAM 只有 A/B 两口，不够。改成 32 位宽后
++    //   **总位数不变**（16,384×16b → 8,192×32b），BRAM 数量不变，仍只用 1 个读口。
++    //
++    //   上传路径用**半字写**：book_wa[0] 选高/低 16 位，与上传顺序天然对齐
++    //   （wa=2k → 低半 = 行内偶像素，wa=2k+1 → 高半 = 行内奇像素）。
++    reg [31:0] book [0:8*CBSIZE-1];
++    reg [12:0] book_ra;
++    reg [31:0] book_rdata;
+     always @(posedge clk) book_rdata <= book[book_ra];
+     // 板上初始化：头解析器经此写口灌码本（仿真 TB 用 $readmemh，两路并存安全：
+     // 解析装载发生在渲染开始前）
+-    always @(posedge clk) if (book_we) book[book_wa] <= book_wd;
++    always @(posedge clk) if (book_we) begin
++        if (book_wa[0]) book[book_wa[13:1]][31:16] <= book_wd;
++        else            book[book_wa[13:1]][15: 0] <= book_wd;
++    end
+ 
+     // ---- 行缓冲（8 行 × W 像素；2 带 ping-pong；32bit 打包字）----
+     // 字地址 = 像素地址/2（行 × W + 列，W 为偶数 → 整除）
+-    reg [15:0] pix_hold;                // 打包用：块内偶像素暂存（★ 必须 16 位）
+ 
+     // 扫描读端口：单地址、无条件、同步读
+     // ★ 渲染写口（下方 WRITE 态）与扫描读口永不访问同一地址（分属不同半区），
+@@ -141,12 +156,14 @@ module yx_vp_band #(
+     assign frame_base  = base_l;
+     assign pend_cnt_o  = pend_cnt;
+ 
+-    wire [1:0] q_row = wp[3:2];          // ★ 必须显式位宽：隐式 wire 默认 1 位会丢高位
+-    // 行缓冲写地址（32bit 字）：带内行 {band[0],q_row} × (W/2) + 块内字 bx*2 + wp[1]
+-    //   块内 4 列 = 2 个打包字：wp[1]=0 装列 (0,1)，wp[1]=1 装列 (2,3)。
+-    //   ★ 只能用 wp[1]：写 wp[2:1] 会把行内列号与行号搅在一起（行 1/2/3 各偏
++    // ★★ P6：wp 现在数 0..7（每拍 2 像素），位分配随之改变：
++    //   q_row = wp[2:1]（4 行 × 2 拍/行），块内打包字号 = wp[0]（0=列(0,1)，1=列(2,3)）。
++    //   旧版 wp 数 0..15：q_row=wp[3:2]、字号=wp[1]。两者不能混用。
++    wire [1:0] q_row = wp[2:1];          // ★ 必须显式位宽：隐式 wire 默认 1 位会丢高位
++    // 行缓冲写地址（32bit 字）：带内行 {band[0],q_row} × (W/2) + 块内字 bx*2 + wp[0]
++    //   ★ 只能用 wp[0]：写 wp[1:0] 会把行内列号与行号搅在一起（行 1/2/3 各偏
+     //   +2/+4/+6 字，导致 ln32 每行前 2 字永不被写 —— 实测 ln=X 的根因）。
+-    wire [12:0] ln_w32 = {band[0], q_row} * (W/2) + {bx, 1'b0} + wp[1];
++    wire [12:0] ln_w32 = {band[0], q_row} * (W/2) + {bx, 1'b0} + wp[0];
+     // 索引字地址：base + (band*BW + bx)
+     wire [AW-1:0] ix_addr = base_l + (band * BW) + bx;
+     // 电平式读请求：取带等待期保持，dvld 到达撤销（刷新窗口不丢请求）
+@@ -160,9 +177,11 @@ module yx_vp_band #(
+     reg  [12:0] ln_wa_r;
+     reg  [31:0] ln_wd_r;
+     always @(posedge clk) begin
+-        ln_we_r <= (st == 2'd3) && wp[0];
++        // ★★ P6：每拍写 1 个打包字（2 像素），故不再需要 wp[0] 门控；
++        //   book_rdata 已是 {奇像素, 偶像素} 的 32 位打包字，直接落盘。
++        ln_we_r <= (st == 2'd3);
+         ln_wa_r <= ln_w32;
+-        ln_wd_r <= {book_rdata, pix_hold};
++        ln_wd_r <= book_rdata;
+     end
+ 
+     always @(posedge clk or negedge rst_n) begin
+@@ -175,7 +194,7 @@ module yx_vp_band #(
+             rd_addr <= {AW{1'b0}};
+             band_done <= 1'b0; frame_done <= 1'b0; frame_start <= 1'b0;
+             book_ra <= 14'd0;
+-            pix_hold <= 16'd0;
++            // (P6: pix_hold 已移除，book_rdata 自带打包)
+             pend_v <= 1'b0; pend_base <= {AW{1'b0}}; pend_fno <= 16'hffff;
+         end else begin
+             band_done <= 1'b0;
+@@ -221,7 +240,7 @@ module yx_vp_band #(
+                         end else if (rd_dvld) begin
+                             cur_idx <= rd_data[9:0];
+                             fetch_r <= 2'd0;
+-                            book_ra <= {rd_data[9:0], 4'b0000};
++                            book_ra <= {rd_data[9:0], 3'b000};
+                             wp      <= 4'd0;
+                             st      <= 2'd2;   // BOOK：等一拍装载 book_rdata
+                         end
+@@ -246,18 +265,17 @@ module yx_vp_band #(
+                 end
+             end
+ 
+-            2'd2: begin // BOOK：本拍装载 book[{idx,0}]；地址预增一拍，使写循环每拍恰好对齐下一像素
+-                book_ra <= book_ra + 14'd1;
++            2'd2: begin // BOOK：本拍装载 book[{idx,0}]；地址预增一拍，使写循环每拍恰好对齐下一对像素
++                book_ra <= book_ra + 13'd1;
+                 st      <= 2'd3;
+             end
+ 
+-            2'd3: begin // WRITE：16 像素写入行缓冲（book_ra 自动递增；偶/奇打包 32bit）
++            2'd3: begin // WRITE：8 拍 × 2 像素 = 16 像素写入行缓冲（book_ra 自动递增）
+                 // 行缓冲实际写入见模块上方独立的无复位写口 always 块；
+-                // 本块只负责抓偶像素（pix_hold 是普通触发器，放这里没关系）
+-                pix_hold  <= book_rdata;
+-                book_ra   <= book_ra + 14'd1;
++                // ★★ P6：book_rdata 已是 32 位打包字（{奇,偶}），无需再抓 pix_hold。
++                book_ra   <= book_ra + 13'd1;
+                 wp        <= wp + 4'd1;
+-                if (wp == 4'd15) begin
++                if (wp == 4'd7) begin
+                     bx <= bx + 9'd1;
+                     st <= 2'd1;
+                 end
+diff --git a/tb/tb_yxvp_bboard.v b/tb/tb_yxvp_bboard.v
+index 4dc9552..b1a45a5 100644
+--- a/tb/tb_yxvp_bboard.v
++++ b/tb/tb_yxvp_bboard.v
+@@ -541,6 +541,34 @@ module tb_yxvp_bboard;
+         end
+     end
+ 
++    // ---- S_WALK 子情况拆分（判定 7.8M 拍到底卡在哪）----
++    //   变块只占 7.6%（DIDX 13,176 / WALKR 172,800），却占了 7.8M 拍 —— 与
++    //   "S_KEY 写 57,600 字只用 405,545 拍" 矛盾，必须拆开看，别在错误前提上改 RTL。
++    integer dw_walk_wait = 0;    // S_WALK 且 map_bite 且 !q_room（等 skid 腾位）
++    integer dw_walk_didx = 0;    // S_WALK 且 map_bite 且 q_room（转 DIDX）
++    integer dw_walk_next = 0;    // S_WALK 且 !map_bite（未变块，下一块）
++    integer dw_map1 = 0;         // map_bite 为 1 的总拍数
++    // ix_rdy = ix_acc_phase && pf_room && !busy[act^1]（yx_vp_ixbuf.v:120）
++    //   走查停顿时拆开这三项，定位 skid 排不出去的真正原因
++    integer iw_phase = 0;        // 阶段不对（不在接收相）
++    integer iw_pfroom = 0;       // 补丁 FIFO 满
++    integer iw_busy = 0;         // 另一个索引缓冲正忙
++    always @(posedge clk100) begin
++        if (rst_n) begin
++            if (u_top.u_ixdec.map_bite) dw_map1 = dw_map1 + 1;
++            if (u_top.u_ixdec.state == 4'd7) begin
++                if (!u_top.u_ixdec.map_bite)                       dw_walk_next = dw_walk_next + 1;
++                else if (u_top.u_ixdec.q_room)                     dw_walk_didx = dw_walk_didx + 1;
++                else begin
++                    dw_walk_wait = dw_walk_wait + 1;
++                    if (!u_top.u_ixbuf.ix_acc_phase)               iw_phase = iw_phase + 1;
++                    else if (!u_top.u_ixbuf.pf_room)               iw_pfroom = iw_pfroom + 1;
++                    else if (u_top.u_ixbuf.busy[u_top.u_ixbuf.act ^ 1'b1]) iw_busy = iw_busy + 1;
++                end
++            end
++        end
++    end
++
+     always @(posedge clk100) begin
+         if (rst_n && band_idle_w) begin
+             di_tot = di_tot + 1;
+@@ -581,16 +609,17 @@ module tb_yxvp_bboard;
+             end
+         end
+     end
+-    // 码本探针：hdr_ok 沿转储 book[0..7]（期望 0,1,2,3,4,5,6,7）
++    // 码本探针：hdr_ok 沿转储 book[0..3]（P6 起每字 32 位装 2 像素）
++    //   旧布局（16 位/字）：book[0..7] = 0 1 2 3 4 5 6 7
++    //   新布局（32 位/字）：book[k] = {像素(2k+1), 像素(2k)}
++    //     → 期望 book[0..3] = 0x00010000 0x00030002 0x00050004 0x00070006
+     reg hdr_ok_r = 1'b0;
+     always @(posedge clk100) begin
+         if (rst_n && u_top.hdr_ok_w && !hdr_ok_r) begin
+             hdr_ok_r <= 1'b1;
+-            $display("BOOK[0..7] = %0d %0d %0d %0d %0d %0d %0d %0d",
++            $display("BOOK[0..3] = %08h %08h %08h %08h (want 00010000 00030002 00050004 00070006)",
+                      u_top.u_band.book[0], u_top.u_band.book[1],
+-                     u_top.u_band.book[2], u_top.u_band.book[3],
+-                     u_top.u_band.book[4], u_top.u_band.book[5],
+-                     u_top.u_band.book[6], u_top.u_band.book[7]);
++                     u_top.u_band.book[2], u_top.u_band.book[3]);
+         end else begin
+             hdr_ok_r <= u_top.hdr_ok_w;
+         end
+@@ -1253,6 +1282,15 @@ module tb_yxvp_bboard;
+                  (dx_st[5]*100)/((duty_tot>0)?duty_tot:1), (dx_st[6]*100)/((duty_tot>0)?duty_tot:1),
+                  (dx_st[7]*100)/((duty_tot>0)?duty_tot:1), (dx_st[8]*100)/((duty_tot>0)?duty_tot:1),
+                  (dx_st[9]*100)/((duty_tot>0)?duty_tot:1), (dx_st[10]*100)/((duty_tot>0)?duty_tot:1));
++        // ---- S_WALK 子情况（walk_next 应为每块 1 拍；walk_wait 才是真停滞）----
++        $display("DUTY-WALK walk_next=%0d(%0d%%) walk_didx=%0d(%0d%%) walk_wait=%0d(%0d%%) map1=%0d",
++                 dw_walk_next, (dw_walk_next*100)/((duty_tot>0)?duty_tot:1),
++                 dw_walk_didx, (dw_walk_didx*100)/((duty_tot>0)?duty_tot:1),
++                 dw_walk_wait, (dw_walk_wait*100)/((duty_tot>0)?duty_tot:1), dw_map1);
++        $display("DUTY-WAIT phase=%0d(%0d%%) pfroom=%0d(%0d%%) busy_other=%0d(%0d%%) (of walk_wait=%0d)",
++                 iw_phase, (iw_phase*100)/((dw_walk_wait>0)?dw_walk_wait:1),
++                 iw_pfroom, (iw_pfroom*100)/((dw_walk_wait>0)?dw_walk_wait:1),
++                 iw_busy, (iw_busy*100)/((dw_walk_wait>0)?dw_walk_wait:1), dw_walk_wait);
+         $display("AXDBG clk_cnt=%0d valid_cnt=%0d user_cnt=%0d first_user_t=%0t frm=%0d",
+                  ax_clk_cnt, ax_valid_cnt, ax_user_cnt, ax_first_user_t, ax_frm);
+         $finish;
