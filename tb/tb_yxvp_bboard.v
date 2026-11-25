@@ -508,6 +508,54 @@ module tb_yxvp_bboard;
         end
     end
 
+    // ================= 解码链占空比（band 在 st=0 等帧时，上游在干什么）=================
+    // 5A 会计证明真实流的 1.50M 拍额外耗时全在 band 的 idle（等下一帧提交）。
+    // 本段回答"那段时间上游在忙什么"：解码在干活 / 在等数据 / 在等 SDRAM 写。
+    integer di_tot = 0;
+    integer di_ixdec_busy = 0;       // ixdec 不在 S_HDR0（收头相）之外的空闲
+    integer di_ixdec_hdr = 0;        // ixdec 停在 S_HDR0..S_HDR4（等/收字节）
+    integer di_ixwr_wait = 0;        // seq_wr 在 S_WAIT0/S_WINWAIT（等补丁）
+    integer di_ixwr_grp = 0;         // seq_wr 在 S_GRPDONE（等突发落 SDRAM）
+    integer di_ixwr_push = 0;        // seq_wr 在 S_PUSH（推字）
+    integer di_sdram = 0;            // SDRAM 控制器忙
+    integer di_dec_nrdy = 0;         // 解码器不收（dec_rdy_w=0）
+    integer di_hdr_nrdy = 0;         // hdr_parse 不收（hdr_rdy=0）
+    wire band_idle_w = (u_top.u_band.st == 2'd0);
+
+    // ixdec 状态分布（0..10 = S_HDR0..S_HDR4 / S_KEY / S_MAP / S_WALK /
+    //   S_DIDX / S_FD / S_WALKR；见 yx_vp_ixdec.v:47-49）
+    integer dx_st [0:15];
+    integer dx_st_idle [0:15];
+    integer dx_n;
+    initial begin
+        for (dx_n = 0; dx_n < 16; dx_n = dx_n + 1) begin
+            dx_st[dx_n] = 0; dx_st_idle[dx_n] = 0;
+        end
+    end
+
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            dx_st[u_top.u_ixdec.state] = dx_st[u_top.u_ixdec.state] + 1;
+            if (band_idle_w)
+                dx_st_idle[u_top.u_ixdec.state] = dx_st_idle[u_top.u_ixdec.state] + 1;
+        end
+    end
+
+    always @(posedge clk100) begin
+        if (rst_n && band_idle_w) begin
+            di_tot = di_tot + 1;
+            if (u_top.u_ixdec.state >= 4'd5)      di_ixdec_busy = di_ixdec_busy + 1;
+            else                                  di_ixdec_hdr  = di_ixdec_hdr  + 1;
+            if (u_top.REAL_IX.u_ixwr.st == 3'd0 ||
+                u_top.REAL_IX.u_ixwr.st == 3'd4)  di_ixwr_wait = di_ixwr_wait + 1;
+            if (u_top.REAL_IX.u_ixwr.st == 3'd2)  di_ixwr_grp  = di_ixwr_grp  + 1;
+            if (u_top.REAL_IX.u_ixwr.st == 3'd1)  di_ixwr_push = di_ixwr_push + 1;
+            if (sdram_busy_w)                     di_sdram     = di_sdram     + 1;
+            if (!u_top.dec_rdy_w)                 di_dec_nrdy  = di_dec_nrdy  + 1;
+            if (!u_top.hdr_rdy)                   di_hdr_nrdy  = di_hdr_nrdy  + 1;
+        end
+    end
+
     // RD 路径观测：控制器 RD 突发数 + 显示待数据（RD FIFO 空）拍数
     integer rd_bursts = 0, disp_empty_cnt = 0, dec_frames = 0;
     reg [1:0] rd_mask_prev = 2'b00;
@@ -1186,6 +1234,25 @@ module tb_yxvp_bboard;
         $display("DUTY-CHK sum=%0d tot=%0d (st1-其它=%0d)",
                  w_idle+w_backpressure+w_issue+w_fetchwait+w_book+w_write, duty_tot,
                  duty_tot-(w_idle+w_backpressure+w_issue+w_fetchwait+w_book+w_write));
+        // ---- band 在 st=0 等帧期间，上游解码链在干什么 ----
+        $display("DUTY-DECODE tot_idle=%0d ixdec_busy=%0d(%0d%%) ixdec_hdr=%0d(%0d%%) ixwr_wait=%0d(%0d%%) ixwr_push=%0d(%0d%%) ixwr_grp=%0d(%0d%%) sdram=%0d(%0d%%) dec_nrdy=%0d(%0d%%) hdr_nrdy=%0d(%0d%%)",
+                 di_tot,
+                 di_ixdec_busy, (di_ixdec_busy*100)/((di_tot>0)?di_tot:1),
+                 di_ixdec_hdr,  (di_ixdec_hdr*100)/((di_tot>0)?di_tot:1),
+                 di_ixwr_wait,  (di_ixwr_wait*100)/((di_tot>0)?di_tot:1),
+                 di_ixwr_push,  (di_ixwr_push*100)/((di_tot>0)?di_tot:1),
+                 di_ixwr_grp,   (di_ixwr_grp*100)/((di_tot>0)?di_tot:1),
+                 di_sdram,      (di_sdram*100)/((di_tot>0)?di_tot:1),
+                 di_dec_nrdy,   (di_dec_nrdy*100)/((di_tot>0)?di_tot:1),
+                 di_hdr_nrdy,   (di_hdr_nrdy*100)/((di_tot>0)?di_tot:1));
+        // ---- ixdec 状态分布（0..4 收头 / 5 KEY / 6 MAP / 7 WALK / 8 DIDX / 9 FD / 10 WALKR）----
+        $display("DUTY-IXDEC hdr0-4=%0d KEY=%0d MAP=%0d WALK=%0d DIDX=%0d FD=%0d WALKR=%0d (tot=%0d)",
+                 dx_st[0]+dx_st[1]+dx_st[2]+dx_st[3]+dx_st[4],
+                 dx_st[5], dx_st[6], dx_st[7], dx_st[8], dx_st[9], dx_st[10], duty_tot);
+        $display("DUTY-IXDEC pct: KEY=%0d%% MAP=%0d%% WALK=%0d%% DIDX=%0d%% FD=%0d%% WALKR=%0d%%",
+                 (dx_st[5]*100)/((duty_tot>0)?duty_tot:1), (dx_st[6]*100)/((duty_tot>0)?duty_tot:1),
+                 (dx_st[7]*100)/((duty_tot>0)?duty_tot:1), (dx_st[8]*100)/((duty_tot>0)?duty_tot:1),
+                 (dx_st[9]*100)/((duty_tot>0)?duty_tot:1), (dx_st[10]*100)/((duty_tot>0)?duty_tot:1));
         $display("AXDBG clk_cnt=%0d valid_cnt=%0d user_cnt=%0d first_user_t=%0t frm=%0d",
                  ax_clk_cnt, ax_valid_cnt, ax_user_cnt, ax_first_user_t, ax_frm);
         $finish;
