@@ -467,6 +467,47 @@ module tb_yxvp_bboard;
         end
     end
 
+    // ================= 逐级占空比（定位 0.85× 的阻断级）=================
+    // ★ 教训：第一版只统计 `stall2 期间 band 在哪个状态`，得出"100% 在 st=1"，
+    //   就误判成"在等 fetch 数据"。但 st=1 是个**多用途状态**：
+    //     · !can_render            → 被扫描端深度 2 背压挡住（pend_cnt==2）
+    //     · can_render && !fetch_r → 正在发出取数请求
+    //     · can_render && fetch_r  → 真在等 rd_dvld
+    //   而 stall2 的定义就是 pend_cnt==2，等于 can_render==0 —— 所以"stall2 期间
+    //   band 必然在 st=1"是同义反复，什么也没证明。必须做**完整周期会计**。
+    integer duty_tot = 0;
+    integer w_idle = 0;                  // st=0 等帧
+    integer w_backpressure = 0;          // st=1 且被 pend_cnt<2 背压挡住
+    integer w_issue = 0;                 // st=1 发取数请求
+    integer w_fetchwait = 0;             // st=1 已发请求、等 rd_dvld（真延迟）
+    integer w_book = 0;                  // st=2 装载 book
+    integer w_write = 0;                 // st=3 写 16 像素
+    integer duty_sdram_busy = 0;         // SDRAM 控制器有突发在跑
+
+    // SDRAM 控制器"有活"：任一 mask 非零，或 IN_REQ/OUT_VALID 在跑
+    wire sdram_busy_w = (u_top.st_wr_mask_w != 2'b00) || (u_top.st_rd_mask_w != 2'b00) ||
+                        u_top.st_in_req_w || u_top.st_out_valid_w;
+
+    // 渲染器的三种子情况（层次引用，仅仿真用）
+    wire band_st1 = (u_top.u_band.st == 2'd1);
+    wire band_bp  = band_st1 && !u_top.u_band.can_render;
+    wire band_iss = band_st1 &&  u_top.u_band.can_render && !u_top.u_band.fetch_r[0];
+    wire band_wait= band_st1 &&  u_top.u_band.can_render &&  u_top.u_band.fetch_r[0]
+                                  && !u_top.u_band.rd_dvld;
+
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            duty_tot = duty_tot + 1;
+            if (sdram_busy_w)          duty_sdram_busy = duty_sdram_busy + 1;
+            if (u_top.u_band.st == 2'd0) w_idle = w_idle + 1;
+            if (band_bp)               w_backpressure = w_backpressure + 1;
+            if (band_iss)              w_issue = w_issue + 1;
+            if (band_wait)             w_fetchwait = w_fetchwait + 1;
+            if (u_top.u_band.st == 2'd2) w_book = w_book + 1;
+            if (u_top.u_band.st == 2'd3) w_write = w_write + 1;
+        end
+    end
+
     // RD 路径观测：控制器 RD 突发数 + 显示待数据（RD FIFO 空）拍数
     integer rd_bursts = 0, disp_empty_cnt = 0, dec_frames = 0;
     reg [1:0] rd_mask_prev = 2'b00;
@@ -1131,6 +1172,20 @@ module tb_yxvp_bboard;
                  frames_done, bands_scanned, scan_errs, ax_errs, ax_beats, ax_lines,
                  disp_pass_w, disp_stall_w, vbl_loads,
                  stall2_cnt, total_cnt, (stall2_cnt*100)/(total_cnt>0?total_cnt:1));
+        // ---- 逐级占空比（定位 0.85x 的阻断级）----
+        // 完整周期会计：六项之和应 = duty_tot（差值是 st=1 的其它拍）
+        $display("DUTY tot=%0d sdram_busy=%0d (%0d%%)",
+                 duty_tot, duty_sdram_busy, (duty_sdram_busy*100)/((duty_tot>0)?duty_tot:1));
+        $display("DUTY-BAND idle=%0d(%0d%%) backpressure=%0d(%0d%%) issue=%0d(%0d%%) fetchwait=%0d(%0d%%) book=%0d(%0d%%) write=%0d(%0d%%)",
+                 w_idle,         (w_idle*100)/((duty_tot>0)?duty_tot:1),
+                 w_backpressure, (w_backpressure*100)/((duty_tot>0)?duty_tot:1),
+                 w_issue,        (w_issue*100)/((duty_tot>0)?duty_tot:1),
+                 w_fetchwait,    (w_fetchwait*100)/((duty_tot>0)?duty_tot:1),
+                 w_book,         (w_book*100)/((duty_tot>0)?duty_tot:1),
+                 w_write,        (w_write*100)/((duty_tot>0)?duty_tot:1));
+        $display("DUTY-CHK sum=%0d tot=%0d (st1-其它=%0d)",
+                 w_idle+w_backpressure+w_issue+w_fetchwait+w_book+w_write, duty_tot,
+                 duty_tot-(w_idle+w_backpressure+w_issue+w_fetchwait+w_book+w_write));
         $display("AXDBG clk_cnt=%0d valid_cnt=%0d user_cnt=%0d first_user_t=%0t frm=%0d",
                  ax_clk_cnt, ax_valid_cnt, ax_user_cnt, ax_first_user_t, ax_frm);
         $finish;
