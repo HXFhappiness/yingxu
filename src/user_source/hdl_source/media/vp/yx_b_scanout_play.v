@@ -190,6 +190,17 @@ module yx_b_scanout_play #(
                 rd1_load <= (boot_cnt != 4'd0);
                 primed   <= 1'b0;
                 sk_cnt   <= 3'd0;            // 旧窗残留作废
+                // ★★ 2026-11-26 修复：清计数**必须同时复位指针**。
+                //   原实现只清 sk_cnt、保留 sk_wp/sk_rp，破坏了"计数与指针一致"
+                //   的不变量：帧边界后首次 push 写到沿用位置，首次 take 却从陈旧
+                //   sk_rp 读 → 读到的不是刚推入的字，整帧前移 1 个字。
+                //   偏移量取决于边界时刻 (sk_wp−sk_rp)，而它由预取节奏决定 →
+                //   **随码流变化**（实测 book32 后合成流偏 1 字、真实流不偏，
+                //   造成"同一 AX_OFF 只能修好一个流"的假象）。
+                //   证据：RD1 首次 pop 的 do 两流都等于 mem[i_base]（FIFO 侧正确），
+                //   而 AXIS 从 word 1 起吐 → 丢失点在 skid，不在 FIFO。
+                sk_wp    <= 2'd0;
+                sk_rp    <= 2'd0;
             end
             else if (vb_start) begin
                 loading  <= 1'b1;
@@ -197,6 +208,8 @@ module yx_b_scanout_play #(
                 rd1_load <= 1'b1;
                 primed   <= 1'b0;
                 sk_cnt   <= 3'd0;            // 换窗前清空 skid
+                sk_wp    <= 2'd0;            // ★ 同 !loaded 分支：指针一起复位
+                sk_rp    <= 2'd0;
             end
             else if (loading) begin
                 // ★ B 板手术 1：LOAD 保持至 FIFO 排空且无在途突发——冲洗旧窗

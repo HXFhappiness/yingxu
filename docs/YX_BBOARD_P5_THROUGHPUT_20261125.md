@@ -299,6 +299,102 @@ got[i] = exp[i+2]  逐项成立（均匀移位，非随机损坏）
 `docs/patches/p6a_book32.patch`（可重新应用）。**先修 RD1 对齐，再回来做杠杆 A**：
 它是正确性问题且硬件可能复现，优先级高于性能；且门禁长期红着无法判断后续改动。
 
+---
+
+## 5D. ★ 最终结论（2026-11-26）：720p60 达标，且是两个真 bug 修好后的结果
+
+### 5D.1 两个真 bug（都不是 TB 侧问题）
+
+**Bug 1：`video_user`/`video_last` 与数据走不同深度的路径**
+
+```verilog
+// yx_b_scanout.v 改前
+assign video_valid = vad[`VDLY] && armed_w;   // pa_w + 8 级
+assign video_user  = vsrc_user_w && armed_w;  // 源相位 + 0 级  ← 深度差 8
+```
+
+根因：三个移位寄存器**输入深度不同**——`vad <= pa_w`（`O_pixel_active = S_active`，
+源内 0 级），而 `vud <= vsrc_user_w` / `vld <= vsrc_last_w`（`O_video_user = Q_user`，
+源内 2 级）。旧做法"保持源相位"让 user 的落点依赖 `armed_w`(=vb_seen，渲染侧信号)
+→ **相位随码流漂移**。
+
+修法：user/last 改取 `vud[VDLY-2]` / `vld[VDLY-2]`，与 valid 同源同机制。
+验证：UVGAP 探针实测两流四帧全为"user 后第 0 拍出现首个 valid"。
+
+**Bug 2：skid 清计数时未复位指针（长期潜伏，book32 才踩出来）**
+
+```verilog
+// yx_b_scanout_play.v 帧边界分支（!loaded / vb_start）改前
+primed <= 1'b0;
+sk_cnt <= 3'd0;            // ← 只清计数，sk_wp/sk_rp 沿用旧值
+```
+
+帧边界后：首次 push 写到**沿用的** `sk_wp`，首次 take 却从**陈旧的** `sk_rp` 读
+→ 读到的不是刚推入的字 → **整帧前移 1 个字**。偏移量 = 边界时刻 `(sk_wp − sk_rp)`，
+由预取节奏决定 → **随码流变化**。
+
+修法：清 `sk_cnt` 时同时 `sk_wp <= 0; sk_rp <= 0;`。
+
+> 为什么长期潜伏：只在预取节奏使 `sk_wp ≠ sk_rp` 时才暴露。book32 改变渲染时序
+> → 改变 SDRAM 仲裁 → 改变预取节奏 → 踩出来。
+
+### 5D.2 定位过程（每一步都靠可证伪的实验，且两次自我否证）
+
+| 步骤 | 观察 | 结论 |
+|---|---|---|
+| RD1 首次 pop 探针 | 两流 `do` 都 == `mem[i_base]` | FIFO 侧正确 → 丢失点在 skid 消费侧 |
+| FSTAT 帧首统计 | 两流均 `valid=921600 user=1`、帧首时刻逐帧相同 | 否掉"帧首相位"假设 |
+| FSB 逐拍 dump | `key` 每拍不同、`sys` 前 12 拍全同（`f7f3ef`） | 解释"两流反转"假象：sys 对 1 字偏移不敏感 |
+| 代码核对 | `sk_cnt` 清零但指针未复位 | **根因** |
+
+**两次自我否证**（记录以免重犯）：
+1. 第一版探针统计"`stall2` 期间 band 在哪个状态"，得出"100% 在 st=1"→ 误判为
+   "在等取带"。但 `stall2` 的定义就是 `pend_cnt==2`，而 `can_render=(pend_cnt<2)`，
+   两者是**同义反复**，什么也没证明。
+2. 由真实流 `rd_bursts` 高 36% 推断"`cp` 抢 RD2 使取带变慢"。实测 `fetchwait`
+   两流差仅 576 拍，推断被否。
+
+> 教训：**探针本身必须先证伪**。若统计量与被解释量在定义上等价，得到的"相关"
+> 是恒等式，不是证据。
+
+### 5D.3 判据收紧：删掉相位常量
+
+`AX_OFF` / `AX_SWAP` 是 TB 侧"管线相位校准常量"，长期用来补偿 user/last 与数据的
+错位。两个 bug 修好后 **`AX_OFF=0` 下合成流与真实流同时 `ax_errs=0`** → 常量已删除。
+
+保留它们只会掩盖同类结构缺陷：实测 book32 后同一常量只能修好一个流，造成"两流
+反转"的假象，浪费了多轮排查。**判据里现在不含任何可调相位项。**
+
+### 5D.4 最终结果
+
+| 入口 | 结果 |
+|---|---|
+| `bboard_key` | **ALL PASS** `ax_errs=0` `golden=0` |
+| `bboard_sys` | **ALL PASS** `ax_errs=0` `golden=0` |
+| `bboard_sys_eth` | **ALL PASS** `ax_errs=0`；`GATE-ETH ok=292 drop=0 bytes=297989` |
+| `eth_stress` | **ALL PASS** |
+| `eth_rx` | **ALL PASS** |
+
+**性能（720p60 定档达标）**：
+
+| | 基线 | 现在 |
+|---|---|---|
+| 5 帧合计 | 9,841,471 拍 | **7,537,182**（−23%） |
+| 稳态帧周期 | 1.85M 拍 | **1.69M** ≈ vsync 16.67 ms |
+| 最差帧 | 2.89M（1.7× 超时） | **1.69M** |
+| 渲染写循环 | 16 拍/块 | **8 拍/块**（write 占空比 57% → 30%） |
+| 背压 | 12% | 36%（渲染器已跑在扫描端前面） |
+
+### 5D.5 改动清单
+
+| 文件 | 改动 |
+|---|---|
+| `yx_vp_band.v` | 码本 16→32 位/字（一字 2 像素），写循环 16→8 拍；上传改半字写；`q_row`/字号位分配随之调整 |
+| `yx_b_scanout.v` | `video_user`/`video_last` 改取 `vud[VDLY-2]`/`vld[VDLY-2]` |
+| `yx_b_scanout_play.v` | 帧边界清 `sk_cnt` 时同时复位 `sk_wp`/`sk_rp` |
+| `tb/tb_yxvp_bboard.v` | 新增 FSTAT/FSB/RD1POP/AXJTRAP 探针；**删除 `AX_OFF`/`AX_SWAP`** |
+
+
 
 
 ## 6. 改动清单

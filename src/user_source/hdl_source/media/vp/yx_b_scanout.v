@@ -171,13 +171,31 @@ module yx_b_scanout #(
 `else
     assign video_valid = vad[7] && armed_w;
 `endif
-    // user/last 保持源输出相位（实测与 valid 同时延迟会引入 4 拍错位——源内
-    // user 与 active 存在相位差）。valid 与数据已逐像素对齐（tb_scanout:
-    // best_sh=0 errs=0）。★ P5 接加密核时需按核的实际采样点校准 user/last
-    // 相位（可由 VDLY 统一或对二者单独加延迟）。
-    // ★ P4：三元组统一再与 armed 相与（首窗完成→首个帧边界前不出图）。
-    assign video_user  = vsrc_user_w && armed_w;
-    assign video_last  = vsrc_last_w && armed_w;
+    // ★★ 2026-11-25 结构性修复：user/last 改走与 valid **同一条移位寄存器**，
+    //   只少 2 级（`VDLY-2`），不再"保持源输出相位"。
+    //
+    //   为什么原来不行：三个移位寄存器的**输入深度不同**——
+    //     vad <= pa_w          （O_pixel_active = S_active，源内 **0 级**）
+    //     vud <= vsrc_user_w   （O_video_user  = Q_user，  源内 **2 级**）
+    //     vld <= vsrc_last_w   （O_video_last  = Q_last，  源内 **2 级**）
+    //   而 valid 取 vad[VDLY]（延迟 8）、user/last 直接取源（延迟 0）→ 两条路径
+    //   深度差 8。旧注释说"与 valid 同时延迟会引入 4 拍错位"正是这个源内 2 级差
+    //   在 8 级路径上的表现。旧做法（保持源相位）让 user 相对数据的落点依赖
+    //   `armed_w`(=vb_seen，渲染侧给的) → **相位随码流内容漂移**。
+    //   实测证据：book32（渲染提速）后，合成流 AX_OFF=0→2 可修好、真实流却修不好
+    //   ——没有单一常量能同时满足两种流，证明不是标定偏差而是结构缺陷。
+    //
+    //   修法：源域里 user/last 比 active **早 2 级**，所以对齐到数据时只需
+    //   `VDLY-2` 级延迟。这样三者同源、同机制，相位与工作负载无关。
+    //   （源域同相性见 video_source_test.v:91/129-131：S_active 与 S_frame_tick
+    //     同拍组合产生，同走 P/Q 两级流水。）
+`ifdef VDLY
+    assign video_user  = vud[`VDLY-2] && armed_w;
+    assign video_last  = vld[`VDLY-2] && armed_w;
+`else
+    assign video_user  = vud[5] && armed_w;
+    assign video_last  = vld[5] && armed_w;
+`endif
 
     // ★ 取数核坐标延迟（PIX_DLY 级移位寄存器）：源 2 级流水使 AXIS 流每行
     //   吞首 2 拍——延迟取数坐标使弹出的字对准显示位置。

@@ -73,17 +73,32 @@ module yx_vp_band #(
     localparam BH = H/4;
 
     // ---- 码本（同步读 BRAM；外加写口供板上头解析装载）----
-    reg [15:0] book [0:16*CBSIZE-1];
-    reg [13:0] book_ra;
-    reg [15:0] book_rdata;
+    // ★★ P6（2026-11-25）：从 16 位/字 改为 **32 位/字（一字装 2 个像素）**。
+    //
+    //   为什么：渲染写循环原来是"每拍读 1 个像素 → 16 拍/块"，而 720p@60 的帧预算
+    //   只有 1.667M 拍，实测渲染器忙时 1.35M/帧（占预算 81%），其中写行缓冲 0.92M
+    //   （57,600 块 × 16 拍）是大头。改成 32 位读后每拍出 2 个像素 → **8 拍/块**，
+    //   渲染器忙时降到约 0.89M/帧（预算的 53%），给解码侧留出抖动余量。
+    //
+    //   为什么不用"BRAM 双口读 2 个地址"：book 需要 1 个写口（码本上传）+ 2 个读口
+    //   = 3 个访问，而 EG_LOGIC_BRAM 只有 A/B 两口，不够。改成 32 位宽后
+    //   **总位数不变**（16,384×16b → 8,192×32b），BRAM 数量不变，仍只用 1 个读口。
+    //
+    //   上传路径用**半字写**：book_wa[0] 选高/低 16 位，与上传顺序天然对齐
+    //   （wa=2k → 低半 = 行内偶像素，wa=2k+1 → 高半 = 行内奇像素）。
+    reg [31:0] book [0:8*CBSIZE-1];
+    reg [12:0] book_ra;
+    reg [31:0] book_rdata;
     always @(posedge clk) book_rdata <= book[book_ra];
     // 板上初始化：头解析器经此写口灌码本（仿真 TB 用 $readmemh，两路并存安全：
     // 解析装载发生在渲染开始前）
-    always @(posedge clk) if (book_we) book[book_wa] <= book_wd;
+    always @(posedge clk) if (book_we) begin
+        if (book_wa[0]) book[book_wa[13:1]][31:16] <= book_wd;
+        else            book[book_wa[13:1]][15: 0] <= book_wd;
+    end
 
     // ---- 行缓冲（8 行 × W 像素；2 带 ping-pong；32bit 打包字）----
     // 字地址 = 像素地址/2（行 × W + 列，W 为偶数 → 整除）
-    reg [15:0] pix_hold;                // 打包用：块内偶像素暂存（★ 必须 16 位）
 
     // 扫描读端口：单地址、无条件、同步读
     // ★ 渲染写口（下方 WRITE 态）与扫描读口永不访问同一地址（分属不同半区），
@@ -141,12 +156,14 @@ module yx_vp_band #(
     assign frame_base  = base_l;
     assign pend_cnt_o  = pend_cnt;
 
-    wire [1:0] q_row = wp[3:2];          // ★ 必须显式位宽：隐式 wire 默认 1 位会丢高位
-    // 行缓冲写地址（32bit 字）：带内行 {band[0],q_row} × (W/2) + 块内字 bx*2 + wp[1]
-    //   块内 4 列 = 2 个打包字：wp[1]=0 装列 (0,1)，wp[1]=1 装列 (2,3)。
-    //   ★ 只能用 wp[1]：写 wp[2:1] 会把行内列号与行号搅在一起（行 1/2/3 各偏
+    // ★★ P6：wp 现在数 0..7（每拍 2 像素），位分配随之改变：
+    //   q_row = wp[2:1]（4 行 × 2 拍/行），块内打包字号 = wp[0]（0=列(0,1)，1=列(2,3)）。
+    //   旧版 wp 数 0..15：q_row=wp[3:2]、字号=wp[1]。两者不能混用。
+    wire [1:0] q_row = wp[2:1];          // ★ 必须显式位宽：隐式 wire 默认 1 位会丢高位
+    // 行缓冲写地址（32bit 字）：带内行 {band[0],q_row} × (W/2) + 块内字 bx*2 + wp[0]
+    //   ★ 只能用 wp[0]：写 wp[1:0] 会把行内列号与行号搅在一起（行 1/2/3 各偏
     //   +2/+4/+6 字，导致 ln32 每行前 2 字永不被写 —— 实测 ln=X 的根因）。
-    wire [12:0] ln_w32 = {band[0], q_row} * (W/2) + {bx, 1'b0} + wp[1];
+    wire [12:0] ln_w32 = {band[0], q_row} * (W/2) + {bx, 1'b0} + wp[0];
     // 索引字地址：base + (band*BW + bx)
     wire [AW-1:0] ix_addr = base_l + (band * BW) + bx;
     // 电平式读请求：取带等待期保持，dvld 到达撤销（刷新窗口不丢请求）
@@ -160,9 +177,11 @@ module yx_vp_band #(
     reg  [12:0] ln_wa_r;
     reg  [31:0] ln_wd_r;
     always @(posedge clk) begin
-        ln_we_r <= (st == 2'd3) && wp[0];
+        // ★★ P6：每拍写 1 个打包字（2 像素），故不再需要 wp[0] 门控；
+        //   book_rdata 已是 {奇像素, 偶像素} 的 32 位打包字，直接落盘。
+        ln_we_r <= (st == 2'd3);
         ln_wa_r <= ln_w32;
-        ln_wd_r <= {book_rdata, pix_hold};
+        ln_wd_r <= book_rdata;
     end
 
     always @(posedge clk or negedge rst_n) begin
@@ -175,7 +194,7 @@ module yx_vp_band #(
             rd_addr <= {AW{1'b0}};
             band_done <= 1'b0; frame_done <= 1'b0; frame_start <= 1'b0;
             book_ra <= 14'd0;
-            pix_hold <= 16'd0;
+            // (P6: pix_hold 已移除，book_rdata 自带打包)
             pend_v <= 1'b0; pend_base <= {AW{1'b0}}; pend_fno <= 16'hffff;
         end else begin
             band_done <= 1'b0;
@@ -221,7 +240,7 @@ module yx_vp_band #(
                         end else if (rd_dvld) begin
                             cur_idx <= rd_data[9:0];
                             fetch_r <= 2'd0;
-                            book_ra <= {rd_data[9:0], 4'b0000};
+                            book_ra <= {rd_data[9:0], 3'b000};
                             wp      <= 4'd0;
                             st      <= 2'd2;   // BOOK：等一拍装载 book_rdata
                         end
@@ -246,18 +265,17 @@ module yx_vp_band #(
                 end
             end
 
-            2'd2: begin // BOOK：本拍装载 book[{idx,0}]；地址预增一拍，使写循环每拍恰好对齐下一像素
-                book_ra <= book_ra + 14'd1;
+            2'd2: begin // BOOK：本拍装载 book[{idx,0}]；地址预增一拍，使写循环每拍恰好对齐下一对像素
+                book_ra <= book_ra + 13'd1;
                 st      <= 2'd3;
             end
 
-            2'd3: begin // WRITE：16 像素写入行缓冲（book_ra 自动递增；偶/奇打包 32bit）
+            2'd3: begin // WRITE：8 拍 × 2 像素 = 16 像素写入行缓冲（book_ra 自动递增）
                 // 行缓冲实际写入见模块上方独立的无复位写口 always 块；
-                // 本块只负责抓偶像素（pix_hold 是普通触发器，放这里没关系）
-                pix_hold  <= book_rdata;
-                book_ra   <= book_ra + 14'd1;
+                // ★★ P6：book_rdata 已是 32 位打包字（{奇,偶}），无需再抓 pix_hold。
+                book_ra   <= book_ra + 13'd1;
                 wp        <= wp + 4'd1;
-                if (wp == 4'd15) begin
+                if (wp == 4'd7) begin
                     bx <= bx + 9'd1;
                     st <= 2'd1;
                 end

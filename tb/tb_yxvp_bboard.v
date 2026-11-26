@@ -609,6 +609,74 @@ module tb_yxvp_bboard;
             end
         end
     end
+    // ================= P1b 帧首结构探针 =================
+    // 判据（用户指定）：
+    //   ① 一帧内 user 恰好 1 拍；
+    //   ② user 必须与"第 0 个有效像素"同一拍；
+    //   ③ valid 高电平拍数 == HACTIVE*VACTIVE = 1280*720 = 921600。
+    // 帧首 dump 前 32 拍 {user, valid, last, data}，看 user 是否比首个有效像素
+    //   早/晚 k 拍（k 即常数偏移来源）。重点看首帧：render 尚未 arm 时 user 是否漏出。
+    integer fs_beat = -1;
+    integer fs_frm = 0;
+    integer fs_vcnt = 0;
+    integer fs_ucnt = 0;
+    localparam FS_WANT_VALID = 1280*720;
+    always @(posedge u_top.pixel_clk_w) begin
+        if (video_user_w) begin
+            if (fs_frm > 0)
+                $display("FSTAT frm=%0d valid=%0d user=%0d (want valid=%0d user=1) %s",
+                         fs_frm-1, fs_vcnt, fs_ucnt, FS_WANT_VALID,
+                         ((fs_vcnt == FS_WANT_VALID) && (fs_ucnt == 1)) ? "OK" : "BAD");
+            fs_frm  = fs_frm + 1;
+            fs_beat = 0;
+            fs_vcnt = 0;
+            fs_ucnt = 1;          // 本拍即本帧的 user
+            $display("FSBEGIN frm=%0d t=%0t", fs_frm-1, $time);
+        end
+        if (fs_beat >= 0) begin
+            if (fs_beat <= 32)
+                $display("FSB %0d u=%b v=%b l=%b d=%06h", fs_beat,
+                         video_user_w, video_valid_w, video_last_w, video_data_w);
+            fs_beat = fs_beat + 1;
+        end
+        if (video_valid_w) fs_vcnt = fs_vcnt + 1;
+    end
+
+    // ================= P1b-1 RD1 首次 pop 探针 =================
+    // 目标：定位"首字丢在哪一级"。在 book32+user修复+AX_OFF=0 配置下，
+    //   key 的 AXIS 从 SDRAM word 1 起吐（跳过 word 0）。
+    // 做法：每帧 LOAD 释放后，抓 RD1 FIFO 的前 8 次 pop 及其 do，
+    //   与 SDRAM 帧窗 mem[i_base + n] 逐字比对。
+    // 判据：第 0 次 pop 的 do 是否 == mem[i_base]。
+    //   · 若第 0 次 pop 的 do 就是 mem[i_base+1] → 首字在 pop 前已被吃掉
+    //   · 若第 0 次 pop 的 do == mem[i_base] 但 AXIS 仍从 word1 起
+    //     → 丢在 skid→pair→输出 这一段
+    reg     rp_armed = 1'b0;
+    integer rp_n = 0;
+    integer rp_frm = 0;
+    always @(posedge clk100) begin
+        if (rst_n) begin
+            if (u_top.u_scanout.u_play.rd1_load) begin
+                rp_armed = 1'b1;         // LOAD 期间武装
+                rp_n     = 0;
+            end else if (rp_armed && u_top.u_scanout.u_play.rd1_en) begin
+                if (rp_n < 8)
+                    $display("RD1POP frm=%0d n=%0d do=%08h exp=%08h %s",
+                             rp_frm, rp_n,
+                             u_top.u_scanout.u_play.rd1_data,
+                             u_top.u_dram.sdram.mem[u_top.u_scanout.i_base_r + rp_n],
+                             (u_top.u_scanout.u_play.rd1_data ===
+                              u_top.u_dram.sdram.mem[u_top.u_scanout.i_base_r + rp_n])
+                             ? "OK" : "MISMATCH");
+                rp_n = rp_n + 1;
+                if (rp_n >= 8) begin
+                    rp_armed = 1'b0;
+                    rp_frm   = rp_frm + 1;
+                end
+            end
+        end
+    end
+
     // 码本探针：hdr_ok 沿转储 book[0..7]（期望 0,1,2,3,4,5,6,7）
     reg hdr_ok_r = 1'b0;
     always @(posedge clk100) begin
@@ -785,8 +853,21 @@ module tb_yxvp_bboard;
     integer mutex_errs = 0, vbl_loads = 0;
     integer ax_clk_cnt = 0, ax_valid_cnt = 0, ax_user_cnt = 0;
     reg [63:0] ax_first_user_t = 64'd0;
-    localparam AX_OFF = 0;    // 校准：A1 修复后 valid 与数据逐拍对齐（独立 TB best_sh=0），故为 0
-    localparam AX_SWAP = 0;   // 校准：0=拍偶→字[15:0]，1=互换
+    // ★★ 2026-11-26：AX_OFF / AX_SWAP **已删除**。
+    //   它们是"管线相位校准常量"，长期用来补偿 user/last 与数据的错位。
+    //   但两个真 bug 修好后（yx_b_scanout 的 user/last 改走 vud[VDLY-2]；
+    //   yx_b_scanout_play 的 skid 清计数时同时复位 sk_wp/sk_rp），
+    //   **AX_OFF=0 下合成流与真实流同时 ax_errs=0** —— 常量不再需要。
+    //   保留它们只会掩盖同类结构缺陷（实测：book32 后同一常量只能修好一个流，
+    //   造成"两流反转"的假象，浪费了多轮排查）。判据里不再有任何可调相位项。
+    // ★ P1a：滑移陷阱（+AXJTRAP=<j>，缺省关闭）
+    integer ax_trap_j = 0;
+    integer ax_trap_rc = 0;
+    reg     ax_trap_on = 1'b0;
+    initial begin
+        ax_trap_on = $test$plusargs("AXJTRAP") ? 1'b1 : 1'b0;
+        ax_trap_rc = $value$plusargs("AXJTRAP=%d", ax_trap_j);
+    end
     integer C;
     integer gwd_i;
     reg [15:0] gpx;
@@ -820,10 +901,24 @@ module tb_yxvp_bboard;
             if (video_valid_w) begin
                 ax_valid_cnt = ax_valid_cnt + 1;
                 ax_beats = ax_beats + 1;
-                if (ax_frm >= 0 && ax_frm < 5 && (ax_j + AX_OFF) >= 0) begin
-                    gwd_i = ax_base + ((ax_j + AX_OFF) >> 1);
-                    gpx = (((ax_j + AX_OFF) & 1) ^ AX_SWAP) ? u_top.u_dram.sdram.mem[gwd_i][31:16]
-                                                            : u_top.u_dram.sdram.mem[gwd_i][15:0];
+                // ★ P1a 滑移陷阱：+AXJTRAP=<j> 在指定 beat 前后各 16 拍逐拍抓
+                //   AXIS 握手 + 扫描 skid + 拷贝相态，用于定位"帧中滑移"。
+                //   判据：滑移点前后 axis_tready 是否 1 拍拉低而 valid 仍高。
+                //   注：仿真里 video_ready_w 恒 1（top:722 "ready 仅 informational"），
+                //   故若滑移在仿真可复现，机制不在 AXIS 背压而在别处。
+                if (ax_trap_on && ax_j >= ax_trap_j - 16 && ax_j <= ax_trap_j + 16)
+                    $display("AXTRAP j=%0d v=%b u=%b l=%b rdy=%b | skc=%0d cap=%b pair=%08h refw=%b load=%b | sc_st=%0d push=%0d win=%b b=%0d",
+                             ax_j, video_valid_w, video_user_w, video_last_w,
+                             u_top.video_ready_w,
+                             u_top.u_scanout.u_play.sk_cnt, u_top.u_scanout.u_play.sk_cap,
+                             u_top.u_scanout.u_play.pair,
+                             u_top.u_scanout.u_play.refwait, u_top.u_scanout.u_play.loading,
+                             u_top.sc_st, u_top.sc_push, u_top.sc_win, u_top.sc_cur);
+                // ★ 无相位常量：ax_j 直接就是帧内像素序号（结构已对齐）
+                if (ax_frm >= 0 && ax_frm < 5) begin
+                    gwd_i = ax_base + (ax_j >> 1);
+                    gpx = (ax_j & 1) ? u_top.u_dram.sdram.mem[gwd_i][31:16]
+                                     : u_top.u_dram.sdram.mem[gwd_i][15:0];
                     // RGB565→RGB888 扩展（与 yx_b_scanout_play 同款）
                     gexp = { gpx[15:11], gpx[15:13], gpx[10:5], gpx[10:9],
                              gpx[4:0],   gpx[4:2] };
