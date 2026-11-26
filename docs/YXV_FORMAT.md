@@ -1,5 +1,18 @@
 # YXV 视频容器格式规范 v1
 
+> ## ⚠️ 当前架构不使用本格式（2026-11-26）
+>
+> 本文件描述的是 **YXV v1 = MJPEG 帧 + PCM 音轨** 的"卡带"容器，属于
+> **板 A 单板播视频**的旧路径；它的消费方（RTL 解码器，见 §7）**从未实现**。
+>
+> 双板架构（算画分开）定型后，视频显示整体移交板 B：
+> - 码流格式 = **YXV2**（VQ：码本 + KEY/DELTA 帧），规范见 `docs/YXVP_VQ_DESIGN.md`
+> - 生成工具 = `tools/vq_encode_stream.py`（PC 端）
+> - 消费方 = 板 B `yx_vp_ixdec/ixbuf/band` + HDMI 扫出（已 720p60 实时）
+> - 板 A 的角色 = 把 `.yxv2` 字节流按帧率推给板 B，**不做任何解码**
+>
+> 格式对照见 `docs/FORMAT_INDEX.md`。**不要照本文去实现 MJPEG 解码器。**
+
 > 映序的视频"卡带"格式。设计目标：**让硬件解码器用最少的逻辑消费**。
 > 生成工具：`tools/video2yxv.py`（PC 端，ffmpeg 负责 MJPEG 编码）。
 > 消费方：待实现的 RTL 解码器（见 §7）。

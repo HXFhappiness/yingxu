@@ -1,5 +1,15 @@
 // iverilog shim (tools/_ctrl_shim.py): CS_N port scalar->vector.
 // Original vendor file used for TD synthesis; this copy for simulation only.
+//
+// ############################################################################
+// ## ★ LEGACY（2026-11-26 标注）：本文件**已无任何门禁入口引用**，勿再加回源单。
+// ##   板 B 的仿真与综合现在统一使用
+// ##     src/5640/sdram_ctrl_4p/b_board/Sdram_Control_4Port_b.v （模块名 ..._B）
+// ##   ——即"仿真与要综合的代码是同一份"，见 docs/FORMAT_INDEX.md §4。
+// ##   本文件保留只为历史对照（它记录了 P3 的三处修补：RD1 水线 128→300、
+// ##   rd1_turn 仲裁轮转、CS_N 标量→向量），其中该修的内容已移植进 b_board 副本。
+// ##   若把它加回源单，会重新引入"仿真模型 ≠ 综合源码"的静默分叉。
+// ############################################################################
 module Sdram_Control_4Port(
 		//	HOST Side
         REF_CLK,
