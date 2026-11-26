@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Last modified by TangDynasty Release_2026.2 -->
-<Project Version="3" Minor="2" Path="C:/Users/HXF/Desktop/yingxu-fpga">
+<Project Version="3" Minor="2" Path="C:/Users/HXF/Desktop/YX">
     <Project_Created_Time></Project_Created_Time>
     <TD_Version>6.2.3.210850</TD_Version>
     <Name>AC201_AL_board_test</Name>
@@ -327,14 +327,6 @@
                     <Attr Name="CompileOrder" Val="40"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/yingxu_breakout.v">
-                <FileInfo>
-                    <Attr Name="UsedInSyn" Val="true"/>
-                    <Attr Name="UsedInP&R" Val="true"/>
-                    <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="41"/>
-                </FileInfo>
-            </File>
             <File Path="src/user_source/hdl_source/yingxu_tile_layer.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -375,14 +367,6 @@
                     <Attr Name="CompileOrder" Val="46"/>
                 </FileInfo>
             </File>
-            <File Path="src/user_source/hdl_source/yx8_prom.v">
-                <FileInfo>
-                    <Attr Name="UsedInSyn" Val="true"/>
-                    <Attr Name="UsedInP&R" Val="true"/>
-                    <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="48"/>
-                </FileInfo>
-            </File>
             <File Path="src/user_source/hdl_source/yx8_uart_telem.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -397,6 +381,14 @@
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
                     <Attr Name="CompileOrder" Val="49"/>
+                </FileInfo>
+            </File>
+            <File Path="src/user_source/hdl_source/media/sd/sd_multi_reader.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="50"/>
                 </FileInfo>
             </File>
         </Verilog>
