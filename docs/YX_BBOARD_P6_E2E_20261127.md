@@ -202,7 +202,7 @@ CNT: frames=5 bands=900 scan_errs=0 ax_errs=0 ax_beats=13242976 ax_lines=10346
 | `hdr_parse` | `hdrerr=0` |
 | 既有入口回归 | `eth_rx` PASS、`eth_stress` PASS、`mdio` PASS、`phy_init` PASS、`bboard_sys_eth` PASS、`bboard_key` PASS |
 
-### 6.4 官方入口复跑（`run_sim.ps1 -Entry p6_e2e`）
+### 6.4 官方入口复跑（`run_sim.ps1 -Entry p6_e2e`，**`ip_checksum` 终版下**）
 ```
 VERDICT: p6_e2e PASS exit=0 summary="=== TB-SUMMARY: ALL PASS ==="
 GATE dec_frames=5 OK frames_done=5 OK bands=900 OK scan=0 OK xz=0 OK
@@ -211,12 +211,70 @@ GATE-WR1 eq_errs=0 OK
 GATE-ETH ok=206(=A.pkt) OK drop=0 OK bytes=297989(=slen) OK
 stall2=36,923/27,924,959 (0%)
 ```
-与手跑的 p6_final 逐拍一致（t=16.0M 时 `win=12,700/115,200`、`byte=177,008` 完全相同），
-确定性复现。修 `a_src_done` 后仿真在 27.9M 正常收尾（此前空转到 36M WD）。
+三轮独立跑分（手跑 p6_final、官方 174009、官方 201930）**逐拍一致**
+（t=16.0M 时 `win=12,700/115,200`、`byte=177,008` 完全相同），确定性复现。
+
+### 6.5 全入口回归（**`ip_checksum` 终版下**）
+| 入口 | 结果 |
+|---|---|
+| `eth_rx` | PASS（`cmp_errs=0`、`out_bytes=295941` 精确匹配、`ok=290 drop=1`） |
+| `eth_stress` | PASS（压力换判据：过载发生 + 设计仍推进） |
+| `bboard_sys_eth` | PASS（`GATE-ETH ok=292/292`、`drop=0`、`bytes=297989`） |
+| `bboard_key` | PASS（非 ETH 路径，证明 TB 改动都关在 `ifdef P6_E2E` 内） |
+| `mdio` | PASS |
+| `phy_init` | PASS |
+| `tb_a_sender` | PASS（判据 1） |
 
 ---
 
-## 7. 结构限制与后续（P7 建议）
+## 7. 时序（TD P&R，非工程流到 route）
+
+`out/p5td/p5_pr2.tcl`（双 bit 预检 + route 后出报告，**不出 bit**）：
+
+| 指标 | P5 基线 | P6 终版 |
+|---|---|---|
+| **SWNS** | 0.000 ns | **+0.432 ns** ✓（更好） |
+| STNS | 0.000 ns | 0.000 ns ✓ |
+| 已知 RGMII 输入 hold | −3.237 ns / 10 端点 | −2.564 ns / 10 端点（同一项） |
+| `ip_checksum` 违例 | — | **0 条** ✓ |
+| bit 文件 | 无 | **无**（双预检均通过）✓ |
+
+### 7.1 `ip_checksum` 的进位链问题与修法（两个错法都被实测否掉）
+
+P6 上一版写"平衡加法树（名义深度 4）"，但 TD 把 `s1..s4 → t1,t2 → suma`
+**合成了一条进位链**：route 后实测 6 级 ADDER 串联（`add1_313 → add1_314 →
+add1_304 → add1_305 → add0_552 → add0_541 → add0_542`），arrival 11.899 ns
+vs 8 ns 周期，**SWNS −0.457 ns / 8 个违例端点**。
+
+**错法 A：多打一拍（`cal_en_d1`）** —— RX 侧余量只有 1 拍：
+```
+cnt_ip_header==19 → 下一拍 cal_en=1 → suma 在 cal_en+1 → check_ok 在 cal_en+2
+→ 消费点 cnt_udp_header==2 在 cal_en+3
+```
+实测：加一拍后 `eth_rx` 直接卡死（`out_bytes` 停在 294,917、`cmp_errs=202,399`）。
+
+**错法 B：用 `cal_en` 前一拍的值** —— 9 个操作数里**只有 `dst_ip[15:0]` 在
+`cal_en` 前一拍还没稳定**（`rx_dst_ip[7:0]` 在 `cnt_ip_header==19` 那拍写入）。
+实测：`ok=289`（少 1）、`cmp_errs=202,399`。
+
+**正解（latency 零增加）**：只把**前 8 项**（不含 `dst_ip[15:0]`，它们在
+`cnt_ip_header==18` 就全部稳定）做成独立平衡树 `acc8`（深度 4），**每拍无条件
+锁存**进 `acc8_r`；`cal_en` 当拍只做「`acc8_r + dst_ip[15:0]`」一次加法（深度 1）。
+`dst_ip[15:0]` 取 `cal_en` **当拍**值 —— 它是唯一刚稳定的项，故不混时间点。
+`suma` 仍在 `cal_en+1` 有效，消费点余量不变。
+
+验证：`checksum=0xF35A`（正确值）、`eth_rx` ALL PASS（`cmp_errs=0`、
+`out_bytes=295941` 精确匹配）、TD **SWNS +0.432 ns / `ip_checksum` 0 条违例**。
+
+### 7.2 剩余违例（P5 已记录，非本次引入）
+`b_eth_virtual_125m → b_eth_rxc_125m`，10 个 `eth_rxd[*]/eth_rxdv` 端点，
+HWNS −2.564 ns / HTNS −23.738 ns。见 `docs/YX_BBOARD_P5_PHY1_20261124.md §3`：
+RXC 到 IOB 插入延时 3.705 ns 而数据路径仅 1.075 ns，**不是调数值能解决**，
+需拿到 RTL8211F 手册按实测重定窗口（P5 结论：保留约束 + 文档写明，不隐藏问题）。
+
+---
+
+## 8. 结构限制与后续（P7 建议）
 
 **根因不在 A 侧**：B 的入口 FIFO 只有 8 KB（`FIFO_AW=13`），而 KEY 帧起步有 ~2.5 ms 消费死窗。
 开环 UDP 在"8 KB FIFO + 无回传通道"下，任何有用速率都会在死窗内溢出。三选一才能跑实时：
