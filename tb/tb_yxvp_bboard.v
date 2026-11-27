@@ -147,13 +147,104 @@ module tb_yxvp_bboard;
     reg gmii_clk = 1'b0;
     always #4 gmii_clk = ~gmii_clk;            // 125M PHY 时钟（与 100M 异步）
 
+`ifdef P6_E2E
+    // ★ P6 端到端：GMII 输入改由**板 A 发送器**驱动（TB 自己的包发生器停用）。
+    //   声明为 wire（发送器直接驱动），非 P6_E2E 下仍是 reg（TB 发生器驱动）。
+    wire [7:0] gmii_rxd;
+    wire       gmii_rxdv;
+`else
     reg  [7:0] gmii_rxd  = 8'h00;
     reg        gmii_rxdv = 1'b0;
+`endif
 
     wire        eth_sv;
     wire [7:0]  eth_sd;
     wire [15:0] eth_ok_cnt, eth_drop_cnt, eth_room;
     wire [31:0] eth_byte_cnt;
+
+`ifdef P6_E2E
+    // ================= P6：板 A 发送器接到板 B 的 GMII 输入 =================
+    // A 侧：文件字节流 → yx_a_vq_sender（开环节流 + 分片 UDP）→ GMII
+    // B 侧：GMII → u_ethrx（不变）
+    wire        a_src_valid;
+    wire [7:0]  a_src_data;
+    wire        a_src_ready;
+    wire        a_gmii_tx_clk;
+    wire [7:0]  a_gmii_txd;
+    wire        a_gmii_txen;
+    wire [31:0] a_tx_byte;
+    wire [15:0] a_tx_pkt;
+    wire [15:0] a_tx_short;
+
+    // ★ P6 发送速率常数（推导见 yx_a_vq_sender.v 文件头"取值规则"）：
+    //     源码率 = 59,597.8 B/帧 ÷ 1,687,455 clk100(=16.87ms) = 3.532 MB/s
+    //     目标   = 源码率 × 0.85（宁慢勿超）           = 3.00 MB/s
+    //     BYTE_DIV = 125e6 / 3.00e6 = 41.6 → 42（实发 2.976 MB/s）
+    //   ★ 这个值是**按本源流推出来的**，不是"B 能力常数"：B 帧锁存消费，
+    //     每帧周期只吃一帧的字节，A 一旦快于源码率，8KB FIFO 必然溢出。
+    //     实测 BYTE_DIV=20（6.25 MB/s）→ drop=85；见 docs/patches/p6_e2e_wip.patch。
+    localparam integer P6_BYTE_DIV = 42;
+
+    yx_a_vq_sender #(
+        .DST_MAC   (ETH_LOCAL_MAC),      // 必须与 B 的过滤条件一致
+        .DST_IP    (ETH_LOCAL_IP),
+        .DST_PORT  (ETH_LOCAL_PORT),
+        .SRC_MAC   (ETH_SRC_MAC),
+        .SRC_IP    (ETH_SRC_IP),
+        .SRC_PORT  (ETH_SRC_PORT),
+        .BYTE_DIV  (P6_BYTE_DIV)
+    ) u_asender (
+        .clk125       (gmii_clk),
+        .rst_p        (~rst_n),
+        .src_valid    (a_src_valid),
+        .src_data     (a_src_data),
+        .src_ready    (a_src_ready),
+        .gmii_tx_clk  (a_gmii_tx_clk),
+        .gmii_txd     (a_gmii_txd),
+        .gmii_txen    (a_gmii_txen),
+        .tx_byte_cnt  (a_tx_byte),
+        .tx_pkt_cnt   (a_tx_pkt),
+        .tx_short_cnt (a_tx_short)
+    );
+
+    // GMII 直连：发送器的 txd/txen 即 B 侧 PHY 输入（P6 规格：GMII 直连）
+    // ★ 曾试过插一级 negedge 寄存器模拟 PHY 的半拍转发延迟 —— 实测 MACPV
+    //   逐字节不变（本仿真的两域同源，半拍不改变采样结果），故不保留。
+    assign gmii_rxd  = a_gmii_txd;
+    assign gmii_rxdv = a_gmii_txen;
+
+    // ---- P6 线上探针：A 实际发出的前 48 个字节（含前导码/SFD）----
+    // 目的：把"A 发错"与"B 收错"分开。源文件首 4 字节应为 59 58 56 32，
+    // 在线上应出现在 preamble(7×55)+SFD(d5) 之后。
+    integer wire_b = 0;
+    always @(posedge gmii_clk) begin
+        if (a_gmii_txen && rst_n) begin
+            if (wire_b < 8)
+                $display("TRC %0d: txd=%02x gi=%02x txen=%b pv=%b pdat=%02x",
+                         wire_b, a_gmii_txd, gmii_rxd,
+                         a_gmii_txen, u_ethrx.pv, u_ethrx.pdat);
+            wire_b = wire_b + 1;
+        end
+    end
+
+    // ---- P6 收侧探针：厂商 RX 核自己吐出的 payload 字节 ----
+    // 与 WIRE 对齐比较：WIRE[50] 应 == MACPV[0]。若不等，问题在厂商核；
+    // 若相等而 FEED 不等，问题在异步 FIFO / 读侧。
+    integer mac_b = 0;
+    always @(posedge gmii_clk) begin
+        if (u_ethrx.pv) mac_b = mac_b + 1;
+    end
+    always @(posedge gmii_clk) begin
+        if (u_ethrx.pkt_start)
+            $display("MACPKT len=%0d start_ok=%b skip=%b room=%0d dfull=%b",
+                     u_ethrx.rx_len, u_ethrx.start_ok, u_ethrx.skip_pkt,
+                     u_ethrx.fifo_room, u_ethrx.desc_full);
+        if (u_ethrx.op_done)
+            $display("MACDONE wcnt=%0d rxlen=%0d err=%b bad=%b skip=%b",
+                     u_ethrx.wcnt, u_ethrx.rx_len, u_ethrx.pkt_err,
+                     u_ethrx.bad_pkt, u_ethrx.skip_pkt);
+    end
+`endif
 
     // ★ 吞吐压力模式（+NOSTALL）：跳过 FIFO room 节流，按 GMII 线速不间断灌包。
     //
@@ -222,6 +313,9 @@ module tb_yxvp_bboard;
 
     reg [7:0] efb [0:2047];
 
+    // ★ P6_E2E：GMII 由板 A 发送器驱动，gmii_rxd/rxdv 是 wire，这三个任务
+    //   （只被已停用的 TB 发生器使用）不能编译 → 包进 ifndef。
+`ifndef P6_E2E
     task e_gmii_byte(input [7:0] b);
     begin
         @(negedge gmii_clk);
@@ -297,12 +391,16 @@ module tb_yxvp_bboard;
             e_gmii_idle(12);
         end
     endtask
+`endif
 
     reg     eth_tx_done = 1'b0;
     integer e_npkt, e_pi, e_off, e_len;
 
     // 发送进程：等顶层 INIT 完成（LOAD 不落控制器 POR 窗）后按 FIFO room 节流
     //   （+NOSTALL 时**不节流**，按线速灌满，用于测饱和/丢包，见上方声明处注释）
+    // ★ P6_E2E：本发生器停用——GMII 由板 A 发送器（u_asender）驱动，
+    //   源喂入见下方 "P6_E2E 源喂入" 块。五个既有入口行为不变。
+`ifndef P6_E2E
     initial begin : ethsrc
         wait (init_done === 1'b1);
         repeat (100) @(negedge gmii_clk);
@@ -323,6 +421,7 @@ module tb_yxvp_bboard;
         $display("ETHTX done pkts=%0d bytes=%0d nostall=%b win_clk=%0d delivered_in_win=%0d",
                  e_npkt, slen, nostall, st_cyc_tx, st_byte_tx);
     end
+`endif
 `endif
 
     // ================= 断言状态 =================
@@ -1037,6 +1136,44 @@ module tb_yxvp_bboard;
     reg [255:0] path;
     integer hdr_cb;
 
+`ifdef P6_E2E
+    // ================= P6_E2E 源喂入：文件字节流 → 板 A 发送器 =================
+    // 与 tb_a_sender 的喂法一致：src_ready 放行时推进；全部字节发完后置
+    // eth_tx_done，让主流程（while (!eth_tx_done …)）正常往下走。
+    reg [7:0] a_src_data_r;
+    reg       a_src_valid_r;
+    integer   a_sp;
+    assign a_src_valid = a_src_valid_r;
+    assign a_src_data  = a_src_data_r;
+
+    always @(posedge gmii_clk) begin
+        if (!rst_n) begin
+            a_src_valid_r <= 1'b0;
+            a_src_data_r  <= 8'd0;
+            a_sp          <= 0;
+        end else if (init_done) begin
+            if (a_sp < slen) begin
+                a_src_valid_r <= 1'b1;
+                a_src_data_r  <= smem[a_sp];
+                if (a_src_valid_r && a_src_ready) a_sp <= a_sp + 1;
+            end else begin
+                a_src_valid_r <= 1'b0;
+            end
+        end
+    end
+
+    initial begin : e2esrc
+        wait (init_done === 1'b1);
+        while (!(a_sp >= slen && u_asender.st === 2'd0)) @(posedge gmii_clk);
+        repeat (200) @(posedge gmii_clk);      // 让末片 tx_done 落定
+        eth_tx_done = 1'b1;
+        st_cyc_tx   = st_cyc;
+        st_byte_tx  = eth_byte_cnt;
+        $display("E2ETX done slen=%0d eth_ok=%0d eth_drop=%0d eth_bytes=%0d",
+                 slen, eth_ok_cnt, eth_drop_cnt, eth_byte_cnt);
+    end
+`endif
+
     // ================= 主控 =================
     integer wd = 12000000;
     integer cyc = 0;
@@ -1173,6 +1310,13 @@ module tb_yxvp_bboard;
                          u_top.REAL_IX.u_ixfetch.cp_quiet,
                          cp_deliv, cp_disc, cp_stale, cp_loads);
 `endif
+`ifdef P6_E2E
+                $display("POLLETH t=%0d ok=%0d drop=%0d bytes=%0d room=%0d | a: st=%0d pkt=%0d byte=%0d short=%0d fcnt=%0d frd=%0d fby=%0d sp=%0d",
+                         cyc, eth_ok_cnt, eth_drop_cnt, eth_byte_cnt, eth_room,
+                         u_asender.st, a_tx_pkt, a_tx_byte, a_tx_short,
+                         u_asender.frag_cnt, u_asender.frag_rd, u_asender.frag_bytes,
+                         a_sp);
+`endif
                 $fflush;      // 实时落盘（长跑时 POLL/FRAME 可即时观测）
             end
         end
@@ -1275,8 +1419,18 @@ module tb_yxvp_bboard;
 `ifdef BBOARD_ETH
         // P4 传输层判据：全部包 CRC 正确（ok=包数）、零丢包、转发的字节数
         // 必须等于源文件长度（slen）。
+`ifdef P6_E2E
+        // ★ P6：分片长度由 A 发送器决定（FRAG_LEN=1472），而 e_npkt 是按 TB 自己
+        //   的 1024B 口径算的（P4 旧路径）→ 直接比会拿 203 去比 292，必然红。
+        //   这里把"期望包数"换成 A 实发的包数 a_tx_pkt。**判据语义一字未改**：
+        //   A 发的每一个包都被 B 收下（ok == 实发数）、零丢包、字节数等于源码流。
+        //   （换成 a_tx_pkt 比硬写 203 更强：A 少发或重发都会露出来。）
+        peth = (eth_ok_cnt == a_tx_pkt) && (eth_drop_cnt == 0) &&
+               (eth_byte_cnt == slen);
+`else
         peth = (eth_ok_cnt == e_npkt) && (eth_drop_cnt == 0) &&
                (eth_byte_cnt == slen);
+`endif
 `else
         peth = 1'b1;
 `endif
@@ -1302,10 +1456,18 @@ module tb_yxvp_bboard;
                  disp_stall_w, pst?"OK":"BAD");
         $display("GATE-WR1 eq_errs=%0d(want 0:%s)", wr1_eq_errs, (wr1_eq_errs == 0)?"OK":"BAD");
 `ifdef BBOARD_ETH
+`ifdef P6_E2E
+        $display("GATE-ETH ok=%0d(want %0d=A.pkt:%s) drop=%0d(want 0:%s) bytes=%0d(want %0d:%s) a_bytes=%0d",
+                 eth_ok_cnt, a_tx_pkt, (eth_ok_cnt == a_tx_pkt)?"OK":"BAD",
+                 eth_drop_cnt, (eth_drop_cnt == 0)?"OK":"BAD",
+                 eth_byte_cnt, slen, (eth_byte_cnt == slen)?"OK":"BAD",
+                 a_tx_byte);
+`else
         $display("GATE-ETH ok=%0d(want %0d:%s) drop=%0d(want 0:%s) bytes=%0d(want %0d:%s)",
                  eth_ok_cnt, e_npkt, (eth_ok_cnt == e_npkt)?"OK":"BAD",
                  eth_drop_cnt, (eth_drop_cnt == 0)?"OK":"BAD",
                  eth_byte_cnt, slen, (eth_byte_cnt == slen)?"OK":"BAD");
+`endif
         // ★ 压力分支必须留在本 `ifdef BBOARD_ETH` 内：它引用的 nostall / eth_* /
         //   e_npkt / slen 都只在 ETH 构建里声明。初版把 `if (nostall)` 写到了
         //   `endif` 之后，导致 bboard_sys / bboard_key 编译报

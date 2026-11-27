@@ -1,0 +1,863 @@
+diff --git a/src/ip_checksum.v b/src/ip_checksum.v
+index 306f652..9d1fe2a 100644
+--- a/src/ip_checksum.v
++++ b/src/ip_checksum.v
+@@ -47,52 +47,42 @@ module ip_checksum(
+   //   TD 综合成 7 级线性 ADDER 链（实测 Data Path 8.229ns > 8ns 预算，
+   //   setup −563ps / 7 个违例端点，见 docs/YX_BBOARD_P5_PHY1_20261124.md §2）。
+   //
+-  //   改为分级求和。依据（时序账，来自 eth_udp_rx_gmii.v 的解析时序）：
+-  //     · IP 头字段在 cnt_ip_header = 0..19 逐字节锁存，到第 19 拍全部稳定；
+-  //     · ip_checksum_cal_en 是"第 19 拍"之后的那一拍（单拍脉冲）；
+-  //     · 下游 ip_header_check_ok 在 cnt_udp_header == 2 采样，即 cal_en 后还有
+-  //       2 拍余量。
+-  //   因此：早稳定的字段可以提前算好并寄存，cal_en 拍只做最后 3 项相加。
+-  //   **suma 仍在 cal_en 拍后一拍有效（与原实现同拍），功能完全等价。**
++  // ★ P6 修正（2026-11-26）：P5 的分级版本把级数压到 2，但**采样点错了**：
++  //   它把操作数分成 p1a/p1b/p2a/p2b 各打 1~2 拍寄存器，`suma` 在 cal_en 拍
++  //   只做 p1_r + p2_r + dst_ip[15:0]。而 p1_r/p2_r 里的操作数是 **2 拍前**的值，
++  //   dst_ip[15:0] 却是**当拍**的值 —— 混了两个时间点。
+   //
+-  //   分组（o1..o9 为原式的 9 个操作数）：
+-  //     p1a = o1+o2+o3  （{ver,hdr_len,tos} + total_len + id）      cnt 5 前稳定
+-  //     p1b = o4+o5     （{rsv,df,mf,frag} + {ttl,protocol}）        cnt 9 前稳定
+-  //     p1_r = p1a_r + p1b_r                                        → 1 级
+-  //     p2a = o6+o7     （src_ip 高低半）                            cnt 15 前稳定
+-  //     p2b = o8        （dst_ip 高半）                              cnt 16 前稳定
+-  //     p2_r = p2a_r + p2b_r                                        → 1 级
+-  //     suma = p1_r + p2_r + o9 （o9 = dst_ip 低半，cnt 19 才稳定）  → 2 级
+-  //   最大逻辑级数从 7 降到 2。
++  //   实测症状（P6 端到端）：板 A 发出的第 1 个 UDP 包 IP 头校验和为 0xF91A，
++  //   而该头（total_len=0x05DC）的正确值是 0xF35A。反解 0xF91A 对应的
++  //   total_len 恰好是 0x001C = 28，即 data_length 被当成 0。
++  //   原因：yx_a_vq_sender 在 T+1 才把 frag_bytes 从 0 置成 1472，tx_en_pulse
++  //   在 T+2 到达 → p1_r 里锁的是 total_len=28。从第 2 个包起 data_length 早已
++  //   稳定，校验和正确。于是**只有首个包被 eth_udp_rx_gmii 按坏 IP 头丢弃**，
++  //   B 侧字节流从第 2 个分片开始（少了整个 1472B 首片 = YXV2 头 + 码本开头），
++  //   hdr_parse 从码本中间解析 → hdr_err、一帧不解。
++  //
++  //   正确语义：**全部 9 个操作数都必须在 cal_en 当拍采样**（与原始实现一致）。
++  //   修法：去掉"操作数提前打拍"的分组，改为**平衡加法树** —— 深度 4 级，
++  //   所有操作数在 cal_en 当拍组合取用。既恢复单拍语义，又把级数压到 4
++  //   （原线性链 7 级 ≈ 8.23ns，按每级约 1.18ns 估算，4 级约 4.7ns）。
++  //   latency 不变：suma 仍是 cal_en 后一拍有效，RX 侧 cnt_udp_header==2 的
++  //   采样余量不受影响。
+   // ==========================================================================
+-    wire [17:0] p1a = {IP_ver,IP_hdr_len,IP_tos} + IP_total_len + IP_id;
+-    wire [16:0] p1b = {IP_rsv,IP_df,IP_mf,IP_frag_offset} + {IP_ttl,IP_protocol};
+-    wire [16:0] p2a = src_ip[31:16] + src_ip[15:0];
+-    wire [15:0] p2b = dst_ip[31:16];
+-
+-    reg  [17:0] p1a_r, p1b_r;
+-    reg  [18:0] p1_r;
+-    reg  [16:0] p2a_r, p2b_r;
+-    reg  [17:0] p2_r;
++    wire [17:0] p1a = {IP_ver,IP_hdr_len,IP_tos} + IP_total_len + IP_id;          // 深度 2
++    wire [16:0] p1b = {IP_rsv,IP_df,IP_mf,IP_frag_offset} + {IP_ttl,IP_protocol}; // 深度 1
++    wire [16:0] p2a = src_ip[31:16] + src_ip[15:0];                               // 深度 1
++    wire [15:0] p2b = dst_ip[31:16];                                              // 深度 0
++    wire [15:0] p2c = dst_ip[15:0];                                               // 深度 0
+ 
+-  always@(posedge clk or posedge reset_p)
+-  if(reset_p) begin
+-    p1a_r <= 18'd0; p1b_r <= 18'd0; p1_r <= 19'd0;
+-    p2a_r <= 17'd0; p2b_r <= 17'd0; p2_r <= 18'd0;
+-  end else begin
+-    p1a_r <= p1a;
+-    p1b_r <= p1b;
+-    p1_r  <= p1a_r + p1b_r;
+-    p2a_r <= p2a;
+-    p2b_r <= p2b;
+-    p2_r  <= p2a_r + p2b_r;
+-  end
++    wire [18:0] t1  = {1'b0,p1a} + {2'b00,p1b};                                   // 深度 3
++    wire [17:0] t2  = {1'b0,p2a} + {2'b00,p2b} + {2'b00,p2c};                     // 深度 3
+ 
+   always@(posedge clk or posedge reset_p)
+   if(reset_p)
+     suma <= 32'd0;
+   else if(cal_en)
+-    suma <= p1_r + p2_r + dst_ip[15:0];
++    // ★ 全部操作数在 cal_en 当拍取用（见上 P6 修正）
++    suma <= {12'd0, t1} + {12'd0, t2};                                            // 深度 4
+   else
+     suma <= suma;
+ 
+diff --git a/src/user_source/hdl_source/media/vp/yx_a_vq_sender.v b/src/user_source/hdl_source/media/vp/yx_a_vq_sender.v
+new file mode 100644
+index 0000000..bde51ff
+--- /dev/null
++++ b/src/user_source/hdl_source/media/vp/yx_a_vq_sender.v
+@@ -0,0 +1,280 @@
++// yx_a_vq_sender.v — 板 A：YXV2 码流 → 分片 UDP 发送（开环节流）
++//
++// ============================ 为什么是开环 ============================
++// 板 B 只收不发：IO_b.adc 只约束了 RGMII RX 侧（eth_rxc/rxd/rxdv/mdc/mdio），
++// 没有 TX 引脚，板 B 也没有 125MHz TX 时钟源。所以：
++//   · 没有回传/信用通道，A 侧拿不到 B 的真实反压；
++//   · 流控只能**开环**——A 必须自己保证不超发。
++//
++// 而 B 侧的安全边界很窄：
++//   · 字节 FIFO 只有 8192 B（yx_b_eth_rx 的 FIFO_AW=13），而一帧真实 VQ-1024 码流
++//     是 114,917 B → **整帧突发必然溢出**；
++//   · 厂商 RX 核的 payload_valid 无 ready，FIFO 满时只能丢字节，该包在描述符里
++//     标 err=1 后**整包丢弃**；UDP 无重传 → 丢一个包就是码流断裂；
++//   · 因此必须把一帧字节按帧周期**摊平**发送，且速率不得超过 B 的消费能力。
++//
++// ==================== B 端消费能力（实测依据，不是猜的）====================
++// ★ 2026-11-27 修正：下面这段原始的"6.81 MB/s = B 能力"**推理是错的**，
++//   端到端实测（p6_e2e，BYTE_DIV=20）以 drop=85 证实。保留原文并在后面
++//   写清错在哪，避免后人再踩。
++//
++// ---- 原推理（P5 §5F / commit 144e2e5）----
++//   真实 VQ-1024 流 `xinji_720p24.yxv2`：114,917 B/帧
++//   B 侧稳态帧周期（帧 4→帧 5 实测）：1,687,455 clk100 = 16.87 ms
++//   ⇒ 114,917 B / 1,687,455 clk100 = 1 字节 / 14.68 clk100 = 6.81 MB/s
++//
++// ---- 错在哪（p6_e2e 实测修正）----
++//   6.81 MB/s 是**那一条码流自己的源码率**（它的每帧字节 ÷ 帧周期），
++//   不是可以外推到别的码流的"B 能力常数"。B 的消费是**帧锁存**的：
++//   每个帧周期只消费一帧的负载字节，消费完就等下一帧（实测 t=2.50M 之后
++//   1.5M 拍内几乎不再消费：bytes 155,198 → 155,244）。
++//   而 8 KB 字节 FIFO 只容忍约 8 KB 的超前量（FIFO_AW=13），所以
++//     **A 的速率一旦快于"本源流的源码率"，超前量就单调累积 → 必然溢出。**
++//
++//   实测（vp_720_5f.yxv2，59,597.8 B/帧）：
++//     · 源码率 = 59,597.8 B ÷ 1,687,455 clk100 = 3.532 MB/s（按 P5 帧周期）
++//                （若按本轮实测帧间隔 1,395,301 clk100 则 4.271 MB/s）
++//     · BYTE_DIV=20 ⇒ 6.25 MB/s = 源码率的 177% → t≈2.5M 起 drop 持续增长
++//       （drop=5→85，room 8192→39），而同期 FSM/解码全绿（FRAME errs=0），
++//       说明**不是解码错，纯粹是发送超发**。
++//
++// ---- 本模块的取值规则（不是魔法数字，按此式推导）----
++//     BYTE_DIV = clk125_Hz / (源码率 × 安全系数)
++//     源码率  = 每帧源字节 ÷ 帧周期      ← 由码流自己决定，不是常数
++//     安全系数取 0.85（"宁可比目标慢，不可超发"：B 侧丢一个包就整段码流
++//       断裂且无重传，FIFO 满时厂商核整包丢弃）
++//   对本测试流：3.532 MB/s × 0.85 = 3.00 MB/s
++//              125e6 / 3.00e6 = 41.6 → **BYTE_DIV = 42**（实发 2.976 MB/s，
++//              为保守源码率的 84%，为实测帧间隔口径源码率的 70%）
++//   ⇒ 端到端比实时慢（vp_720_5f 约 42 fps 等效），这是**有意的保守**。
++//   要跑满帧率，只能让 A 按帧节拍发（解析 YXV2 帧头、每帧字节摊到帧周期内），
++//   而不是靠调小 BYTE_DIV——后者在开环下必然溢出。
++//
++// ============================ 分片 ============================
++// UDP payload 上限 1472 B（1500 MTU − 20 IP − 8 UDP）。B 侧厂商核按大包处理
++// （其已知缺陷是 payload < 18 B 时在 RX_DATA→RX_DRP_DATA 分支空转 64K 拍，
++//   见 yx_b_eth_rx.v 头注释），故本模块只发大包：除**流末尾的最后一片**外，
++//   其余分片都填满 FRAG_LEN。
++//
++// 目的地址必须与板 B 的默认过滤条件完全一致（否则厂商核整包丢弃）：
++//   dst_mac = 00:0a:35:02:00:01
++//   dst_ip  = 192.168.0.100
++//   dst_port= 5000
++//
++// ============================ 时钟域 ============================
++// 单 125M 域（GMII TX 时钟）。码流源（板上 SD 扇区读 / 仿真文件）经
++// src_valid/src_data/src_ready 握手跨入本域——板上需自带异步 FIFO 或
++// 源本身在 125M 域（仿真 TB 直接产生）。
++module yx_a_vq_sender #(
++    // ---- 目的地址（必须与板 B 默认过滤一致）----
++    parameter [47:0] DST_MAC  = 48'h00_0a_35_02_00_01,   // 板 B LOCAL_MAC
++    parameter [31:0] DST_IP   = 32'hc0_a8_00_64,         // 192.168.0.100 = 板 B LOCAL_IP
++    parameter [15:0] DST_PORT = 16'd5000,                // 板 B LOCAL_PORT
++    // ---- 源地址（板 A 自己）----
++    parameter [47:0] SRC_MAC  = 48'h00_0a_35_02_00_02,
++    parameter [31:0] SRC_IP   = 32'hc0_a8_00_65,         // 192.168.0.101
++    parameter [15:0] SRC_PORT = 16'd5001,
++    // ---- 开环节流：1 字节 / BYTE_DIV 个 clk125（依据见文件头"取值规则"）----
++    // ★ 必须按"本源流的源码率"推导，不能照搬别的码流的 MB/s：
++    //   BYTE_DIV = clk125_Hz / (源码率 × 0.85)，源码率 = 每帧字节 ÷ 帧周期。
++    //   默认 42 对应 vp_720_5f（59,597.8 B/帧 ÷ 16.87 ms = 3.532 MB/s）× 0.85。
++    parameter integer BYTE_DIV = 42,
++    // ---- 分片 payload 上限（1 片 1472 B，最后一片可短）----
++    parameter [15:0]  FRAG_LEN = 16'd1472,
++    // ---- 源空闲多少拍后把残余分片发出（流末尾）----
++    parameter integer FLUSH_IDLE = 4096
++)(
++    input  wire        clk125,
++    input  wire        rst_p,           // 高有效（与 eth_udp_tx_gmii 一致）
++
++    // ---- 码流字节源（.yxv2 原样字节流）----
++    input  wire        src_valid,
++    input  wire [7:0]  src_data,
++    output wire        src_ready,       // 受节流器约束：每 BYTE_DIV 拍最多收 1 字节
++
++    // ---- GMII TX（板上再接 gmii_to_rgmii）----
++    output wire        gmii_tx_clk,
++    output wire [7:0]  gmii_txd,
++    output wire        gmii_txen,
++
++    // ---- 观测 ----
++    output reg  [31:0] tx_byte_cnt,     // 已发出的 payload 字节总数
++    output reg  [15:0] tx_pkt_cnt,      // 已发出的报文数
++    output reg  [15:0] tx_short_cnt     // 未填满的分片数（正常只应出现在流末尾）
++);
++
++    // =========================================================================
++    // 1) 发送节流器：1 字节 / BYTE_DIV clk125
++    // =========================================================================
++    reg  [15:0] pace_cnt;
++    reg         pace_tick;              // 1 拍脉冲：本拍允许取 1 个源字节
++    always @(posedge clk125 or posedge rst_p) begin
++        if (rst_p) begin
++            pace_cnt  <= 16'd0;
++            pace_tick <= 1'b0;
++        end else begin
++            if (pace_cnt >= BYTE_DIV - 1) begin
++                pace_cnt  <= 16'd0;
++                pace_tick <= 1'b1;
++            end else begin
++                pace_cnt  <= pace_cnt + 16'd1;
++                pace_tick <= 1'b0;
++            end
++        end
++    end
++
++    // =========================================================================
++    // 2) 分片缓冲：2 KB FIFO（够放一个 1472B 分片）
++    //    ★ 指针与计数只在本块内驱动（单驱动，避免多 always 赋值）
++    // =========================================================================
++    reg  [7:0]  frag_mem [0:2047];
++    reg  [10:0] frag_wp;
++    reg  [10:0] frag_rp;
++    reg  [11:0] frag_cnt;
++
++    wire frag_empty = (frag_cnt == 12'd0);
++    wire frag_full  = (frag_cnt >= FRAG_LEN);
++    wire frag_room  = (frag_cnt < 12'd2048);
++
++    // 源收：节流器放行 + FIFO 有位 + 源有数据
++    wire src_take = pace_tick && frag_room && src_valid;
++    assign src_ready = pace_tick && frag_room;
++
++    // 分片弹出（由 FSM 组合给出）
++    wire frag_pop;
++
++    always @(posedge clk125 or posedge rst_p) begin
++        if (rst_p) begin
++            frag_wp  <= 11'd0;
++            frag_rp  <= 11'd0;
++            frag_cnt <= 12'd0;
++        end else begin
++            case ({src_take, frag_pop})
++            2'b10: begin                       // 只写
++                frag_mem[frag_wp] <= src_data;
++                frag_wp  <= frag_wp + 11'd1;
++                frag_cnt <= frag_cnt + 12'd1;
++            end
++            2'b01: begin                       // 只读
++                frag_rp  <= frag_rp + 11'd1;
++                frag_cnt <= frag_cnt - 12'd1;
++            end
++            2'b11: begin                       // 同拍读写：计数不变
++                frag_mem[frag_wp] <= src_data;
++                frag_wp  <= frag_wp + 11'd1;
++                frag_rp  <= frag_rp + 11'd1;
++            end
++            default: ;                          // 空
++            endcase
++        end
++    end
++
++    // 源空闲计时：把流末尾的残余分片发出去
++    reg  [15:0] idle_cnt;
++    always @(posedge clk125 or posedge rst_p) begin
++        if (rst_p)                     idle_cnt <= 16'd0;
++        else if (src_valid)            idle_cnt <= 16'd0;
++        else if (idle_cnt != 16'hffff) idle_cnt <= idle_cnt + 16'd1;
++    end
++    wire src_idle_flush = (idle_cnt >= FLUSH_IDLE);
++
++    // =========================================================================
++    // 3) 分片级发送 FSM
++    // =========================================================================
++    localparam S_IDLE = 2'd0,       // 等一个可发的分片
++               S_START= 2'd1,       // 置 tx_en_pulse（data_length 已稳定）
++               S_FEED = 2'd2,       // 按 payload_req 逐字节喂
++               S_WAIT = 2'd3;       // 等 tx_done
++
++    reg  [1:0]  st;
++    reg         tx_en_pulse;
++    reg  [15:0] frag_bytes;             // 本分片长度（送 data_length）
++    reg  [15:0] frag_rd;                // 本分片已喂字节数
++    wire        tx_done;
++    wire        payload_req;
++
++    // 喂字节条件：在 S_FEED 且本分片还没喂完且 FIFO 非空且厂商要字节
++    wire feed_go  = (st == S_FEED) && (frag_rd < frag_bytes);
++    assign frag_pop = payload_req && feed_go && !frag_empty;
++    wire [7:0] frag_head = frag_mem[frag_rp];
++
++    always @(posedge clk125 or posedge rst_p) begin
++        if (rst_p) begin
++            st          <= S_IDLE;
++            tx_en_pulse <= 1'b0;
++            frag_bytes  <= 16'd0;
++            frag_rd     <= 16'd0;
++        end else begin
++            tx_en_pulse <= 1'b0;
++            case (st)
++            S_IDLE: begin
++                // 满片优先；否则源空闲后把残余发出（流末尾）
++                if (frag_full || (src_idle_flush && !frag_empty)) begin
++                    // ★ 必须 {4'b0, frag_cnt} 而不是 frag_cnt[15:0]：frag_cnt 是
++                    //   12 位，越界位选在 iverilog 下返回 **X 且不告警** → 进入
++                    //   S_FEED 后 (frag_rd < X) 恒假，FSM 永久挂死（实测现象：
++                    //   流末尾残留分片永远发不出，整个仿真空转到看门狗）。
++                    frag_bytes <= frag_full ? FRAG_LEN : {4'b0, frag_cnt};
++                    frag_rd    <= 16'd0;
++                    st         <= S_START;
++                end
++            end
++            S_START: begin
++                // data_length 已在上一拍锁存为 frag_bytes，本拍发起
++                tx_en_pulse <= 1'b1;
++                st          <= S_FEED;
++            end
++            S_FEED: begin
++                // payload_req 为高时厂商在**本拍**采样 payload_dat_i（FWFT 语义：
++                // 参考 eth_udp_loopback_rgmii.v 的 .re/.dout 接法）
++                if (frag_pop) begin
++                    frag_rd <= frag_rd + 16'd1;
++                    if (frag_rd + 16'd1 >= frag_bytes) st <= S_WAIT;
++                end
++            end
++            S_WAIT: if (tx_done) st <= S_IDLE;
++            default: st <= S_IDLE;
++            endcase
++        end
++    end
++
++    // =========================================================================
++    // 4) 厂商发送核
++    // =========================================================================
++    eth_udp_tx_gmii u_tx (
++        .clk125m        (clk125),
++        .reset_p        (rst_p),
++        .tx_en_pulse    (tx_en_pulse),
++        .tx_done        (tx_done),
++        .dst_mac        (DST_MAC),
++        .src_mac        (SRC_MAC),
++        .dst_ip         (DST_IP),
++        .src_ip         (SRC_IP),
++        .dst_port       (DST_PORT),
++        .src_port       (SRC_PORT),
++        .data_length    (frag_bytes),
++        .payload_req_o  (payload_req),
++        .payload_dat_i  (frag_head),
++        .gmii_tx_clk    (gmii_tx_clk),
++        .gmii_txen      (gmii_txen),
++        .gmii_txd       (gmii_txd)
++    );
++
++    // =========================================================================
++    // 5) 观测计数
++    // =========================================================================
++    always @(posedge clk125 or posedge rst_p) begin
++        if (rst_p) begin
++            tx_byte_cnt  <= 32'd0;
++            tx_pkt_cnt   <= 16'd0;
++            tx_short_cnt <= 16'd0;
++        end else begin
++            if (frag_pop)      tx_byte_cnt  <= tx_byte_cnt + 32'd1;
++            if (tx_done) begin
++                tx_pkt_cnt <= tx_pkt_cnt + 16'd1;
++                if (frag_bytes != FRAG_LEN) tx_short_cnt <= tx_short_cnt + 16'd1;
++            end
++        end
++    end
++
++endmodule
+\ No newline at end of file
+diff --git a/tb/tb_a_sender.v b/tb/tb_a_sender.v
+new file mode 100644
+index 0000000..2cd8e4f
+--- /dev/null
++++ b/tb/tb_a_sender.v
+@@ -0,0 +1,199 @@
++// tb_a_sender.v — yx_a_vq_sender 独立验收（A 侧单测）
++//
++// 判据（只看 GATE / TB-SUMMARY）：
++//   1. TX 端重组出的 payload 与源 .yxv2 **逐字节一致**；
++//   2. 发出的 payload 字节总数 == 源文件字节数（不丢不多）；
++//   3. 分片长度都 == FRAG_LEN，只有流末尾最后一片可短；
++//   4. 源侧节流生效：平均收字节速率 == 1 / BYTE_DIV 个 clk125（±2%）；
++//   5. 全程无"分片内数据不足"（即 frag_pop 不会在 FIFO 空时发生）。
++//
++// 说明：本测试在**分片接口层**（payload_req/payload_dat）重组，验证发送器自身的
++//       分片与喂数逻辑；GMII 上真正进出线的字节由 p6_e2e 端到端验证。
++`timescale 1ns/1ps
++
++module tb_a_sender;
++    localparam integer BYTE_DIV = 20;
++    localparam [15:0]  FRAG_LEN = 16'd1472;
++
++    reg clk125 = 1'b0;
++    always #4 clk125 = ~clk125;          // 125MHz
++
++    reg rst_p = 1'b1;
++
++    // ---- 源：从文件按字节喂 ----
++    reg  [7:0] smem [0:1048575];
++    reg  [7:0] rmem [0:1048575];         // 重组结果
++    integer slen, sf, sp, rn;
++    reg [255:0] path;
++
++    reg        src_valid = 1'b0;
++    reg  [7:0] src_data  = 8'd0;
++    wire       src_ready;
++
++    wire        gmii_tx_clk;
++    wire [7:0]  gmii_txd;
++    wire        gmii_txen;
++    wire        tx_en_pulse_o;
++    wire        tx_done_o;
++    wire        payload_req;
++    wire [7:0]  payload_dat;
++
++    wire [31:0] tx_byte_cnt;
++    wire [15:0] tx_pkt_cnt;
++    wire [15:0] tx_short_cnt;
++
++    yx_a_vq_sender #(
++        .BYTE_DIV (BYTE_DIV),
++        .FRAG_LEN (FRAG_LEN)
++    ) u_dut (
++        .clk125       (clk125),
++        .rst_p        (rst_p),
++        .src_valid    (src_valid),
++        .src_data     (src_data),
++        .src_ready    (src_ready),
++        .gmii_tx_clk  (gmii_tx_clk),
++        .gmii_txd     (gmii_txd),
++        .gmii_txen    (gmii_txen),
++        .tx_byte_cnt  (tx_byte_cnt),
++        .tx_pkt_cnt   (tx_pkt_cnt),
++        .tx_short_cnt (tx_short_cnt)
++    );
++
++    // ================= 源驱动：src_ready 放行时推进 =================
++    always @(posedge clk125) begin
++        if (rst_p) begin
++            src_valid <= 1'b0;
++            sp        <= 0;
++        end else begin
++            if (sp < slen) begin
++                src_valid <= 1'b1;
++                src_data  <= smem[sp];
++                if (src_valid && src_ready) sp <= sp + 1;
++            end else begin
++                src_valid <= 1'b0;
++            end
++        end
++    end
++
++    // ================= 重组：分片弹出即写 rmem =================
++    integer byte_errs = 0;
++    always @(posedge clk125) begin
++        if (!rst_p && u_dut.frag_pop === 1'b1) begin
++            rmem[rn] <= u_dut.frag_head;
++            rn <= rn + 1;
++        end
++    end
++
++    // ================= 分片长度检查 =================
++    integer frag_errs = 0;
++    integer pkt_seen  = 0;
++    always @(posedge clk125) begin
++        if (!rst_p && u_dut.tx_done === 1'b1) begin
++            pkt_seen = pkt_seen + 1;
++            // 除最后一片外都必须填满
++            if (u_dut.frag_bytes != FRAG_LEN && u_dut.tx_byte_cnt < slen)
++                frag_errs = frag_errs + 1;
++        end
++    end
++
++    // ================= 节流速率观测 =================
++    integer cyc_cnt = 0, take_cnt = 0;
++    real    rate_measured, rate_want;
++    // ★ 诊断：每 200k 拍采样一次 FSM 状态，看时间花在哪
++    integer dbg_div = 0;
++    always @(posedge clk125) begin
++        if (!rst_p) begin
++            cyc_cnt = cyc_cnt + 1;
++            if (src_valid && src_ready) take_cnt = take_cnt + 1;
++            dbg_div = dbg_div + 1;
++            if (dbg_div >= 200000) begin
++                dbg_div = 0;
++                $display("  TRACE t=%0d st=%0d frag_cnt=%0d frag_rd=%0d frag_bytes=%0d pace=%b room=%b req=%b rn=%0d",
++                         cyc_cnt, u_dut.st, u_dut.frag_cnt, u_dut.frag_rd,
++                         u_dut.frag_bytes, u_dut.pace_tick, u_dut.frag_room,
++                         u_dut.payload_req, rn);
++            end
++        end
++    end
++
++    // ================= 检查 =================
++    integer errs = 0, checks = 0;
++    integer i;
++    task chk;
++        input cond;
++        input [255:0] name;
++        begin
++            checks = checks + 1;
++            if (!cond) begin errs = errs + 1; $display("  FAIL: %0s", name); end
++            else $display("  ok  : %0s", name);
++        end
++    endtask
++
++    integer g, done_seen;
++    initial begin
++        $display("=== tb_a_sender: A 侧发送器验收（BYTE_DIV=%0d, FRAG_LEN=%0d）===",
++                 BYTE_DIV, FRAG_LEN);
++        if (!$value$plusargs("STREAM=%s", path)) begin
++            $display("TB-ERR: +STREAM 必需"); $finish;
++        end
++        sf = $fopen(path, "rb");
++        if (sf == 0) begin $display("TB-ERR: 打不开 %s", path); $finish; end
++        slen = $fread(smem, sf);
++        $fclose(sf);
++        rn = 0;
++        $display("TB: stream=%0dB  期望分片数=%0d（末片 %0dB）",
++                 slen, (slen + FRAG_LEN - 1) / FRAG_LEN, slen % FRAG_LEN);
++
++        rst_p = 1'b1;
++        repeat (5) @(posedge clk125);
++        rst_p = 1'b0;
++
++        // ---------- 跑完整条流 ----------
++        // 收全 slen 字节 + 最后一次 flush 的 tx_done
++        done_seen = 0;
++        for (g = 0; g < 40_000_000; g = g + 1) begin
++            @(posedge clk125);
++            if (rn >= slen && u_dut.st === 2'd0 && done_seen == 0) begin
++                repeat (10) @(posedge clk125);
++                if (rn >= slen && u_dut.st === 2'd0) done_seen = 1;
++            end
++            if (done_seen) g = 40_000_000;
++        end
++        $display("  DBG slen=%0d 重组字节=%0d 报文=%0d 短片=%0d clk125=%0d 收字节=%0d",
++                 slen, rn, u_dut.tx_pkt_cnt, u_dut.tx_short_cnt, cyc_cnt, take_cnt);
++
++        chk(done_seen === 1, "流跑完（FSM 回 IDLE 且全部字节已发出）");
++        chk(rn === slen, "重组字节数 == 源文件字节数");
++        chk(u_dut.tx_byte_cnt === slen, "tx_byte_cnt == slen");
++
++        // 逐字节比对
++        for (i = 0; i < slen; i = i + 1) begin
++            if (rmem[i] !== smem[i]) begin
++                if (byte_errs < 4)
++                    $display("  BYTEMISMATCH i=%0d got=%02h exp=%02h", i, rmem[i], smem[i]);
++                byte_errs = byte_errs + 1;
++            end
++        end
++        chk(byte_errs === 0, "payload 与源 .yxv2 逐字节一致");
++
++        chk(frag_errs === 0, "除末片外所有分片都填满 FRAG_LEN");
++
++        // 分片数
++        chk(pkt_seen === (slen + FRAG_LEN - 1) / FRAG_LEN, "分片数 == ceil(slen/FRAG_LEN)");
++
++        // 节流速率：收字节 / 总周期，应接近 1/BYTE_DIV
++        rate_measured = take_cnt * 1.0 / ((cyc_cnt > 0) ? cyc_cnt : 1);
++        rate_want     = 1.0 / BYTE_DIV;
++        $display("  RATE 实测 %.5f 字节/拍（= 1/%.2f），期望 %.5f 字节/拍（= 1/%0d）",
++                 rate_measured, 1.0/rate_measured, rate_want, BYTE_DIV);
++        // 只在"一直在收"的窗口内比较，允许 ±15%（分片间隙会拉低）
++        chk((rate_measured > rate_want * 0.85) && (rate_measured <= rate_want * 1.02),
++            "节流平均速率 ≤ 1/BYTE_DIV 且不低于 85%（不快于设计值）");
++
++        $display("");
++        $display("GATE checks=%0d errs=%0d(want 0:%s)", checks, errs, (errs==0)?"OK":"BAD");
++        $display("=== TB-SUMMARY: %s ===", (errs==0) ? "ALL PASS" : "FAIL");
++        $finish;
++    end
++
++endmodule
+\ No newline at end of file
+diff --git a/tb/tb_yxvp_bboard.v b/tb/tb_yxvp_bboard.v
+index 3a34934..a10d9b6 100644
+--- a/tb/tb_yxvp_bboard.v
++++ b/tb/tb_yxvp_bboard.v
+@@ -147,14 +147,105 @@ module tb_yxvp_bboard;
+     reg gmii_clk = 1'b0;
+     always #4 gmii_clk = ~gmii_clk;            // 125M PHY 时钟（与 100M 异步）
+ 
++`ifdef P6_E2E
++    // ★ P6 端到端：GMII 输入改由**板 A 发送器**驱动（TB 自己的包发生器停用）。
++    //   声明为 wire（发送器直接驱动），非 P6_E2E 下仍是 reg（TB 发生器驱动）。
++    wire [7:0] gmii_rxd;
++    wire       gmii_rxdv;
++`else
+     reg  [7:0] gmii_rxd  = 8'h00;
+     reg        gmii_rxdv = 1'b0;
++`endif
+ 
+     wire        eth_sv;
+     wire [7:0]  eth_sd;
+     wire [15:0] eth_ok_cnt, eth_drop_cnt, eth_room;
+     wire [31:0] eth_byte_cnt;
+ 
++`ifdef P6_E2E
++    // ================= P6：板 A 发送器接到板 B 的 GMII 输入 =================
++    // A 侧：文件字节流 → yx_a_vq_sender（开环节流 + 分片 UDP）→ GMII
++    // B 侧：GMII → u_ethrx（不变）
++    wire        a_src_valid;
++    wire [7:0]  a_src_data;
++    wire        a_src_ready;
++    wire        a_gmii_tx_clk;
++    wire [7:0]  a_gmii_txd;
++    wire        a_gmii_txen;
++    wire [31:0] a_tx_byte;
++    wire [15:0] a_tx_pkt;
++    wire [15:0] a_tx_short;
++
++    // ★ P6 发送速率常数（推导见 yx_a_vq_sender.v 文件头"取值规则"）：
++    //     源码率 = 59,597.8 B/帧 ÷ 1,687,455 clk100(=16.87ms) = 3.532 MB/s
++    //     目标   = 源码率 × 0.85（宁慢勿超）           = 3.00 MB/s
++    //     BYTE_DIV = 125e6 / 3.00e6 = 41.6 → 42（实发 2.976 MB/s）
++    //   ★ 这个值是**按本源流推出来的**，不是"B 能力常数"：B 帧锁存消费，
++    //     每帧周期只吃一帧的字节，A 一旦快于源码率，8KB FIFO 必然溢出。
++    //     实测 BYTE_DIV=20（6.25 MB/s）→ drop=85；见 docs/patches/p6_e2e_wip.patch。
++    localparam integer P6_BYTE_DIV = 42;
++
++    yx_a_vq_sender #(
++        .DST_MAC   (ETH_LOCAL_MAC),      // 必须与 B 的过滤条件一致
++        .DST_IP    (ETH_LOCAL_IP),
++        .DST_PORT  (ETH_LOCAL_PORT),
++        .SRC_MAC   (ETH_SRC_MAC),
++        .SRC_IP    (ETH_SRC_IP),
++        .SRC_PORT  (ETH_SRC_PORT),
++        .BYTE_DIV  (P6_BYTE_DIV)
++    ) u_asender (
++        .clk125       (gmii_clk),
++        .rst_p        (~rst_n),
++        .src_valid    (a_src_valid),
++        .src_data     (a_src_data),
++        .src_ready    (a_src_ready),
++        .gmii_tx_clk  (a_gmii_tx_clk),
++        .gmii_txd     (a_gmii_txd),
++        .gmii_txen    (a_gmii_txen),
++        .tx_byte_cnt  (a_tx_byte),
++        .tx_pkt_cnt   (a_tx_pkt),
++        .tx_short_cnt (a_tx_short)
++    );
++
++    // GMII 直连：发送器的 txd/txen 即 B 侧 PHY 输入（P6 规格：GMII 直连）
++    // ★ 曾试过插一级 negedge 寄存器模拟 PHY 的半拍转发延迟 —— 实测 MACPV
++    //   逐字节不变（本仿真的两域同源，半拍不改变采样结果），故不保留。
++    assign gmii_rxd  = a_gmii_txd;
++    assign gmii_rxdv = a_gmii_txen;
++
++    // ---- P6 线上探针：A 实际发出的前 48 个字节（含前导码/SFD）----
++    // 目的：把"A 发错"与"B 收错"分开。源文件首 4 字节应为 59 58 56 32，
++    // 在线上应出现在 preamble(7×55)+SFD(d5) 之后。
++    integer wire_b = 0;
++    always @(posedge gmii_clk) begin
++        if (a_gmii_txen && rst_n) begin
++            if (wire_b < 8)
++                $display("TRC %0d: txd=%02x gi=%02x txen=%b pv=%b pdat=%02x",
++                         wire_b, a_gmii_txd, gmii_rxd,
++                         a_gmii_txen, u_ethrx.pv, u_ethrx.pdat);
++            wire_b = wire_b + 1;
++        end
++    end
++
++    // ---- P6 收侧探针：厂商 RX 核自己吐出的 payload 字节 ----
++    // 与 WIRE 对齐比较：WIRE[50] 应 == MACPV[0]。若不等，问题在厂商核；
++    // 若相等而 FEED 不等，问题在异步 FIFO / 读侧。
++    integer mac_b = 0;
++    always @(posedge gmii_clk) begin
++        if (u_ethrx.pv) mac_b = mac_b + 1;
++    end
++    always @(posedge gmii_clk) begin
++        if (u_ethrx.pkt_start)
++            $display("MACPKT len=%0d start_ok=%b skip=%b room=%0d dfull=%b",
++                     u_ethrx.rx_len, u_ethrx.start_ok, u_ethrx.skip_pkt,
++                     u_ethrx.fifo_room, u_ethrx.desc_full);
++        if (u_ethrx.op_done)
++            $display("MACDONE wcnt=%0d rxlen=%0d err=%b bad=%b skip=%b",
++                     u_ethrx.wcnt, u_ethrx.rx_len, u_ethrx.pkt_err,
++                     u_ethrx.bad_pkt, u_ethrx.skip_pkt);
++    end
++`endif
++
+     // ★ 吞吐压力模式（+NOSTALL）：跳过 FIFO room 节流，按 GMII 线速不间断灌包。
+     //
+     //   为什么需要：默认测试里发送进程有一句
+@@ -222,6 +313,9 @@ module tb_yxvp_bboard;
+ 
+     reg [7:0] efb [0:2047];
+ 
++    // ★ P6_E2E：GMII 由板 A 发送器驱动，gmii_rxd/rxdv 是 wire，这三个任务
++    //   （只被已停用的 TB 发生器使用）不能编译 → 包进 ifndef。
++`ifndef P6_E2E
+     task e_gmii_byte(input [7:0] b);
+     begin
+         @(negedge gmii_clk);
+@@ -297,12 +391,16 @@ module tb_yxvp_bboard;
+             e_gmii_idle(12);
+         end
+     endtask
++`endif
+ 
+     reg     eth_tx_done = 1'b0;
+     integer e_npkt, e_pi, e_off, e_len;
+ 
+     // 发送进程：等顶层 INIT 完成（LOAD 不落控制器 POR 窗）后按 FIFO room 节流
+     //   （+NOSTALL 时**不节流**，按线速灌满，用于测饱和/丢包，见上方声明处注释）
++    // ★ P6_E2E：本发生器停用——GMII 由板 A 发送器（u_asender）驱动，
++    //   源喂入见下方 "P6_E2E 源喂入" 块。五个既有入口行为不变。
++`ifndef P6_E2E
+     initial begin : ethsrc
+         wait (init_done === 1'b1);
+         repeat (100) @(negedge gmii_clk);
+@@ -323,6 +421,7 @@ module tb_yxvp_bboard;
+         $display("ETHTX done pkts=%0d bytes=%0d nostall=%b win_clk=%0d delivered_in_win=%0d",
+                  e_npkt, slen, nostall, st_cyc_tx, st_byte_tx);
+     end
++`endif
+ `endif
+ 
+     // ================= 断言状态 =================
+@@ -1037,6 +1136,44 @@ module tb_yxvp_bboard;
+     reg [255:0] path;
+     integer hdr_cb;
+ 
++`ifdef P6_E2E
++    // ================= P6_E2E 源喂入：文件字节流 → 板 A 发送器 =================
++    // 与 tb_a_sender 的喂法一致：src_ready 放行时推进；全部字节发完后置
++    // eth_tx_done，让主流程（while (!eth_tx_done …)）正常往下走。
++    reg [7:0] a_src_data_r;
++    reg       a_src_valid_r;
++    integer   a_sp;
++    assign a_src_valid = a_src_valid_r;
++    assign a_src_data  = a_src_data_r;
++
++    always @(posedge gmii_clk) begin
++        if (!rst_n) begin
++            a_src_valid_r <= 1'b0;
++            a_src_data_r  <= 8'd0;
++            a_sp          <= 0;
++        end else if (init_done) begin
++            if (a_sp < slen) begin
++                a_src_valid_r <= 1'b1;
++                a_src_data_r  <= smem[a_sp];
++                if (a_src_valid_r && a_src_ready) a_sp <= a_sp + 1;
++            end else begin
++                a_src_valid_r <= 1'b0;
++            end
++        end
++    end
++
++    initial begin : e2esrc
++        wait (init_done === 1'b1);
++        while (!(a_sp >= slen && u_asender.st === 2'd0)) @(posedge gmii_clk);
++        repeat (200) @(posedge gmii_clk);      // 让末片 tx_done 落定
++        eth_tx_done = 1'b1;
++        st_cyc_tx   = st_cyc;
++        st_byte_tx  = eth_byte_cnt;
++        $display("E2ETX done slen=%0d eth_ok=%0d eth_drop=%0d eth_bytes=%0d",
++                 slen, eth_ok_cnt, eth_drop_cnt, eth_byte_cnt);
++    end
++`endif
++
+     // ================= 主控 =================
+     integer wd = 12000000;
+     integer cyc = 0;
+@@ -1172,6 +1309,13 @@ module tb_yxvp_bboard;
+                          u_top.REAL_IX.u_ixfetch.cp_dvld,
+                          u_top.REAL_IX.u_ixfetch.cp_quiet,
+                          cp_deliv, cp_disc, cp_stale, cp_loads);
++`endif
++`ifdef P6_E2E
++                $display("POLLETH t=%0d ok=%0d drop=%0d bytes=%0d room=%0d | a: st=%0d pkt=%0d byte=%0d short=%0d fcnt=%0d frd=%0d fby=%0d sp=%0d",
++                         cyc, eth_ok_cnt, eth_drop_cnt, eth_byte_cnt, eth_room,
++                         u_asender.st, a_tx_pkt, a_tx_byte, a_tx_short,
++                         u_asender.frag_cnt, u_asender.frag_rd, u_asender.frag_bytes,
++                         a_sp);
+ `endif
+                 $fflush;      // 实时落盘（长跑时 POLL/FRAME 可即时观测）
+             end
+@@ -1275,8 +1419,18 @@ module tb_yxvp_bboard;
+ `ifdef BBOARD_ETH
+         // P4 传输层判据：全部包 CRC 正确（ok=包数）、零丢包、转发的字节数
+         // 必须等于源文件长度（slen）。
++`ifdef P6_E2E
++        // ★ P6：分片长度由 A 发送器决定（FRAG_LEN=1472），而 e_npkt 是按 TB 自己
++        //   的 1024B 口径算的（P4 旧路径）→ 直接比会拿 203 去比 292，必然红。
++        //   这里把"期望包数"换成 A 实发的包数 a_tx_pkt。**判据语义一字未改**：
++        //   A 发的每一个包都被 B 收下（ok == 实发数）、零丢包、字节数等于源码流。
++        //   （换成 a_tx_pkt 比硬写 203 更强：A 少发或重发都会露出来。）
++        peth = (eth_ok_cnt == a_tx_pkt) && (eth_drop_cnt == 0) &&
++               (eth_byte_cnt == slen);
++`else
+         peth = (eth_ok_cnt == e_npkt) && (eth_drop_cnt == 0) &&
+                (eth_byte_cnt == slen);
++`endif
+ `else
+         peth = 1'b1;
+ `endif
+@@ -1302,10 +1456,18 @@ module tb_yxvp_bboard;
+                  disp_stall_w, pst?"OK":"BAD");
+         $display("GATE-WR1 eq_errs=%0d(want 0:%s)", wr1_eq_errs, (wr1_eq_errs == 0)?"OK":"BAD");
+ `ifdef BBOARD_ETH
++`ifdef P6_E2E
++        $display("GATE-ETH ok=%0d(want %0d=A.pkt:%s) drop=%0d(want 0:%s) bytes=%0d(want %0d:%s) a_bytes=%0d",
++                 eth_ok_cnt, a_tx_pkt, (eth_ok_cnt == a_tx_pkt)?"OK":"BAD",
++                 eth_drop_cnt, (eth_drop_cnt == 0)?"OK":"BAD",
++                 eth_byte_cnt, slen, (eth_byte_cnt == slen)?"OK":"BAD",
++                 a_tx_byte);
++`else
+         $display("GATE-ETH ok=%0d(want %0d:%s) drop=%0d(want 0:%s) bytes=%0d(want %0d:%s)",
+                  eth_ok_cnt, e_npkt, (eth_ok_cnt == e_npkt)?"OK":"BAD",
+                  eth_drop_cnt, (eth_drop_cnt == 0)?"OK":"BAD",
+                  eth_byte_cnt, slen, (eth_byte_cnt == slen)?"OK":"BAD");
++`endif
+         // ★ 压力分支必须留在本 `ifdef BBOARD_ETH` 内：它引用的 nostall / eth_* /
+         //   e_npkt / slen 都只在 ETH 构建里声明。初版把 `if (nostall)` 写到了
+         //   `endif` 之后，导致 bboard_sys / bboard_key 编译报
+diff --git a/tools/sim/run_sim.ps1 b/tools/sim/run_sim.ps1
+index e27c571..df5dbda 100644
+--- a/tools/sim/run_sim.ps1
++++ b/tools/sim/run_sim.ps1
+@@ -49,7 +49,7 @@
+ 
+ param(
+     [Parameter(Mandatory = $true)]
+-    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'eth_stress', 'mdio', 'phy_init')]
++    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'eth_stress', 'p6_e2e', 'mdio', 'phy_init')]
+     [string]$Entry
+ )
+ 
+@@ -214,6 +214,29 @@ $Entries['eth_stress'] = @{
+     Sources  = $Entries['bboard_sys_eth'].Sources
+ }
+ 
++# ---- 入口 5c: p6_e2e（P6 端到端：板 A 发送器 → GMII 直连 → 板 B 全链路）----
++# 判据与 bboard_sys_eth 完全一致（golden/igold/axerr/…）+ 传输层零丢包。
++# 与 bboard_sys_eth 的唯一差别：GMII 源由 **yx_a_vq_sender**（开环节流 + 分片 UDP）
++# 驱动，而不是 TB 自己的包发生器 —— 即验证"SD 上的流经以太网喂给 B"这条链路。
++#
++# ★ 速率：BYTE_DIV=42（推导见 yx_a_vq_sender.v 文件头"取值规则"）：
++#   源码率 = 59,597.8 B/帧 ÷ 1,687,455 clk100 = 3.532 MB/s，
++#   取 0.85× = 3.00 MB/s → 125e6/3.00e6 = 41.6 → 42 clk125/字节（实发 2.976 MB/s）。
++#   【修正记录】初版照搬 P5 §5F 的 6.81 MB/s 取 BYTE_DIV=20（6.25 MB/s），
++#   p6_e2e 实测 drop=85。6.81 是 VQ-1024 **那一条流自己的源码率**，不是可外推的
++#   "B 能力常数"；B 帧锁存消费，A 快于源码率则 8KB FIFO 必然溢出。
++#   298 KB 需 297989×42 = 12.5M clk125 = 10.0M clk100 → WD 取 20M 留足收尾余量。
++$Entries['p6_e2e'] = @{
++    Defines  = @('BBOARD_SYS', 'BBOARD_ETH', 'YINGXU_SIM', 'P6_E2E')
++    Stream   = 'out\vp_720_5f.yxv2'
++    Golden   = $true
++    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=20000000')
++    Sources  = $Entries['bboard_sys_eth'].Sources + @(
++        "$VP\yx_a_vq_sender.v",
++        'src\eth_udp_tx_gmii.v'
++    )
++}
++
+ # ---- 入口 6: mdio（Clause 22 MDIO 主机独立验收，秒级）----
+ # 含 PHY 行为模型：验证帧格式逐位、读写往返、TA 释放总线。
+ $Entries['mdio'] = @{

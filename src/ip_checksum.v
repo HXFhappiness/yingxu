@@ -47,52 +47,42 @@ module ip_checksum(
   //   TD 综合成 7 级线性 ADDER 链（实测 Data Path 8.229ns > 8ns 预算，
   //   setup −563ps / 7 个违例端点，见 docs/YX_BBOARD_P5_PHY1_20261124.md §2）。
   //
-  //   改为分级求和。依据（时序账，来自 eth_udp_rx_gmii.v 的解析时序）：
-  //     · IP 头字段在 cnt_ip_header = 0..19 逐字节锁存，到第 19 拍全部稳定；
-  //     · ip_checksum_cal_en 是"第 19 拍"之后的那一拍（单拍脉冲）；
-  //     · 下游 ip_header_check_ok 在 cnt_udp_header == 2 采样，即 cal_en 后还有
-  //       2 拍余量。
-  //   因此：早稳定的字段可以提前算好并寄存，cal_en 拍只做最后 3 项相加。
-  //   **suma 仍在 cal_en 拍后一拍有效（与原实现同拍），功能完全等价。**
+  // ★ P6 修正（2026-11-26）：P5 的分级版本把级数压到 2，但**采样点错了**：
+  //   它把操作数分成 p1a/p1b/p2a/p2b 各打 1~2 拍寄存器，`suma` 在 cal_en 拍
+  //   只做 p1_r + p2_r + dst_ip[15:0]。而 p1_r/p2_r 里的操作数是 **2 拍前**的值，
+  //   dst_ip[15:0] 却是**当拍**的值 —— 混了两个时间点。
   //
-  //   分组（o1..o9 为原式的 9 个操作数）：
-  //     p1a = o1+o2+o3  （{ver,hdr_len,tos} + total_len + id）      cnt 5 前稳定
-  //     p1b = o4+o5     （{rsv,df,mf,frag} + {ttl,protocol}）        cnt 9 前稳定
-  //     p1_r = p1a_r + p1b_r                                        → 1 级
-  //     p2a = o6+o7     （src_ip 高低半）                            cnt 15 前稳定
-  //     p2b = o8        （dst_ip 高半）                              cnt 16 前稳定
-  //     p2_r = p2a_r + p2b_r                                        → 1 级
-  //     suma = p1_r + p2_r + o9 （o9 = dst_ip 低半，cnt 19 才稳定）  → 2 级
-  //   最大逻辑级数从 7 降到 2。
+  //   实测症状（P6 端到端）：板 A 发出的第 1 个 UDP 包 IP 头校验和为 0xF91A，
+  //   而该头（total_len=0x05DC）的正确值是 0xF35A。反解 0xF91A 对应的
+  //   total_len 恰好是 0x001C = 28，即 data_length 被当成 0。
+  //   原因：yx_a_vq_sender 在 T+1 才把 frag_bytes 从 0 置成 1472，tx_en_pulse
+  //   在 T+2 到达 → p1_r 里锁的是 total_len=28。从第 2 个包起 data_length 早已
+  //   稳定，校验和正确。于是**只有首个包被 eth_udp_rx_gmii 按坏 IP 头丢弃**，
+  //   B 侧字节流从第 2 个分片开始（少了整个 1472B 首片 = YXV2 头 + 码本开头），
+  //   hdr_parse 从码本中间解析 → hdr_err、一帧不解。
+  //
+  //   正确语义：**全部 9 个操作数都必须在 cal_en 当拍采样**（与原始实现一致）。
+  //   修法：去掉"操作数提前打拍"的分组，改为**平衡加法树** —— 深度 4 级，
+  //   所有操作数在 cal_en 当拍组合取用。既恢复单拍语义，又把级数压到 4
+  //   （原线性链 7 级 ≈ 8.23ns，按每级约 1.18ns 估算，4 级约 4.7ns）。
+  //   latency 不变：suma 仍是 cal_en 后一拍有效，RX 侧 cnt_udp_header==2 的
+  //   采样余量不受影响。
   // ==========================================================================
-    wire [17:0] p1a = {IP_ver,IP_hdr_len,IP_tos} + IP_total_len + IP_id;
-    wire [16:0] p1b = {IP_rsv,IP_df,IP_mf,IP_frag_offset} + {IP_ttl,IP_protocol};
-    wire [16:0] p2a = src_ip[31:16] + src_ip[15:0];
-    wire [15:0] p2b = dst_ip[31:16];
+    wire [17:0] p1a = {IP_ver,IP_hdr_len,IP_tos} + IP_total_len + IP_id;          // 深度 2
+    wire [16:0] p1b = {IP_rsv,IP_df,IP_mf,IP_frag_offset} + {IP_ttl,IP_protocol}; // 深度 1
+    wire [16:0] p2a = src_ip[31:16] + src_ip[15:0];                               // 深度 1
+    wire [15:0] p2b = dst_ip[31:16];                                              // 深度 0
+    wire [15:0] p2c = dst_ip[15:0];                                               // 深度 0
 
-    reg  [17:0] p1a_r, p1b_r;
-    reg  [18:0] p1_r;
-    reg  [16:0] p2a_r, p2b_r;
-    reg  [17:0] p2_r;
-
-  always@(posedge clk or posedge reset_p)
-  if(reset_p) begin
-    p1a_r <= 18'd0; p1b_r <= 18'd0; p1_r <= 19'd0;
-    p2a_r <= 17'd0; p2b_r <= 17'd0; p2_r <= 18'd0;
-  end else begin
-    p1a_r <= p1a;
-    p1b_r <= p1b;
-    p1_r  <= p1a_r + p1b_r;
-    p2a_r <= p2a;
-    p2b_r <= p2b;
-    p2_r  <= p2a_r + p2b_r;
-  end
+    wire [18:0] t1  = {1'b0,p1a} + {2'b00,p1b};                                   // 深度 3
+    wire [17:0] t2  = {1'b0,p2a} + {2'b00,p2b} + {2'b00,p2c};                     // 深度 3
 
   always@(posedge clk or posedge reset_p)
   if(reset_p)
     suma <= 32'd0;
   else if(cal_en)
-    suma <= p1_r + p2_r + dst_ip[15:0];
+    // ★ 全部操作数在 cal_en 当拍取用（见上 P6 修正）
+    suma <= {12'd0, t1} + {12'd0, t2};                                            // 深度 4
   else
     suma <= suma;
 

@@ -49,7 +49,7 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'eth_stress', 'mdio', 'phy_init')]
+    [ValidateSet('sdctrl_sanity', 'bboard_sys', 'bboard_key', 'eth_rx', 'bboard_sys_eth', 'eth_stress', 'p6_e2e', 'mdio', 'phy_init')]
     [string]$Entry
 )
 
@@ -212,6 +212,29 @@ $Entries['eth_stress'] = @{
     Golden   = $false
     PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=3000000', '+NOSTALL')
     Sources  = $Entries['bboard_sys_eth'].Sources
+}
+
+# ---- 入口 5c: p6_e2e（P6 端到端：板 A 发送器 → GMII 直连 → 板 B 全链路）----
+# 判据与 bboard_sys_eth 完全一致（golden/igold/axerr/…）+ 传输层零丢包。
+# 与 bboard_sys_eth 的唯一差别：GMII 源由 **yx_a_vq_sender**（开环节流 + 分片 UDP）
+# 驱动，而不是 TB 自己的包发生器 —— 即验证"SD 上的流经以太网喂给 B"这条链路。
+#
+# ★ 速率：BYTE_DIV=42（推导见 yx_a_vq_sender.v 文件头"取值规则"）：
+#   源码率 = 59,597.8 B/帧 ÷ 1,687,455 clk100 = 3.532 MB/s，
+#   取 0.85× = 3.00 MB/s → 125e6/3.00e6 = 41.6 → 42 clk125/字节（实发 2.976 MB/s）。
+#   【修正记录】初版照搬 P5 §5F 的 6.81 MB/s 取 BYTE_DIV=20（6.25 MB/s），
+#   p6_e2e 实测 drop=85。6.81 是 VQ-1024 **那一条流自己的源码率**，不是可外推的
+#   "B 能力常数"；B 帧锁存消费，A 快于源码率则 8KB FIFO 必然溢出。
+#   298 KB 需 297989×42 = 12.5M clk125 = 10.0M clk100 → WD 取 20M 留足收尾余量。
+$Entries['p6_e2e'] = @{
+    Defines  = @('BBOARD_SYS', 'BBOARD_ETH', 'YINGXU_SIM', 'P6_E2E')
+    Stream   = 'out\vp_720_5f.yxv2'
+    Golden   = $true
+    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=20000000')
+    Sources  = $Entries['bboard_sys_eth'].Sources + @(
+        "$VP\yx_a_vq_sender.v",
+        'src\eth_udp_tx_gmii.v'
+    )
 }
 
 # ---- 入口 6: mdio（Clause 22 MDIO 主机独立验收，秒级）----
