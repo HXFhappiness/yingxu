@@ -200,7 +200,19 @@ CNT: frames=5 bands=900 scan_errs=0 ax_errs=0 ax_beats=13242976 ax_lines=10346
 | 短包位置 | 只在窗口末尾（首个 `idx=22 len=404`，`ps=3` = 序幕末片），**不是首包** |
 | KEY3 起步死窗（上一轮丢包点） | 缺口峰值 **3,819 B** ≪ 丢包阈值 11,000 B（**余量 2.9×**），`drop=0` |
 | `hdr_parse` | `hdrerr=0` |
-| 既有入口回归 | `eth_rx` PASS、`eth_stress` PASS、`mdio` PASS、`phy_init` PASS |
+| 既有入口回归 | `eth_rx` PASS、`eth_stress` PASS、`mdio` PASS、`phy_init` PASS、`bboard_sys_eth` PASS、`bboard_key` PASS |
+
+### 6.4 官方入口复跑（`run_sim.ps1 -Entry p6_e2e`）
+```
+VERDICT: p6_e2e PASS exit=0 summary="=== TB-SUMMARY: ALL PASS ==="
+GATE dec_frames=5 OK frames_done=5 OK bands=900 OK scan=0 OK xz=0 OK
+     hdrerr=0 OK axerr=0 OK axlines=6891 OK mutex=0 OK cpdeliv=166212 OK
+GATE-WR1 eq_errs=0 OK
+GATE-ETH ok=206(=A.pkt) OK drop=0 OK bytes=297989(=slen) OK
+stall2=36,923/27,924,959 (0%)
+```
+与手跑的 p6_final 逐拍一致（t=16.0M 时 `win=12,700/115,200`、`byte=177,008` 完全相同），
+确定性复现。修 `a_src_done` 后仿真在 27.9M 正常收尾（此前空转到 36M WD）。
 
 ---
 
