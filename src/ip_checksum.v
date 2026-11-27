@@ -62,29 +62,54 @@ module ip_checksum(
   //   hdr_parse 从码本中间解析 → hdr_err、一帧不解。
   //
   //   正确语义：**全部 9 个操作数都必须在 cal_en 当拍采样**（与原始实现一致）。
-  //   修法：去掉"操作数提前打拍"的分组，改为**平衡加法树** —— 深度 4 级，
-  //   所有操作数在 cal_en 当拍组合取用。既恢复单拍语义，又把级数压到 4
-  //   （原线性链 7 级 ≈ 8.23ns，按每级约 1.18ns 估算，4 级约 4.7ns）。
-  //   latency 不变：suma 仍是 cal_en 后一拍有效，RX 侧 cnt_udp_header==2 的
-  //   采样余量不受影响。
+  //
+  // ★ P6 时序修正（2026-11-27）：上面的平衡树在 RTL 里名义深度 4，但 TD 把
+  //   `s1..s4 → t1,t2 → suma` **合成了一条进位链**（route 后实测 6 级 ADDER
+  //   串联：add1_313 → add1_314 → add1_304 → add1_305 → add0_552 → add0_541
+  //   → add0_542，arrival 11.899ns vs 8ns 周期，SWNS −0.457ns / 8 个违例端点）。
+  //   ⇒ 必须**真正打拍切断**进位链，但又要保持"同一批操作数"。
+  //
+  //   可行性依据（RX 侧实测时序余量，见 eth_udp_rx_gmii.v 状态机）：
+  //     · 操作数在 cnt_ip_header = 0..19 逐字节锁存，到 19 全部稳定；
+  //     · curr_state 在 cnt_ip_header==19 的**下一拍**转 RX_UDP_HEADER，
+  //       cal_en 也在那一拍置位；
+  //     · 消费点 ip_header_check_ok 在 cnt_udp_header==2 采样，
+  //       即 cal_en 之后**第 3 拍**（cnt_udp_header 从 0 数到 2）。
+  //   ⇒ 原设计 suma 在 cal_en+1 有效、check_ok 在 cal_en+2 锁存、消费 cal_en+3，
+  //     **只剩 1 拍余量**。任何额外延时都会破坏它（实测：加 1 拍 → eth_rx 卡死）。
+  //
+  //   实现（**latency 零增加**，且不混时间点）：
+  //     · 9 个操作数里，**只有 dst_ip[15:0] 在 cal_en 前一拍还没稳定**
+  //       （rx_dst_ip[7:0] 在 cnt_ip_header==19 那拍写入，下一拍才可见）；
+  //       其余 8 项在 cnt_ip_header==18 时就全部稳定了。
+  //     · 于是：**每拍**把前 8 项的部分和算好锁进 acc8_r（深度 3，独立进位链）；
+  //       cal_en 当拍只做「acc8_r + dst_ip[15:0]」一次加法（深度 1）。
+  //     · acc8_r 在 cal_en 当拍装的是"上一拍算的 8 项和"，而这 8 项在上一拍
+  //       与当拍**完全相同**（它们早在 cnt==18 就稳定）→ 不混时间点。
+  //       ★ 唯一的 dst_ip[15:0] 用 cal_en **当拍**值 —— 它才是刚稳定的那一项。
+  //     · suma 仍在 cal_en+1 有效（与原设计一致），消费点余量不变。
   // ==========================================================================
-    wire [17:0] p1a = {IP_ver,IP_hdr_len,IP_tos} + IP_total_len + IP_id;          // 深度 2
-    wire [16:0] p1b = {IP_rsv,IP_df,IP_mf,IP_frag_offset} + {IP_ttl,IP_protocol}; // 深度 1
-    wire [16:0] p2a = src_ip[31:16] + src_ip[15:0];                               // 深度 1
-    wire [15:0] p2b = dst_ip[31:16];                                              // 深度 0
-    wire [15:0] p2c = dst_ip[15:0];                                               // 深度 0
+    // 前 8 项（不含 dst_ip[15:0]），深度 3 的平衡树
+    wire [17:0] q1 = {IP_ver,IP_hdr_len,IP_tos} + IP_total_len;
+    wire [16:0] q2 = IP_id + {IP_rsv,IP_df,IP_mf,IP_frag_offset};
+    wire [16:0] q3 = {IP_ttl,IP_protocol} + src_ip[31:16];
+    wire [16:0] q4 = src_ip[15:0] + dst_ip[31:16];
+    wire [18:0] qa = {1'b0,q1} + {2'b00,q2};      // 深度 3
+    wire [18:0] qb = {2'b00,q3} + {2'b00,q4};     // 深度 3
+    wire [19:0] acc8 = {1'b0,qa} + {1'b0,qb};     // 深度 4（独立进位链）
 
-    wire [18:0] t1  = {1'b0,p1a} + {2'b00,p1b};                                   // 深度 3
-    wire [17:0] t2  = {1'b0,p2a} + {2'b00,p2b} + {2'b00,p2c};                     // 深度 3
+    reg  [19:0] acc8_r;                            // 每拍锁存前 8 项和
 
   always@(posedge clk or posedge reset_p)
-  if(reset_p)
-    suma <= 32'd0;
-  else if(cal_en)
-    // ★ 全部操作数在 cal_en 当拍取用（见上 P6 修正）
-    suma <= {12'd0, t1} + {12'd0, t2};                                            // 深度 4
-  else
-    suma <= suma;
+  if(reset_p) begin
+    acc8_r <= 20'd0;
+    suma   <= 32'd0;
+  end else begin
+    acc8_r <= acc8;                                // 无条件打拍：切断进位链
+    if(cal_en)
+      // 只加一次（深度 1）。dst_ip[15:0] 取 cal_en 当拍值 —— 它是唯一刚稳定的项。
+      suma <= {12'd0, acc8_r} + {16'd0, dst_ip[15:0]};
+  end
 
     assign                              sumb                      = suma[31:16]+suma[15:0];
     assign                              sumc                      = sumb[16]+sumb[15:0];
