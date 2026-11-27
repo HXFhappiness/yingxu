@@ -175,24 +175,27 @@ module tb_yxvp_bboard;
     wire [31:0] a_tx_byte;
     wire [15:0] a_tx_pkt;
     wire [15:0] a_tx_short;
+    wire [15:0] a_tx_frame;
 
-    // ★ P6 发送速率常数（推导见 yx_a_vq_sender.v 文件头"取值规则"）：
-    //     源码率 = 59,597.8 B/帧 ÷ 1,687,455 clk100(=16.87ms) = 3.532 MB/s
-    //     目标   = 源码率 × 0.85（宁慢勿超）           = 3.00 MB/s
-    //     BYTE_DIV = 125e6 / 3.00e6 = 41.6 → 42（实发 2.976 MB/s）
-    //   ★ 这个值是**按本源流推出来的**，不是"B 能力常数"：B 帧锁存消费，
-    //     每帧周期只吃一帧的字节，A 一旦快于源码率，8KB FIFO 必然溢出。
-    //     实测 BYTE_DIV=20（6.25 MB/s）→ drop=85；见 docs/patches/p6_e2e_wip.patch。
-    localparam integer P6_BYTE_DIV = 42;
+    // ★ P6 帧锁存节流常数（推导见 yx_a_vq_sender.v 文件头，按帧类型分周期）：
+    //   KEY 帧起步有 ~2.5ms 消费死窗（ixwr 写带宽被渲染占用 → skid 满 →
+    //   stream_ready=0），死窗内 A 的累积必须 ≤ FIFO 有效余量 ~6.1KB
+    //   ⇒ KEY 速率 ≤1.22 MB/s，取 1.2 → T_KEY_CYC = 115,200×125e6/1.2e6 = 12M。
+    //   DELTA 帧边界实测无死窗（B 逐拍跟踪 A，缺口 ≤1,455），保持 22ms。
+    localparam integer P6_T_KEY_CYC   = 12000000;   // 96 ms @125MHz
+    localparam integer P6_T_DELTA_CYC =  2750000;   // 22 ms
+    localparam integer P6_PRO_CYC     =  1000000;   // 8 ms
 
     yx_a_vq_sender #(
-        .DST_MAC   (ETH_LOCAL_MAC),      // 必须与 B 的过滤条件一致
-        .DST_IP    (ETH_LOCAL_IP),
-        .DST_PORT  (ETH_LOCAL_PORT),
-        .SRC_MAC   (ETH_SRC_MAC),
-        .SRC_IP    (ETH_SRC_IP),
-        .SRC_PORT  (ETH_SRC_PORT),
-        .BYTE_DIV  (P6_BYTE_DIV)
+        .DST_MAC      (ETH_LOCAL_MAC),      // 必须与 B 的过滤条件一致
+        .DST_IP       (ETH_LOCAL_IP),
+        .DST_PORT     (ETH_LOCAL_PORT),
+        .SRC_MAC      (ETH_SRC_MAC),
+        .SRC_IP       (ETH_SRC_IP),
+        .SRC_PORT     (ETH_SRC_PORT),
+        .T_KEY_CYC    (P6_T_KEY_CYC),
+        .T_DELTA_CYC  (P6_T_DELTA_CYC),
+        .PRO_CYC      (P6_PRO_CYC)
     ) u_asender (
         .clk125       (gmii_clk),
         .rst_p        (~rst_n),
@@ -204,7 +207,8 @@ module tb_yxvp_bboard;
         .gmii_txen    (a_gmii_txen),
         .tx_byte_cnt  (a_tx_byte),
         .tx_pkt_cnt   (a_tx_pkt),
-        .tx_short_cnt (a_tx_short)
+        .tx_short_cnt (a_tx_short),
+        .tx_frame_cnt (a_tx_frame)
     );
 
     // GMII 直连：发送器的 txd/txen 即 B 侧 PHY 输入（P6 规格：GMII 直连）
@@ -1138,40 +1142,123 @@ module tb_yxvp_bboard;
 
 `ifdef P6_E2E
     // ================= P6_E2E 源喂入：文件字节流 → 板 A 发送器 =================
-    // 与 tb_a_sender 的喂法一致：src_ready 放行时推进；全部字节发完后置
-    // eth_tx_done，让主流程（while (!eth_tx_done …)）正常往下走。
+    // 与 tb_a_sender 的喂法一致：握手拍预取下一字节。
+    // ★ 不能用 `a_src_data_r <= smem[a_sp]` + `a_sp <= a_sp+1` 同拍 NBA：
+    //   握手拍 DUT 采到的 src_data 是**上一个**字节 → 序幕整体错位一格 →
+    //   cb 读成 0 → win_total=0 → 卡死在 PS_PRO（实测：ps=1 win=0/0 byte=20）。
+    //   tb_a_sender 已踩过同一坑，修法相同（预取 smem[a_sp+1]）。
     reg [7:0] a_src_data_r;
-    reg       a_src_valid_r;
+    reg       a_sp_valid;
+    reg       a_src_done;        // ★ 流已全部交出（锁存，防止被重载）
     integer   a_sp;
-    assign a_src_valid = a_src_valid_r;
+    assign a_src_valid = a_sp_valid;
     assign a_src_data  = a_src_data_r;
 
+    // ★ a_src_done 必须是锁存位：初版只靠 `a_sp >= slen` 判断结束，而末字节交出后
+    //   a_sp_valid 归 0，`else if (!a_sp_valid)` 分支会把 a_sp 复位成 0 并重新置
+    //   valid（重放整个流）→ E2ETX 的 `a_sp >= slen` 永不成立 → 主循环空转到 WD。
+    //   实测：数据早已圆满（5 帧 / drop=0 / 297,989B），但白烧 7M 拍。
     always @(posedge gmii_clk) begin
-        if (!rst_n) begin
-            a_src_valid_r <= 1'b0;
-            a_src_data_r  <= 8'd0;
-            a_sp          <= 0;
-        end else if (init_done) begin
-            if (a_sp < slen) begin
-                a_src_valid_r <= 1'b1;
-                a_src_data_r  <= smem[a_sp];
-                if (a_src_valid_r && a_src_ready) a_sp <= a_sp + 1;
+        if (!rst_n || !init_done) begin
+            a_sp         <= 0;
+            a_sp_valid   <= 1'b0;
+            a_src_done   <= 1'b0;
+            a_src_data_r <= 8'd0;
+        end else if (a_src_done) begin
+            a_sp_valid <= 1'b0;
+        end else if (!a_sp_valid) begin
+            a_sp         <= 0;
+            a_sp_valid   <= (slen > 0);
+            a_src_data_r <= smem[0];
+        end else if (a_src_ready) begin
+            if (a_sp + 1 < slen) begin
+                a_sp         <= a_sp + 1;
+                a_src_data_r <= smem[a_sp + 1];
             end else begin
-                a_src_valid_r <= 1'b0;
+                a_sp_valid <= 1'b0;
+                a_src_done <= 1'b1;
             end
         end
     end
 
     initial begin : e2esrc
         wait (init_done === 1'b1);
-        while (!(a_sp >= slen && u_asender.st === 2'd0)) @(posedge gmii_clk);
-        repeat (200) @(posedge gmii_clk);      // 让末片 tx_done 落定
+        // st===0 且 ps===4（PS_DONE）：流已全部交出且解析器收尾
+        while (!(a_src_done && u_asender.st === 3'd0 && u_asender.ps === 3'd4))
+            @(posedge gmii_clk);
+        repeat (400) @(posedge gmii_clk);      // 让末片 tx_done/包间隔落定
         eth_tx_done = 1'b1;
         st_cyc_tx   = st_cyc;
         st_byte_tx  = eth_byte_cnt;
-        $display("E2ETX done slen=%0d eth_ok=%0d eth_drop=%0d eth_bytes=%0d",
-                 slen, eth_ok_cnt, eth_drop_cnt, eth_byte_cnt);
+        $display("E2ETX done slen=%0d eth_ok=%0d eth_drop=%0d eth_bytes=%0d a_pkt=%0d a_frm=%0d t=%0d",
+                 slen, eth_ok_cnt, eth_drop_cnt, eth_byte_cnt, a_tx_pkt, a_tx_frame, cyc);
     end
+
+    // ---- P6 字节级对拍：B 侧交付流 vs 源文件（前 32,788 字节 = 头+码本）----
+    // 判据（用户指定）：这 32,788 字节必须逐字节一致，是"A 读错源 / B 解析错"
+    // 的最终判据（FEED 只看前 12 字节，这里看全量）。
+    localparam integer P6_PRO_BYTES = 32788;
+    integer p6_bcnt = 0, p6_berr = 0;
+    always @(posedge clk100) begin
+        if (!rst_n) begin
+            p6_bcnt <= 0;
+            p6_berr <= 0;
+        end else if (eth_sv && s_ready) begin
+            if (p6_bcnt < P6_PRO_BYTES) begin
+                if (eth_sd !== smem[p6_bcnt]) begin
+                    if (p6_berr < 6)
+                        $display("BERR i=%0d got=%02x exp=%02x", p6_bcnt, eth_sd, smem[p6_bcnt]);
+                    p6_berr <= p6_berr + 1;
+                end
+                p6_bcnt <= p6_bcnt + 1;
+                if (p6_bcnt == P6_PRO_BYTES - 1)
+                    $display("BYTECMP prologue %0dB mismatch=%0d %s",
+                             P6_PRO_BYTES, p6_berr, (p6_berr == 0) ? "OK" : "BAD");
+            end
+        end
+    end
+
+    // ---- P6 探针①：A 送进发送器的前 40 字节（与 Python 读文件逐字节比）----
+    reg [7:0] p6_a40 [0:39];
+    integer p6_acnt = 0;
+    always @(posedge gmii_clk) begin
+        if (!rst_n) p6_acnt <= 0;
+        else if (a_src_valid && a_src_ready) begin
+            if (p6_acnt < 40) begin
+                p6_a40[p6_acnt] <= a_src_data;
+                p6_acnt <= p6_acnt + 1;
+                if (p6_acnt == 39) begin
+                    $display("A40 %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x",
+                        p6_a40[0],p6_a40[1],p6_a40[2],p6_a40[3],p6_a40[4],p6_a40[5],p6_a40[6],p6_a40[7],
+                        p6_a40[8],p6_a40[9],p6_a40[10],p6_a40[11],p6_a40[12],p6_a40[13],p6_a40[14],p6_a40[15]);
+                    $display("A40 %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x",
+                        p6_a40[16],p6_a40[17],p6_a40[18],p6_a40[19],p6_a40[20],p6_a40[21],p6_a40[22],p6_a40[23],
+                        p6_a40[24],p6_a40[25],p6_a40[26],p6_a40[27],p6_a40[28],p6_a40[29],p6_a40[30],p6_a40[31],
+                        p6_a40[32],p6_a40[33],p6_a40[34],p6_a40[35],p6_a40[36],p6_a40[37],p6_a40[38],a_src_data);
+                end
+            end
+        end
+    end
+
+    // ---- P6 探针②：短包出现在第几个包、多长（判"首包是否未填满"）----
+    integer p6_pkt_i = 0, p6_short_i = 0;
+    always @(posedge gmii_clk) begin
+        if (!rst_n) begin
+            p6_pkt_i <= 0; p6_short_i <= 0;
+        end else if (u_asender.tx_done) begin
+            p6_pkt_i <= p6_pkt_i + 1;
+            if (u_asender.frag_bytes != 16'd1472) begin
+                p6_short_i <= p6_short_i + 1;
+                $display("SHORTPKT idx=%0d len=%0d ps=%0d win=%0d/%0d",
+                         p6_pkt_i, u_asender.frag_bytes, u_asender.ps,
+                         u_asender.win_sent, u_asender.win_total);
+            end
+        end
+    end
+
+    // ---- P6 探针③：clk125 累计计数（POLLETH 打印，外部算每字节间隔）----
+    integer p6_clk125 = 0;
+    always @(posedge gmii_clk) if (!rst_n) p6_clk125 <= 0; else p6_clk125 <= p6_clk125 + 1;
 `endif
 
     // ================= 主控 =================
@@ -1311,11 +1398,11 @@ module tb_yxvp_bboard;
                          cp_deliv, cp_disc, cp_stale, cp_loads);
 `endif
 `ifdef P6_E2E
-                $display("POLLETH t=%0d ok=%0d drop=%0d bytes=%0d room=%0d | a: st=%0d pkt=%0d byte=%0d short=%0d fcnt=%0d frd=%0d fby=%0d sp=%0d",
+                $display("POLLETH t=%0d ok=%0d drop=%0d bytes=%0d room=%0d | a: ps=%0d st=%0d pkt=%0d byte=%0d short=%0d frm=%0d win=%0d/%0d sp=%0d clk125=%0d",
                          cyc, eth_ok_cnt, eth_drop_cnt, eth_byte_cnt, eth_room,
-                         u_asender.st, a_tx_pkt, a_tx_byte, a_tx_short,
-                         u_asender.frag_cnt, u_asender.frag_rd, u_asender.frag_bytes,
-                         a_sp);
+                         u_asender.ps, u_asender.st, a_tx_pkt, a_tx_byte,
+                         a_tx_short, a_tx_frame,
+                         u_asender.win_sent, u_asender.win_total, a_sp, p6_clk125);
 `endif
                 $fflush;      // 实时落盘（长跑时 POLL/FRAME 可即时观测）
             end

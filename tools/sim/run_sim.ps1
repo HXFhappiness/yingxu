@@ -219,18 +219,25 @@ $Entries['eth_stress'] = @{
 # 与 bboard_sys_eth 的唯一差别：GMII 源由 **yx_a_vq_sender**（开环节流 + 分片 UDP）
 # 驱动，而不是 TB 自己的包发生器 —— 即验证"SD 上的流经以太网喂给 B"这条链路。
 #
-# ★ 速率：BYTE_DIV=42（推导见 yx_a_vq_sender.v 文件头"取值规则"）：
-#   源码率 = 59,597.8 B/帧 ÷ 1,687,455 clk100 = 3.532 MB/s，
-#   取 0.85× = 3.00 MB/s → 125e6/3.00e6 = 41.6 → 42 clk125/字节（实发 2.976 MB/s）。
-#   【修正记录】初版照搬 P5 §5F 的 6.81 MB/s 取 BYTE_DIV=20（6.25 MB/s），
-#   p6_e2e 实测 drop=85。6.81 是 VQ-1024 **那一条流自己的源码率**，不是可外推的
-#   "B 能力常数"；B 帧锁存消费，A 快于源码率则 8KB FIFO 必然溢出。
-#   298 KB 需 297989×42 = 12.5M clk125 = 10.0M clk100 → WD 取 20M 留足收尾余量。
+# ★ 速率：帧锁存、按帧类型分周期（推导见 yx_a_vq_sender.v 文件头）：
+#   KEY   T_KEY_CYC=12M clk125（96ms，1.2 MB/s）—— KEY 起步有 ~2.5ms 消费死窗
+#         （ixwr 写带宽被渲染占用），死窗内 A 的累积 ≤ FIFO 有效余量 ~6.1KB
+#         ⇒ KEY 速率 ≤1.22 MB/s（含 2 倍死窗安全系数）。
+#   DELTA T_DELTA_CYC=2.75M clk125（22ms）—— DELTA 边界实测无死窗。
+#   PRO   PRO_CYC=1M clk125（8ms）。
+#   【修正记录】①初版照搬 P5 §5F 的 6.81 MB/s 取 BYTE_DIV=20 → drop=85（该值是
+#   VQ-1024 自己的源码率，不是 B 能力常数）；②统一 22ms 帧锁存 → KEY3 起步死窗
+#   丢 8 包。③用户按 BYTE_DIV=42 估的 ~10M 拍已不适用于帧锁存方案。
+#   ★ WD 依据（帧锁存实际时长，clk100）：
+#     PRO 0.8M + KEY0 9.6M + DELTA1 2.2M + DELTA2 2.2M + KEY3 9.6M + DELTA4 2.2M
+#     = 26.6M 拍（clk125 逐窗换算：1M/12M/2.75M×3/12M ÷1.25）
+#     + 收尾渲染 ~2 帧 ≈ 3.4M  → 合计 ≈ 30M
+#   30M 无余量，取 **36M**（+20%）。
 $Entries['p6_e2e'] = @{
     Defines  = @('BBOARD_SYS', 'BBOARD_ETH', 'YINGXU_SIM', 'P6_E2E')
     Stream   = 'out\vp_720_5f.yxv2'
     Golden   = $true
-    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=20000000')
+    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=36000000')
     Sources  = $Entries['bboard_sys_eth'].Sources + @(
         "$VP\yx_a_vq_sender.v",
         'src\eth_udp_tx_gmii.v'
@@ -309,10 +316,32 @@ $argList += @('-o', $VvpPath)
 $argList += $Cfg.Sources
 $argStr = $argList -join ' '
 
-# cmd 层重定向（stdout+stderr 同文件），退出码走 $LASTEXITCODE；路径均不含空格
+# cmd 层重定向（stdout+stderr 同文件）；路径均不含空格
+# ★ 编译必须带超时：iverilog 遇病态源（如 always @* 组合读百万条目数组）会
+#   **编译期死循环**（2026-11-27 实测：高 CPU 9~34 分钟、内存恒 60~90MB 不涨）。
+#   原 cmd /c 无限等 → 永久挂 + 孤儿进程堆積。这里 Start-Process 拿 PID，
+#   180s 超时即 taskkill /T /F 杀整棵树（cmd + iverilog），判 COMPILE-TIMEOUT。
 $raw = "$CmpLog.raw"
-cmd /c ($IV + ' ' + $argStr + ' > ' + $raw + ' 2>&1')
-$rc = $LASTEXITCODE
+$cmp = Start-Process -FilePath 'cmd.exe' `
+        -ArgumentList ('/c ' + $IV + ' ' + $argStr + ' > ' + $raw + ' 2>&1') `
+        -NoNewWindow -PassThru
+# ★ 必须立刻取 Handle 强制打开进程句柄：否则进程（尤其秒退的编译）退出后
+#   ExitCode 永远读不到 → null → 误判 COMPILE-FAIL。
+#   （eth_rx 20261127_1403/1404 两连：vvp 已产出、脚本却报编译失败。
+#     直接进程实验证实：不取 Handle → exitcode 为空；取 Handle → exitcode=0。）
+$null = $cmp.Handle
+if (-not $cmp.WaitForExit(180000)) {
+    taskkill /PID $($cmp.Id) /T /F 2>$null | Out-Null
+    Write-Output ('COMPILE-TIMEOUT entry=' + $Entry + ' limit=180s ivl=' + $IV)
+    Write-Output ('  病态源排查顺序: ①always @* 里读大数组 ②编译期展开的大 for 循环')
+    if (Test-Path $raw) { Get-Content $raw -Tail 15 | ForEach-Object { Write-Output ('  ' + $_) } }
+    exit 1
+}
+# ★ 无参 WaitForExit 同步进程句柄：不带它，进程快速退出时 ExitCode 实测返回
+#   $null → 误判 COMPILE-FAIL（eth_rx 20261127_140334 就这样：vvp 已产出，
+#   脚本却报编译失败）。
+$cmp.WaitForExit() | Out-Null
+$rc = $cmp.ExitCode
 
 $hdr  = 'cmd: ' + $IV + ' ' + $argStr + "`r`n"
 $body = ''
