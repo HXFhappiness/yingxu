@@ -177,13 +177,14 @@ module tb_yxvp_bboard;
     wire [15:0] a_tx_short;
     wire [15:0] a_tx_frame;
 
-    // ★ P6 帧锁存节流常数（推导见 yx_a_vq_sender.v 文件头，按帧类型分周期）：
-    //   KEY 帧起步有 ~2.5ms 消费死窗（ixwr 写带宽被渲染占用 → skid 满 →
-    //   stream_ready=0），死窗内 A 的累积必须 ≤ FIFO 有效余量 ~6.1KB
-    //   ⇒ KEY 速率 ≤1.22 MB/s，取 1.2 → T_KEY_CYC = 115,200×125e6/1.2e6 = 12M。
-    //   DELTA 帧边界实测无死窗（B 逐拍跟踪 A，缺口 ≤1,455），保持 22ms。
-    localparam integer P6_T_KEY_CYC   = 12000000;   // 96 ms @125MHz
-    localparam integer P6_T_DELTA_CYC =  2750000;   // 22 ms
+    // ★ P7-a 帧锁存节流常数（推导见 yx_a_vq_sender.v 文件头，按帧类型分周期）：
+    //   16KB FIFO 的丢包阈值 ≈17,700B；实测死窗**不是常数**——它是 B 的帧边界
+    //   串行化（ixdec 吃完上一帧后要完成解码+提交才肯吃下一帧），跑得越快越长：
+    //   1.07 MB/s 时 ≤5.5ms，4.11 MB/s 时 ~15ms（实测 t=5.1→6.6M 消费冻结）。
+    //   ⇒ KEY 4.11 MB/s（28ms 窗）丢 30 包（边界值，已记录）；KEY 退到
+    //   2.0 MB/s（57.6ms 窗）做定界实验。
+    localparam integer P6_T_KEY_CYC   =  7200000;   // 57.6 ms @125MHz
+    localparam integer P6_T_DELTA_CYC =  1640000;   // 13.1 ms
     localparam integer P6_PRO_CYC     =  1000000;   // 8 ms
 
     yx_a_vq_sender #(
@@ -279,7 +280,7 @@ module tb_yxvp_bboard;
     assign s_valid = eth_sv;
     assign s_data  = eth_sd;
 
-    yx_b_eth_rx #(.USE_RGMII(0), .FIFO_AW(13)) u_ethrx (
+    yx_b_eth_rx #(.USE_RGMII(0), .FIFO_AW(14)) u_ethrx (
         .clk100       (clk100),
         .rst_n        (rst_n),
         .local_mac    (ETH_LOCAL_MAC),

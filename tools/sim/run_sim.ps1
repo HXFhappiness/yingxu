@@ -168,7 +168,9 @@ $Entries['eth_rx'] = @{
         'src\rgmii_to_gmii.v',
         "$BSHM\BUFG_0.v",
         "$BSHM\IDDR_0.v",
-        "$BSHM\EG_LOGIC_IDELAY.v"
+        "$BSHM\EG_LOGIC_IDELAY.v",
+        # ★ P7-a：yx_b_afifo 的字节 FIFO 改显式 EG_LOGIC_BRAM（BRAM=1），需 shim
+        "$BSHM\EG_LOGIC_BRAM.v"
     )
 }
 
@@ -227,17 +229,17 @@ $Entries['eth_stress'] = @{
 #   PRO   PRO_CYC=1M clk125（8ms）。
 #   【修正记录】①初版照搬 P5 §5F 的 6.81 MB/s 取 BYTE_DIV=20 → drop=85（该值是
 #   VQ-1024 自己的源码率，不是 B 能力常数）；②统一 22ms 帧锁存 → KEY3 起步死窗
-#   丢 8 包。③用户按 BYTE_DIV=42 估的 ~10M 拍已不适用于帧锁存方案。
+#   丢 8 包；③P7-a：B FIFO 16KB（AW=14）后 KEY 28ms（4.11 MB/s）实测丢 30 包
+#   —— **死窗不是常数**（1.07 MB/s 时 ≤5.5ms，4.11 MB/s 时 ~15ms，见
+#   docs/YX_BBOARD_P7_PACING_20261128.md）；KEY 退到 57.6ms（2.0 MB/s）定界。
 #   ★ WD 依据（帧锁存实际时长，clk100）：
-#     PRO 0.8M + KEY0 9.6M + DELTA1 2.2M + DELTA2 2.2M + KEY3 9.6M + DELTA4 2.2M
-#     = 26.6M 拍（clk125 逐窗换算：1M/12M/2.75M×3/12M ÷1.25）
-#     + 收尾渲染 ~2 帧 ≈ 3.4M  → 合计 ≈ 30M
-#   30M 无余量，取 **36M**（+20%）。
+#     PRO 0.8M + KEY0 4.6M + DELTA1 1.05M + DELTA2 1.05M + KEY3 4.6M + DELTA4 1.05M
+#     = 13.0M 拍 + 收尾渲染 ~3M → 合计 ≈ 16M → 取 **18M**。
 $Entries['p6_e2e'] = @{
     Defines  = @('BBOARD_SYS', 'BBOARD_ETH', 'YINGXU_SIM', 'P6_E2E')
     Stream   = 'out\vp_720_5f.yxv2'
     Golden   = $true
-    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=36000000')
+    PlusArgs = @('+STREAM=out\vp_720_5f.yxv2', '+WD=18000000')
     Sources  = $Entries['bboard_sys_eth'].Sources + @(
         "$VP\yx_a_vq_sender.v",
         'src\eth_udp_tx_gmii.v'

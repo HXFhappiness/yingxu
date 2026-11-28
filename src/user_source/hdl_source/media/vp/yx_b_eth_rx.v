@@ -34,8 +34,11 @@
 
 module yx_b_eth_rx #(
     parameter USE_RGMII = 0,        // 0=GMII 直连；1=RGMII（rgmii_to_gmii）
-    parameter FIFO_AW   = 13,       // 字节 FIFO 深度 2^13 = 8KB
-    parameter DESC_AW   = 3         // 包描述符 FIFO 深度 8
+    parameter FIFO_AW   = 14,       // 字节 FIFO 深度 2^14 = 16KB（P7-a：13→14，吸收 KEY 死窗）
+    parameter DESC_AW   = 4         // 包描述符 FIFO 深度 16（P7-a：3→4，与字节 FIFO
+                                    //   16KB 配比——16,384B 最多容纳 15 个整包+1 在途，
+                                    //   8 深描述符会被自适应发送方冲爆（sys_eth 实测
+                                    //   drop=132），16KB 扩容必须同步扩描述符）
 )(
     // ---- 100M 逻辑域（与 yingxu_vq_board_top 同域）----
     input  wire        clk100,
@@ -238,7 +241,7 @@ module yx_b_eth_rx #(
     wire       byte_v;
     wire       byte_pop;
 
-    yx_b_afifo #(.WIDTH(8), .AW(FIFO_AW)) u_bfifo (
+    yx_b_afifo #(.WIDTH(8), .AW(FIFO_AW), .BRAM(1)) u_bfifo (
         .wr_rst   (wr_rst),
         .wr_clk   (clk125),
         .wr_en    (byte_wr),
@@ -369,7 +372,15 @@ endmodule
 // =========================================================================
 module yx_b_afifo #(
     parameter WIDTH = 8,
-    parameter AW    = 13
+    parameter AW    = 13,
+    // ★ P7-a：存储实现选择。0 = reg 数组推断（小 FIFO 用，如描述符 FIFO）；
+    //   1 = 显式例化 EG_LOGIC_BRAM（IMPLEMENT="32K"）。
+    //   为什么大 FIFO 必须用 1：字节 FIFO 扩到 AW=14（16,384×8 = 128 Kbit）后，
+    //   bram9k 池只剩 2 块（推断需要 ~16 块），TD 会按资源上限把它踢成分布式
+    //   RAM（P5 实测 ~15.7K LUT 的重演）；而 32Kb 池有 6 块空闲，128 Kbit
+    //   恰好 = 4 块 bram32k。推断路径永远拿不到 32Kb 池（P5-P1 结论），必须
+    //   显式例化原语并指定 IMPLEMENT="32K"。
+    parameter BRAM  = 0
 )(
     input  wire             wr_rst,
     input  wire             wr_clk,
@@ -386,8 +397,6 @@ module yx_b_afifo #(
 );
     localparam DEPTH = (1 << AW);
     localparam PT    = AW + 1;
-
-    reg [WIDTH-1:0] mem [0:DEPTH-1];
 
     // 格雷→二进制**两级流水**（原 13 级串行 XOR 在 100MHz 域实测 −337 ps）。
     //   低半段用"上一拍的高半结果 + 同一拍的格雷低半快照(g_lo_q)"配种，拼接自洽；
@@ -449,10 +458,9 @@ module yx_b_afifo #(
     wire rd_zero  = (wgray_r2 == rgray);
     wire rd_more  = (wgray_r2 != rgray_nxt);   // 弹出后仍非空（= occ > 1）
 
-    reg [WIDTH-1:0] dout_r;
+    // rd_data 由存储分支给出（BRAM=1 → g_bram.dob；BRAM=0 → g_arr.dout_r）
     reg             dvalid_r;
 
-    assign rd_data  = dout_r;
     assign rd_valid = dvalid_r;
     assign rd_empty = rd_zero && !dvalid_r;
 
@@ -460,6 +468,67 @@ module yx_b_afifo #(
     //   = pop ? rptr+1 : rptr —— 写成加法正好省掉一个地址多路器。
     wire                   pop    = dvalid_r && rd_en;
     wire [AW-1:0]          mem_ra = rptr + {{(AW-1){1'b0}}, pop};
+
+    // ---------------- 存储体（按 BRAM 参数二选一）----------------
+    // ★ 两种实现的读出时序**逐拍等价**：
+    //   · 数组：dout_r <= mem[mem_ra]（组合读、当拍沿打入寄存器）；
+    //   · BRAM：地址 mem_ra 当拍沿锁存，dob 下一拍出现同一地址的值。
+    //   两者都是"cycle N+1 看到 Cycle N 采样地址的值"，故 dvalid 指针逻辑
+    //   完全不用改（这是 P5-P1 验证过的同构，不是近似）。
+    generate
+    if (BRAM != 0) begin : g_bram
+        // 显式厂商 BRAM：真双口（A 写 @wr_clk / B 读 @rd_clk）。
+        // 16,384×8 = 128 Kbit = 4 块 bram32k（IMPLEMENT="32K"）。
+        wire [WIDTH-1:0] dob_i;
+        EG_LOGIC_BRAM #(
+            .DATA_WIDTH_A (WIDTH),
+            .DATA_WIDTH_B (WIDTH),
+            .ADDR_WIDTH_A (AW),
+            .ADDR_WIDTH_B (AW),
+            .BYTE_ENABLE  (0),
+            .MODE         ("DP"),            // A 写 / B 读，真双时钟
+            .REGMODE_A    ("NOREG"),
+            .REGMODE_B    ("NOREG"),         // 同步读：地址打入 → 下一拍出数
+            .WRITEMODE_A  ("NORMAL"),
+            .WRITEMODE_B  ("NORMAL"),
+            .RESETMODE    ("ASYNC"),
+            .INIT_FILE    ("NONE"),
+            .FILL_ALL     ("NONE"),
+            .IMPLEMENT    ("32K")
+        ) u_mem (
+            .dia   (wr_data),
+            .addra (wptr),
+            .cea   (1'b1),
+            .ocea  (1'b1),
+            .clka  (wr_clk),
+            .wea   (wr_en && !wr_full),
+            .rsta  (1'b0),
+            .bea   (1'b1),
+            .dib   ({WIDTH{1'b0}}),
+            .addrb (mem_ra),
+            .ceb   (1'b1),
+            .oceb  (1'b1),
+            .clkb  (rd_clk),
+            .web   (1'b0),
+            .rstb  (1'b0),
+            .beb   (1'b1),
+            .doa   (),
+            .dob   (dob_i)
+        );
+        assign rd_data = dob_i;      // dob 每拍保持 = mem[mem_ra]，与数组 dout_r 等价
+    end else begin : g_arr
+        reg [WIDTH-1:0] mem    [0:DEPTH-1];
+        reg [WIDTH-1:0] dout_r;
+        always @(posedge wr_clk) begin
+            if (wr_en && !wr_full) mem[wptr] <= wr_data;
+        end
+        always @(posedge rd_clk or posedge rd_rst) begin
+            if (rd_rst) dout_r <= {WIDTH{1'b0}};
+            else        dout_r <= mem[mem_ra];
+        end
+        assign rd_data = dout_r;
+    end
+    endgenerate
 
     always @(posedge wr_clk or posedge wr_rst) begin
         if (wr_rst) begin
@@ -479,7 +548,6 @@ module yx_b_afifo #(
             g_lo_q   <= rgray_w2[PH-1:0];
             rbin_w_q <= {rbin_whi, g2b_lo(g_lo_q, rbin_whi[PH])};
             if (wr_en && !wr_full) begin
-                mem[wptr] <= wr_data;
                 wptr  <= wptr + 1'b1;
                 wbin  <= wbin_nxt;
                 wgray <= wgray_nxt;
@@ -494,19 +562,13 @@ module yx_b_afifo #(
             rptr <= {AW{1'b0}};
             wgray_r1 <= {PT{1'b0}};
             wgray_r2 <= {PT{1'b0}};
-            dout_r   <= {WIDTH{1'b0}};
             dvalid_r <= 1'b0;
         end else begin
             wgray_r1 <= wgray;
             wgray_r2 <= wgray_r1;
-            // ★ P5-P1：存储读口收成"唯一地址 + 无条件同步读"。
-            //   原实现是两个分支各读一个地址（消费拍读 mem[rptr_nxt] 预取、
-            //   其余拍读 mem[rptr]），综合器无法把 mem 映射成 BRAM，退化成
-            //   ~15.7K LUT 分布式逻辑 —— B 板 LUT 爆容(248%)与 125M 域
-            //   "SEQ+4×ADDER+DRAM" -2652ps 违例的共同根因。
+            // ★ P5-P1：读口唯一地址 + 无条件同步读（BRAM 分支由原语完成同件事）。
             //   合并为 mem_ra = 消费则 +1 否则不动（= pop ? rptr+1 : rptr），
-            //   读出仍是寄存输出、每拍无气泡，逐拍语义与旧版完全一致。
-            dout_r <= mem[mem_ra];
+            //   读出每拍无气泡，逐拍语义与旧版完全一致。
             if (pop) begin
                 // 消费当前字节；同时预取下一个（≥2 字节时无气泡）
                 rbin  <= rbin_nxt;

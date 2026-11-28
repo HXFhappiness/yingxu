@@ -366,7 +366,7 @@ module yingxu_vq_board_top #(
     wire        eth_rdy;
     yx_b_eth_rx #(
         .USE_RGMII (1),
-        .FIFO_AW   (13)
+        .FIFO_AW   (14)
     ) u_ethrx (
         .clk100       (clk100),
         .rst_n        (rst_n),
